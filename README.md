@@ -45,8 +45,31 @@ Disease control at 12 months:
 
 ## Core Scripts
 
-### `new_data_cleaning_pipe.R`
-Primary data-cleaning and reconstruction pipeline.
+### Modular pipeline in `R/`
+
+Current refactor entry points:
+- `R/01_cleaning.R`: reads raw questionnaire/cost files, applies manual corrections, derives `controlled_*`, `EQindex_*`, cost summaries, and completeness flags.
+- `R/02_imputation.R`: creates the MICE input dataset for outcome/QoL imputation with 20 PMM repetitions; cost summaries are explicitly excluded.
+- `R/03_descriptives.R`: writes baseline, missingness, and disease-stratified descriptive outputs.
+- `R/04_models.R`: fits the mixed-effects sensitivity model on the imputed data.
+- `R/04b_gee.R`: fits the protocol-style GEE effectiveness model on the imputed data.
+- `R/05_cost_effectiveness.R`: fits complete-case cost/QALY GLMs, parallel GEE sensitivity models on the same patient-level covariates, pairs them with the mixed/GEE effectiveness outputs, and runs 5000 bootstrap CEA simulations for both model families.
+- `R/06_outputs.R`: exports legacy-style CSVs, manuscript-ready comparison tables (`manuscript_results_summary.csv`, `manuscript_results_effectiveness.csv`, `manuscript_results_cea.csv`, `manuscript_results_cea_summary.csv`), and a validation summary.
+- `R/utils.R`: central constants, variable derivations, long-format construction, cost aggregation, and shared helpers.
+
+Recommended run order from the project root:
+1. `source("R/01_cleaning.R")`
+2. `source("R/02_imputation.R")`
+3. `source("R/03_descriptives.R")`
+4. `source("R/04_models.R")`
+5. `source("R/04b_gee.R")`
+6. `source("R/05_cost_effectiveness.R")`
+7. `source("R/06_outputs.R")`
+
+For a one-shot run from Bash, use `./run_full_pipeline.sh`.
+
+### `deprecated/new_data_cleaning_pipe.R`
+Legacy data-cleaning and reconstruction pipeline.
 
 Responsibilities:
 - Read raw SPSS datasets
@@ -55,12 +78,12 @@ Responsibilities:
 - Merge longitudinal datasets
 - Prepare analysis-ready data
 
-Recommended entry point for understanding the data structure.
+Historical reference only; the modular pipeline now keeps structural-zero rules in `R/utils.R`.
 
 ---
 
-### `regression_script.R`
-Primary inferential analysis script.
+### `deprecated/regression_script.R`
+Legacy inferential analysis script.
 
 Responsibilities:
 - Power calculations
@@ -73,7 +96,7 @@ Most important file for statistical revisions.
 
 ---
 
-### `Tables and figures.R`
+### `deprecated/Tables and figures.R`
 Publication table generation.
 
 Responsibilities:
@@ -86,7 +109,7 @@ Produces manuscript-ready outputs.
 
 ---
 
-### `Plots.R`
+### `deprecated/Plots.R`
 Exploratory analysis and visualisation.
 
 Responsibilities:
@@ -99,7 +122,7 @@ Useful for QA and exploratory work.
 
 ---
 
-### `BOFE script_copy.R`
+### `deprecated/BOFE script_copy.R`
 Legacy master workflow.
 
 Contains:
@@ -142,12 +165,12 @@ Example:
 - `D1.2` = patient ID
 
 ## Group assignment
-- `D1.4_0`
+- `D1.4` in modular processed datasets
   - intervention
   - control
 
 ## Disease
-- `D1.3_0`
+- `D1.3` in modular processed datasets
   - 1 = asthma
   - 2 = COPD
 
@@ -166,22 +189,36 @@ Example:
 ## Missing Data
 Outcome data:
 - Multiple imputation (MICE)
-- 10 imputations
+- 20 imputations
 
 Cost data:
 - Complete-case only
 - No imputation
 
 ## Primary Model
-Mixed-effects logistic regression:
-- Random intercept for patient
+Legacy ITT analysis in `deprecated/regression_script.R`:
+- Mixed-effects logistic regression on the complete-case longitudinal dataset
 - Fixed effects:
   - treatment
   - time
-  - treatment × time
+  - treatment x time
   - age
   - sex
   - baseline control
+
+Manuscript-aligned refactor:
+- `R/02_imputation.R` reproduces the legacy wide imputation frame, splits by arm and disease, and runs 20 PMM imputations per subset before recombining them
+- `R/04_models.R` reconstructs the repeated-measures analysis set and pools mixed-effects logistic regressions fit to the 20 imputed datasets
+- `R/04b_gee.R` runs the protocol-style GEE analysis separately on the same imputed datasets
+- `R/05_cost_effectiveness.R` combines the mixed-effects and GEE effectiveness outputs with complete-case CEA GLMs and parallel CEA GEE sensitivity models on the same patient-level covariates, then bootstraps both CEA families on the same resampled patients for comparable uncertainty intervals
+- `R/06_outputs.R` writes manuscript-ready summary CSVs for both model families and the cost-effectiveness results, preserving family labels in the bootstrap summary table
+- Key CEA outputs include `cea_model_summaries.csv`, `cea_model_comparison.csv`, `cea_longitudinal.csv`, `cea_summary.csv`, `manuscript_results_cea.csv` (GLM vs GEE comparison), and `manuscript_results_cea_summary.csv` (bootstrap summary by model family)
+- Cost models remain complete-case
+
+Validation note:
+- The cleaned pipeline now preserves legacy time-specific `D1.3_*` and `D1.4_*` columns rather than merging on disease/group.
+- After restoring that behavior, the pooled imputed mixed-effects 12-month OR is about `1.73`, while the legacy-style complete-case mixed model is about `1.83`.
+- The manuscript draft's reported `1.81` estimate is much closer to the complete-case branch than to the imputed branch.
 
 ---
 
@@ -203,6 +240,9 @@ Intervention cost:
 
 QALYs:
 - Calculated using EQ-5D-5L area-under-curve approach
+
+Current modular output:
+- `R/05_cost_effectiveness.R` creates patient-level CEA data, Gamma-log cost models, Gaussian-identity QALY models, parallel GEE sensitivity models on the same patient-level covariates, bootstrap results for both GLM and GEE branches, and cost-effectiveness acceptability probabilities.
 
 ---
 
@@ -228,7 +268,7 @@ Recommended improvements:
 Many questionnaire variables use:
 - `0 = structurally missing`
 
-Scripts intentionally convert these to `NA`.
+The cleaning script now applies these rules from a centralized mapping in `R/utils.R`.
 
 ## Legacy duplication
 There is substantial repeated cleaning code across scripts.

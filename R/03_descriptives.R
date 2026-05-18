@@ -12,25 +12,15 @@
 library(dplyr)
 library(tidyr)
 library(haven)
+source("R/utils.R")
 
 # Load data
 all_cases_raw <- readRDS('data_processed/all_cases.rds')
 complete_cases_raw <- readRDS('data_processed/complete_cases.rds')
 
-# Remove labels to avoid vctrs comparison issues
-remove_labels_safe <- function(df) {
-  df[] <- lapply(df, function(x) {
-    if (class(x)[1] == 'haven_labelled') {
-      as.numeric(x)
-    } else {
-      x
-    }
-  })
-  df
-}
-
-all_cases <- remove_labels_safe(all_cases_raw)
-complete_cases <- remove_labels_safe(complete_cases_raw)
+# Remove labels to avoid vctrs comparison issues.
+all_cases <- remove_labels(all_cases_raw)
+complete_cases <- remove_labels(complete_cases_raw)
 
 cat("Loaded all_cases.rds: ", nrow(all_cases), " rows (ITT population)\n", sep = "")
 cat("Loaded complete_cases.rds: ", nrow(complete_cases), " rows (analyzed population)\n\n", sep = "")
@@ -47,7 +37,7 @@ continuous_vars <- c(
   "D3.1_0", "D3.2_0", "D3.3_0",
   "D3.10_1_0", "D3.10_2_0", "D3.10_3_0", "D3.10_4_0", "D3.10_5_0", "D3.10_6_0", "D3.10_7_0",
   "D3.11_1_0", "D3.11_2_0",
-  "ACT.SCORE_0", "CCQ.SCORE_0", "EQ5D5L.SCORE_0", "D5.2_0"
+  "ACT.SCORE_0", "CCQ.SCORE_0", "EQindex_0", "D5.2_0"
 )
 
 continuous_var_names <- c(
@@ -65,7 +55,7 @@ continuous_var_names <- c(
   "D3.11_2_0" = "Day Centre (per week)",
   "ACT.SCORE_0" = "Asthma Control Test (ACT) Score",
   "CCQ.SCORE_0" = "Clinical COPD Questionnaire (CCQ) Score",
-  "EQ5D5L.SCORE_0" = "EQ-5D-5L Index",
+  "EQindex_0" = "EQ-5D-5L Index",
   "D5.2_0" = "Number of Medications"
 )
 
@@ -215,10 +205,18 @@ cat("  outputs/table1_complete_cases_characteristics.csv (N=", nrow(complete_cas
 
 cat("=== GENERATING MISSINGNESS SUMMARY ===\n")
 
-outcome_vars <- c("ACT.SCORE", "CCQ.SCORE", "EQ5D5L.SCORE", "controlled")
+outcome_vars <- c("ACT.SCORE", "CCQ.SCORE", "EQindex", "controlled")
 timepoints <- c(0, 3, 6, 9, 12)
 
-missingness_summary <- data.frame()
+missingness_summary <- data.frame(
+  Timepoint = integer(0),
+  Variable = character(0),
+  N_Missing_ITT = integer(0),
+  Pct_Missing_ITT = numeric(0),
+  N_Missing_Analyzed = integer(0),
+  Pct_Missing_Analyzed = numeric(0),
+  stringsAsFactors = FALSE
+)
 
 for (tp in timepoints) {
   for (outcome in outcome_vars) {
@@ -270,7 +268,7 @@ for (pop_name in c("ITT", "Analyzed")) {
       Pct_Female = 100 * mean(disease_data$D2.2_0, na.rm = TRUE),
       Mean_ACT = mean(disease_data$ACT.SCORE_0, na.rm = TRUE),
       Mean_CCQ = mean(disease_data$CCQ.SCORE_0, na.rm = TRUE),
-      Mean_EQindex = mean(disease_data$EQ5D5L.SCORE_0, na.rm = TRUE)
+      Mean_EQindex = mean(disease_data$EQindex_0, na.rm = TRUE)
     )
   }
 }

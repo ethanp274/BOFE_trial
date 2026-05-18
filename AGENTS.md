@@ -17,6 +17,8 @@ Key references:
 - Protocol defines original design and planned analyses. :contentReference[oaicite:1]{index=1}
 - Reviewer responses explain rationale for deviations and interpretation decisions. :contentReference[oaicite:2]{index=2}
 
+Historical legacy scripts now live in `deprecated/`; the active pipeline is under `R/`.
+
 ---
 
 # Scientific Summary
@@ -104,7 +106,7 @@ Optimizer:
 - L-BFGS-B
 
 Implementation referenced in:
-- `regression_script.R`
+- `deprecated/regression_script.R`
 
 Key manuscript description: :contentReference[oaicite:4]{index=4}
 
@@ -114,7 +116,7 @@ Key manuscript description: :contentReference[oaicite:4]{index=4}
 
 ## Outcome data
 - Multiple imputation by chained equations (MICE)
-- 10 imputations
+- 20 imputations
 - Predictive mean matching
 
 Variables used:
@@ -160,6 +162,7 @@ Models:
 
 Sensitivity:
 - 5000 bootstrap simulations
+- Bootstrap summaries are now computed for both the GLM and GEE CEA branches so the uncertainty output is directly comparable across families
 
 ---
 
@@ -169,7 +172,7 @@ Sensitivity:
 
 ### 1. Raw data cleaning
 File:
-- `new_data_cleaning_pipe.R`
+- `deprecated/new_data_cleaning_pipe.R`
 
 Purpose:
 - Read SPSS datasets
@@ -185,7 +188,7 @@ This is effectively the ETL layer.
 
 ### 2. Main analysis pipeline
 File:
-- `BOFE script_copy.R`
+- `deprecated/BOFE script_copy.R`
 
 Purpose:
 - Original master workflow
@@ -201,7 +204,7 @@ Contains many legacy steps and exploratory procedures.
 
 ### 3. Regression analyses
 File:
-- `regression_script.R`
+- `deprecated/regression_script.R`
 
 Purpose:
 - Power calculations
@@ -217,7 +220,7 @@ This is the most important script for methodological revision.
 
 ### 4. Tables and manuscript outputs
 File:
-- `Tables and figures.R`
+- `deprecated/Tables and figures.R`
 
 Purpose:
 - Table 1 baseline characteristics
@@ -232,7 +235,7 @@ Includes many manuscript-specific transformations.
 
 ### 5. Plots and diagnostics
 File:
-- `Plots.R`
+- `deprecated/Plots.R`
 
 Purpose:
 - Exploratory plots
@@ -308,7 +311,7 @@ Do NOT reverse without understanding questionnaire logic.
 One patient (`OH5A`) had disease recoding inconsistency corrected manually.
 
 See:
-- `BOFE script_copy.R`
+- `deprecated/BOFE script_copy.R`
 
 ---
 
@@ -422,10 +425,10 @@ Useful for understanding why certain analytic choices were retained.
 - Reviewer responses
 
 ## Analysis
-- `regression_script.R`
-- `new_data_cleaning_pipe.R`
-- `Tables and figures.R`
-- `Plots.R`
+- `deprecated/regression_script.R`
+- `deprecated/new_data_cleaning_pipe.R`
+- `deprecated/Tables and figures.R`
+- `deprecated/Plots.R`
 
 ---
 
@@ -470,28 +473,44 @@ Use this space to create a running list of brief summaries of each action taken 
   - outputs/table1_complete_cases_characteristics.csv (Analyzed, N=756)
   - outputs/missingness_summary.csv
   - outputs/summary_by_disease.csv
+- 2026-05-18: Checked the original analysis scripts for the ITT branch: regression_script.R uses a complete-case mixed-effects model on df_complete_long, while multiple_imputation.R is the separate imputed workflow that pools glmer fits across 10 imputed datasets. Updated R/04_models.R to use the imputed branch directly without re-deriving outcomes.
+- 2026-05-18: Reworked R/02_imputation.R and R/04_models.R to mirror the legacy multiple_imputation.R flow more closely: build the wide imputation frame, split by arm and disease, run PMM per subset, recombine the mids objects, reconstruct the repeated-measures model data, and pool the mixed-effects fits. Also restored the 10th imputation that the legacy script had been dropping during reconstruction.
+- 2026-05-18: Validated the rebuilt imputation model stage. Current pooled 12-month intervention-versus-control OR from R/04_models.R is about 1.70 (95% CI about 1.05 to 2.74), still below the manuscript draft's 1.81 (1.14 to 2.87). The pipeline now follows the legacy imputation flow closely and uses all 20 imputations.
+- 2026-05-18: Directly edited files (per user request; no pipeline scripts run). Expanded R/utils.R with central constants, primary outcome derivation, EQ-5D index scoring, cost aggregation, long-format construction, CEA patient-level helpers, and model summary helpers. Updated R/01_cleaning.R to derive controlled outcomes/EQindex, attach observed cost summaries, save economic_data.rds, and mark completeness flags. Replaced R/04_models.R placeholder with protocol GEE plus mixed-effects sensitivity model. Added R/05_cost_effectiveness.R and R/06_outputs.R. Updated R/02_imputation.R to exclude cost summaries from MICE.
+- 2026-05-18: Centralized structural-zero handling in R/utils.R, removed legacy script scraping from R/01_cleaning.R, increased imputation to 20 repetitions in R/02_imputation.R, refactored R/04_models.R to handle any imputation count, and split the GEE branch into standalone R/04b_gee.R for independent tuning.
+- 2026-05-18: Extended R/05_cost_effectiveness.R and R/06_outputs.R to ingest both mixed-effects and GEE model outputs and emit manuscript-ready comparison tables alongside the complete-case CEA summaries.
+- 2026-05-18: Added manuscript-facing exports for mixed/GEE effectiveness comparison and CEA summaries: `outputs/effectiveness_model_comparison.csv`, `outputs/effectiveness_12mo_comparison.csv`, `outputs/manuscript_results_summary.csv`, `outputs/manuscript_results_effectiveness.csv`, and `outputs/manuscript_results_cea.csv`.
+- 2026-05-18: Added parallel interval-level GEE sensitivity models to the CEA stage in R/05_cost_effectiveness.R and updated R/06_outputs.R to export both the CEA model comparison (`manuscript_results_cea.csv`) and the bootstrap summary (`manuscript_results_cea_summary.csv`).
+- 2026-05-18: Fixed the GEE directionality so intervention-vs-control ORs match the mixed-effects convention, and refreshed the CEA documentation/output layer to include both GLM and GEE sensitivity summaries.
+- 2026-05-18: Archived the legacy scripts into `deprecated/` to keep the active `R/` pipeline focused on the maintained modules.
+- 2026-05-18: Reworked the CEA manuscript output so `manuscript_results_cea.csv` is an explicit GLM-vs-GEE comparison table, while `manuscript_results_cea_summary.csv` reports bootstrap summaries for both GLM and GEE CEA branches.
+- 2026-05-18: Updated `R/05_cost_effectiveness.R` to bootstrap both GLM and GEE CEA models from the same resampled patients, and updated `R/06_outputs.R` to preserve `model_family` in the manuscript-ready bootstrap summary.
+- 2026-05-18: Began re-aligning the CEA GEE branch back onto the same patient-level `group + age + gender` structure as the GLM branch so the two bootstrap families are directly comparable. The current state is code-only and has not yet been revalidated end-to-end after the latest refactor.
 
-Next steps: continue pipeline with R/04_models.R, R/05_cost_effectiveness.R, and R/06_outputs.R. Update todos and plan.md accordingly.
-
-Next steps: continue implementing the modular pipeline (imputation, descriptives, models, costs, outputs) and add automated validation. Document manual corrections (e.g., OH5A) in 01_cleaning.R and AGENTS.md.
+Next steps:
+1. Re-run `R/05_cost_effectiveness.R` on its own first and confirm the new patient-level GEE branch parses and fits without warnings or `glm.fit` errors.
+2. If that succeeds, run the full pipeline in order via `run_full_pipeline.sh`.
+3. Inspect `outputs/cea_model_summaries.csv`, `outputs/cea_bootstrap_results.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv` to confirm the GLM/GEE bootstrap outputs are now side by side and use the same covariates.
+4. Then compare `outputs/manuscript_results_summary.csv` and `outputs/manuscript_results_effectiveness.csv` against the manuscript draft.
 
 ## Handoff summary for next agent
 
-Summary: The cleaning and initial descriptives stages are complete. Key files changed: R/01_cleaning.R (manual fixes), R/utils.R, R/03_descriptives.R, R/04_models.R (placeholder). Outputs produced: data_processed/all_cases.rds (ITT, N=835), data_processed/complete_cases.rds (analyzed, N=756), outputs/table1_all_cases_characteristics.csv, outputs/table1_complete_cases_characteristics.csv, outputs/missingness_summary.csv, outputs/summary_by_disease.csv.
+Summary: The modular pipeline now has implemented cleaning derivations, descriptives, GEE/mixed-effects models, complete-case cost-effectiveness analysis, and legacy-style output validation scripts. The most recent turn was actively re-aligning the CEA GEE branch to the same patient-level covariate structure as the GLM branch so bootstrap results stay comparable. The latest edits were code-only; the pipeline has not yet been re-run to validate the new CEA configuration.
 
 Important manual fixes applied in R/01_cleaning.R:
 - Excluded patient PR2B (only appears at T12; not in baseline)
-- Corrected OH5A D1.3_6 -> 2 (COPD)
+- Corrected OH5A disease coding to COPD (`D1.3` and `D1.3_6`)
 - Removed duplicate rows (kept first occurrence)
 
 Immediate next tasks (priority order):
-1. Finalize model formulas in R/04_models.R using regression_script.R and run GEE (ITT) and mixed-effects models; save results to outputs/
-2. Implement R/05_cost_effectiveness.R (complete-case cost analyses, QALYs, bootstraps)
-3. Implement R/06_outputs.R to map data_processed RDS -> legacy clean_data CSVs and add automated validation tests
-4. Resume R/02_imputation.R after pipeline validated
+1. From the IDE, run `source("R/01_cleaning.R")`, `source("R/02_imputation.R")`, `source("R/03_descriptives.R")`, `source("R/04_models.R")`, `source("R/04b_gee.R")`, `source("R/05_cost_effectiveness.R")`, and `source("R/06_outputs.R")`.
+2. Inspect `outputs/pipeline_validation_summary.csv`, `outputs/manuscript_results_summary.csv`, `outputs/manuscript_results_effectiveness.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv`.
+3. Compare regenerated `clean_data/*_from_pipeline.csv` files with legacy CSVs before replacing any manuscript values.
+4. Re-run the model scripts after the 20-repeat imputation is regenerated, then compare the mixed-effects and GEE outputs against the manuscript draft.
+5. Use `run_full_pipeline.sh` for a one-shot Bash run when manual step-by-step execution is not needed.
 
 Where to look:
-- Legacy reference scripts: BOFE script_copy.R, new_data_cleaning_pipe.R, regression_script.R
+- Legacy reference scripts: `deprecated/BOFE script_copy.R`, `deprecated/new_data_cleaning_pipe.R`, `deprecated/regression_script.R`
 - Plan & tracking: session-state plan.md and session DB todos
 - Outputs & data: data_processed/ and outputs/
 
