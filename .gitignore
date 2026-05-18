@@ -10,6 +10,13 @@
 *.xls
 *.xlsx
 
+clean_data/
+data_processed/
+raw_data/
+
+# Context files
+context_source_files/
+
 # Session Data files
 .RData
 .RDataTmp
