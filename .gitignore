@@ -3,6 +3,13 @@
 .Rapp.history
 *.Rhistory
 
+# Data files
+*.sav
+*.csv
+*.dta
+*.xls
+*.xlsx
+
 # Session Data files
 .RData
 .RDataTmp
@@ -52,3 +59,4 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+.positai

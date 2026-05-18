@@ -1090,6 +1090,9 @@ asthma_cost_outcomes <- generate_quant_outcomes_general(df_asthma, cost_vars, co
 COPD_cost_outcomes <- generate_quant_outcomes_general(df_COPD, cost_vars, cost_vars_names)
 total_cost_outcomes <- generate_quant_outcomes_general(df_complete, cost_vars, cost_vars_names)
 
+
+
+
 ################################ Regressions ######################################
 
 group_factor_levels = c('cg (control group)', 'ig (intervention group)')
@@ -1116,6 +1119,11 @@ reg3_total_6mo <- glm(formula = controlled_6 ~ D1.4_0, family = "binomial", data
 reg3_total_9mo <- glm(formula = controlled_9 ~ D1.4_0, family = "binomial", data = df_complete)
 
 ## Regression 4+: 
+
+
+
+
+
 
 
 
