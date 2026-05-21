@@ -24,6 +24,11 @@ library(dplyr)
 if (!dir.exists("clean_data")) dir.create("clean_data", showWarnings = FALSE)
 if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
 
+pipeline_started <- pipeline_phase_start(
+  "06_outputs",
+  "writing legacy-style CSV exports and manuscript summaries"
+)
+
 all_cases <- readRDS("data_processed/all_cases.rds")
 complete_cases <- readRDS("data_processed/complete_cases.rds")
 
@@ -53,6 +58,7 @@ if (!file.exists(cea_results_path)) stop("Missing ", cea_results_path, ". Run R/
 mixed_results <- readRDS(mixed_results_path)
 gee_results <- readRDS(gee_results_path)
 cea_results <- readRDS(cea_results_path)
+pipeline_phase_info("06_outputs", "loaded effectiveness and CEA model artefacts")
 
 effectiveness_results <- bind_rows(
   mixed_results$timepoint_effects %>% mutate(model = "mixed_effects"),
@@ -89,6 +95,8 @@ manuscript_results_summary <- bind_rows(
   ),
   cea_summary
 )
+
+pipeline_phase_info("06_outputs", "assembling manuscript-ready comparison tables")
 
 write.csv(all_cases, "clean_data/all_cases_from_pipeline.csv", row.names = FALSE)
 write.csv(complete_cases, "clean_data/complete_cases_from_pipeline.csv", row.names = FALSE)
@@ -144,3 +152,8 @@ validation_summary <- bind_rows(
 write.csv(validation_summary, "outputs/pipeline_validation_summary.csv", row.names = FALSE)
 
 cat("06_outputs: saved legacy-style CSV exports and validation summary.\n")
+pipeline_phase_end(
+  "06_outputs",
+  pipeline_started,
+  "saved manuscript outputs and validation summary"
+)

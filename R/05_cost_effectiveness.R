@@ -24,8 +24,14 @@ library(geepack)
 
 if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
 
+pipeline_started <- pipeline_phase_start(
+  "05_cost_effectiveness",
+  "building complete-case CEA models and bootstrap summaries"
+)
+
 complete_cases <- readRDS("data_processed/complete_cases.rds")
 complete_cases <- add_analysis_derivations(complete_cases)
+pipeline_phase_info("05_cost_effectiveness", "attaching observed cost summaries and preparing patient-level CEA data")
 
 if (!all(COST_SUMMARY_COLUMNS %in% names(complete_cases)) && file.exists("data_processed/economic_data.rds")) {
   complete_cases <- attach_cost_summaries(complete_cases, readRDS("data_processed/economic_data.rds"))
@@ -83,11 +89,12 @@ fit_stable_geeglm <- function(formula, data, id_col, family) {
   data <- clean_model_data(formula, data, id_col = id_col)
   if (is.null(data)) return(NULL)
   if (n_distinct(data[[id_col]]) < 2) return(NULL)
+  data$gee_id <- data[[id_col]]
   suppressWarnings(
     geeglm(
       formula = formula,
       data = data,
-      id = data[[id_col]],
+      id = gee_id,
       family = family,
       corstr = "exchangeable",
       std.err = "san.se"
@@ -102,6 +109,7 @@ if (!file.exists(gee_model_path)) stop("Missing ", gee_model_path, ". Run R/04b_
 
 mixed_results <- readRDS(mixed_model_path)
 gee_results <- readRDS(gee_model_path)
+pipeline_phase_info("05_cost_effectiveness", "loading mixed-effects and GEE effectiveness outputs")
 
 effectiveness_mixed <- mixed_results$timepoint_effects %>%
   mutate(model = "mixed_effects", analysis = "effectiveness")
@@ -164,8 +172,10 @@ model_summaries <- model_summaries %>%
       is.na(estimate_exp) & outcome == "cost",
       exp(estimate),
       estimate_exp
-    )
   )
+)
+
+pipeline_phase_info("05_cost_effectiveness", "fitting GLM and GEE cost-effectiveness models")
 
 cea_model_comparison <- model_summaries %>%
   filter(grepl("^group", term)) %>%
@@ -186,7 +196,71 @@ cea_model_comparison <- model_summaries %>%
     p_value
   )
 
-run_bootstrap <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS) {
+bootstrap_iteration_result <- function(i, patient_level, patient_ids) {
+  set.seed(i * 37)
+  sample_ids <- sample(patient_ids, length(patient_ids), replace = TRUE)
+
+  sample_patient <- patient_level[match(sample_ids, patient_level$patient), , drop = FALSE]
+  sample_patient$patient <- as.character(sample_patient$patient)
+  sample_patient$bootstrap_patient <- paste0(sample_patient$patient, "_", seq_along(sample_ids))
+
+  boot_glm_cost <- tryCatch(
+    fit_stable_glm(total_cost_gamma ~ group + age + gender, sample_patient, Gamma(link = "log"), maxit = 200),
+    error = function(e) NULL
+  )
+  boot_glm_qaly <- tryCatch(
+    fit_stable_glm(QALY_model ~ group + age + gender, sample_patient, gaussian(link = "identity"), maxit = 100),
+    error = function(e) NULL
+  )
+  boot_gee_cost <- tryCatch(
+    fit_stable_geeglm(total_cost_gamma ~ group + age + gender, sample_patient, id_col = "bootstrap_patient", family = Gamma(link = "log")),
+    error = function(e) NULL
+  )
+  boot_gee_qaly <- tryCatch(
+    fit_stable_geeglm(QALY_model ~ group + age + gender, sample_patient, id_col = "bootstrap_patient", family = gaussian(link = "identity")),
+    error = function(e) NULL
+  )
+
+  models <- list(
+    glm = list(cost = boot_glm_cost, qaly = boot_glm_qaly),
+    gee = list(cost = boot_gee_cost, qaly = boot_gee_qaly)
+  )
+
+  rows <- list()
+  row_idx <- 0L
+
+  for (model_family in names(models)) {
+    boot_cost <- models[[model_family]]$cost
+    boot_qaly <- models[[model_family]]$qaly
+
+    if (is.null(boot_cost) || is.null(boot_qaly)) next
+    if (model_family == "glm" && !isTRUE(boot_cost$converged)) next
+
+    group_term <- grep("^groupig", names(coef(boot_cost)), value = TRUE)
+    qaly_group_term <- grep("^groupig", names(coef(boot_qaly)), value = TRUE)
+
+    if (length(group_term) == 0 || length(qaly_group_term) == 0) next
+
+    row_idx <- row_idx + 1L
+    rows[[row_idx]] <- data.frame(
+      iteration = i,
+      model_family = model_family,
+      cost_intercept = unname(coef(boot_cost)[["(Intercept)"]]),
+      cost_group_log_ratio = unname(coef(boot_cost)[group_term[1]]),
+      qaly_intercept = unname(coef(boot_qaly)[["(Intercept)"]]),
+      incremental_qaly = unname(coef(boot_qaly)[qaly_group_term[1]]),
+      baseline_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])),
+      intervention_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])) * exp(unname(coef(boot_cost)[group_term[1]])),
+      incremental_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])) * exp(unname(coef(boot_cost)[group_term[1]])) - exp(unname(coef(boot_cost)[["(Intercept)"]])),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  if (length(rows) == 0) return(NULL)
+  do.call(rbind, rows)
+}
+
+run_bootstrap_serial <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS) {
   patient_level$patient <- as.character(patient_level$patient)
   patient_ids <- unique(as.character(patient_level$patient))
   out <- data.frame(
@@ -203,62 +277,15 @@ run_bootstrap <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS) {
   )
 
   for (i in seq_len(num_iter)) {
-    set.seed(i * 37)
-    sample_ids <- sample(patient_ids, length(patient_ids), replace = TRUE)
-
-    sample_patient <- patient_level[match(sample_ids, patient_level$patient), , drop = FALSE]
-    sample_patient$patient <- as.character(sample_patient$patient)
-    sample_patient$bootstrap_patient <- paste0(sample_patient$patient, "_", seq_along(sample_ids))
-
-    boot_glm_cost <- tryCatch(
-      fit_stable_glm(total_cost_gamma ~ group + age + gender, sample_patient, Gamma(link = "log"), maxit = 200),
-      error = function(e) NULL
-    )
-    boot_glm_qaly <- tryCatch(
-      fit_stable_glm(QALY_model ~ group + age + gender, sample_patient, gaussian(link = "identity"), maxit = 100),
-      error = function(e) NULL
-    )
-    boot_gee_cost <- tryCatch(
-      fit_stable_geeglm(total_cost_gamma ~ group + age + gender, sample_patient, id_col = "bootstrap_patient", family = Gamma(link = "log")),
-      error = function(e) NULL
-    )
-    boot_gee_qaly <- tryCatch(
-      fit_stable_geeglm(QALY_model ~ group + age + gender, sample_patient, id_col = "bootstrap_patient", family = gaussian(link = "identity")),
-      error = function(e) NULL
-    )
-
-    models <- list(
-      glm = list(cost = boot_glm_cost, qaly = boot_glm_qaly),
-      gee = list(cost = boot_gee_cost, qaly = boot_gee_qaly)
-    )
-
-    for (model_family in names(models)) {
-      boot_cost <- models[[model_family]]$cost
-      boot_qaly <- models[[model_family]]$qaly
-
-      if (is.null(boot_cost) || is.null(boot_qaly)) next
-      if (model_family == "glm" && !isTRUE(boot_cost$converged)) next
-
-      group_term <- grep("^groupig", names(coef(boot_cost)), value = TRUE)
-      qaly_group_term <- grep("^groupig", names(coef(boot_qaly)), value = TRUE)
-
-      if (length(group_term) == 0 || length(qaly_group_term) == 0) next
-
-      out <- rbind(
-        out,
-        data.frame(
-          iteration = i,
-          model_family = model_family,
-          cost_intercept = unname(coef(boot_cost)[["(Intercept)"]]),
-          cost_group_log_ratio = unname(coef(boot_cost)[group_term[1]]),
-          qaly_intercept = unname(coef(boot_qaly)[["(Intercept)"]]),
-          incremental_qaly = unname(coef(boot_qaly)[qaly_group_term[1]]),
-          baseline_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])),
-          intervention_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])) * exp(unname(coef(boot_cost)[group_term[1]])),
-          incremental_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])) * exp(unname(coef(boot_cost)[group_term[1]])) - exp(unname(coef(boot_cost)[["(Intercept)"]])),
-          stringsAsFactors = FALSE
-        )
+    if (i == 1 || i %% 500 == 0 || i == num_iter) {
+      pipeline_phase_info(
+        "05_cost_effectiveness",
+        sprintf("bootstrap iteration %d/%d", i, num_iter)
       )
+    }
+    boot_row <- bootstrap_iteration_result(i, patient_level, patient_ids)
+    if (!is.null(boot_row)) {
+      out <- rbind(out, boot_row)
     }
   }
 
@@ -266,7 +293,87 @@ run_bootstrap <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS) {
   out
 }
 
-bootstrap_results <- run_bootstrap(cea_df)
+run_bootstrap_parallel <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS, workers = NULL) {
+  patient_level$patient <- as.character(patient_level$patient)
+  patient_ids <- unique(as.character(patient_level$patient))
+  if (is.null(workers)) {
+    workers <- getOption("bofe.bootstrap_workers", NULL)
+  }
+  if (is.null(workers)) {
+    env_workers <- Sys.getenv("BOFE_BOOTSTRAP_WORKERS", "")
+    if (nzchar(env_workers)) {
+      workers <- suppressWarnings(as.integer(env_workers))
+    }
+  }
+  if (is.null(workers) || is.na(workers)) {
+    workers <- max(1L, parallel::detectCores(logical = TRUE) - 1L)
+  }
+  workers <- min(as.integer(workers), num_iter)
+
+  if (workers <= 1L) {
+    pipeline_phase_info("05_cost_effectiveness", "parallel bootstrap disabled because only one worker is available")
+    return(run_bootstrap_serial(patient_level, num_iter = num_iter))
+  }
+
+  pipeline_phase_info(
+    "05_cost_effectiveness",
+    sprintf("starting parallel bootstrap with %d workers", workers)
+  )
+
+  cl <- parallel::makeCluster(workers)
+  on.exit(parallel::stopCluster(cl), add = TRUE)
+  parallel::clusterEvalQ(cl, {
+    library(dplyr)
+    library(geepack)
+  })
+  parallel::clusterExport(
+    cl,
+    varlist = c(
+      "patient_level",
+      "patient_ids",
+      "bootstrap_iteration_result",
+      "clean_model_data",
+      "fit_stable_glm",
+      "fit_stable_geeglm"
+    ),
+    envir = environment()
+  )
+
+  iterations <- seq_len(num_iter)
+  batch_size <- max(1L, ceiling(num_iter / (workers * 8L)))
+  batches <- split(iterations, ceiling(iterations / batch_size))
+  batch_results <- vector("list", length(batches))
+
+  for (idx in seq_along(batches)) {
+    batch <- batches[[idx]]
+    batch_results[[idx]] <- parallel::parLapply(cl, batch, function(i) {
+      bootstrap_iteration_result(i, patient_level, patient_ids)
+    })
+    batch_start <- min(batch)
+    batch_end <- max(batch)
+    pipeline_phase_info(
+      "05_cost_effectiveness",
+      sprintf("finished bootstrap iterations %d-%d/%d", batch_start, batch_end, num_iter)
+    )
+  }
+
+  flat_results <- Filter(Negate(is.null), unlist(batch_results, recursive = FALSE))
+  if (length(flat_results) == 0) return(data.frame())
+  out <- do.call(rbind, flat_results)
+  if (is.null(out) || nrow(out) == 0) return(out)
+  out$icer <- out$incremental_cost / out$incremental_qaly
+  out
+}
+
+use_parallel_bootstrap <- isTRUE(getOption("bofe.parallel_bootstrap", FALSE)) ||
+  identical(tolower(Sys.getenv("BOFE_PARALLEL_BOOTSTRAP", "")), "true")
+
+bootstrap_results <- if (use_parallel_bootstrap) {
+  run_bootstrap_parallel(cea_df)
+} else {
+  run_bootstrap_serial(cea_df)
+}
+pipeline_phase_info("05_cost_effectiveness", "summarising bootstrap uncertainty and acceptability curves")
 
 thresholds <- seq(0, 40000, by = 10)
 acceptability_curve <- do.call(rbind, lapply(split(bootstrap_results, bootstrap_results$model_family), function(df) {
@@ -366,3 +473,8 @@ saveRDS(
 )
 
 cat("05_cost_effectiveness: saved complete-case CEA outputs.\n")
+pipeline_phase_end(
+  "05_cost_effectiveness",
+  pipeline_started,
+  "saved CEA model and bootstrap outputs"
+)

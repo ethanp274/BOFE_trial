@@ -15,6 +15,11 @@ library(mice)
 library(labelled)
 library(haven)
 
+pipeline_started <- pipeline_phase_start(
+  "02_imputation",
+  "building the legacy-style MICE frame"
+)
+
 proc_path <- "data_processed/all_cases.rds"
 out_dir <- "data_processed"
 clean_out_dir <- "clean_data"
@@ -107,6 +112,7 @@ df_impute <- df_impute %>%
     )
   )
 
+pipeline_phase_info("02_imputation", "splitting by arm and disease before MICE")
 df_impute$age <- as.factor(df_impute$age)
 df_impute$education <- as.factor(df_impute$education)
 df_impute$selection <- as.factor(df_impute$selection)
@@ -154,6 +160,7 @@ df_impute_BOFE_asthma <- remove_val_labels(df_impute_BOFE_asthma)
 df_impute_BOFE_COPD <- remove_val_labels(df_impute_BOFE_COPD)
 
 set.seed(123)
+pipeline_phase_info("02_imputation", sprintf("running %d PMM imputations per subset", IMPUTATION_REPLICATES))
 df_impute_UC_asthma <- mice(df_impute_UC_asthma, m = IMPUTATION_REPLICATES, method = "pmm", predictorMatrix = pred_matrix, seed = 123, printFlag = FALSE)
 df_impute_UC_COPD <- mice(df_impute_UC_COPD, m = IMPUTATION_REPLICATES, method = "pmm", predictorMatrix = pred_matrix, seed = 123, printFlag = FALSE)
 df_impute_BOFE_asthma <- mice(df_impute_BOFE_asthma, m = IMPUTATION_REPLICATES, method = "pmm", predictorMatrix = pred_matrix, seed = 123, printFlag = FALSE)
@@ -179,3 +186,8 @@ miss_report <- df_impute %>%
 write.csv(miss_report, file.path(out_dir, "imputation_missingness_summary.csv"), row.names = FALSE)
 
 message("02_imputation: created mids_imputation.rds and supporting diagnostics")
+pipeline_phase_end(
+  "02_imputation",
+  pipeline_started,
+  "saved mids_imputation.rds and diagnostics"
+)

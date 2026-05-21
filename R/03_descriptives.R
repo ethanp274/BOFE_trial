@@ -14,6 +14,11 @@ library(tidyr)
 library(haven)
 source("R/utils.R")
 
+pipeline_started <- pipeline_phase_start(
+  "03_descriptives",
+  "generating baseline tables and missingness summaries"
+)
+
 # Load data
 all_cases_raw <- readRDS('data_processed/all_cases.rds')
 complete_cases_raw <- readRDS('data_processed/complete_cases.rds')
@@ -190,6 +195,7 @@ generate_table1 <- function(data, dataset_name) {
 }
 
 # Generate for both populations
+pipeline_phase_info("03_descriptives", "building baseline characteristics tables")
 table1_itt <- generate_table1(all_cases, "ALL_CASES (ITT, N=835)")
 table1_analyzed <- generate_table1(complete_cases, "COMPLETE_CASES (ANALYZED, N=756)")
 
@@ -204,6 +210,7 @@ cat("  outputs/table1_complete_cases_characteristics.csv (N=", nrow(complete_cas
 ###########################################################################
 
 cat("=== GENERATING MISSINGNESS SUMMARY ===\n")
+pipeline_phase_info("03_descriptives", "summarising outcome missingness across timepoints")
 
 outcome_vars <- c("ACT.SCORE", "CCQ.SCORE", "EQindex", "controlled")
 timepoints <- c(0, 3, 6, 9, 12)
@@ -290,5 +297,11 @@ print(missingness_summary)
 
 cat("\n=== SUMMARY BY DISEASE ===\n")
 print(summary_by_disease)
+
+pipeline_phase_end(
+  "03_descriptives",
+  pipeline_started,
+  "saved descriptive CSV exports"
+)
 
 cat("\n✓ R/03_descriptives.R completed successfully\n")

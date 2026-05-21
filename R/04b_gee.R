@@ -19,6 +19,11 @@ library(geepack)
 
 if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
 
+pipeline_started <- pipeline_phase_start(
+  "04b_gee",
+  "fitting the protocol-style GEE effectiveness model"
+)
+
 imputation_path <- "data_processed/mids_imputation.rds"
 if (!file.exists(imputation_path)) {
   stop("Missing ", imputation_path, ". Run R/02_imputation.R first.")
@@ -26,6 +31,7 @@ if (!file.exists(imputation_path)) {
 
 imputation <- readRDS(imputation_path)
 imputed_sets <- mice::complete(imputation, action = "all", include = FALSE)
+pipeline_phase_info("04b_gee", sprintf("reconstructing %d imputed long datasets", length(imputed_sets)))
 
 make_gee_long_data <- function(frame) {
   frame <- as.data.frame(frame)
@@ -80,6 +86,7 @@ fit_gee_list <- lapply(seq_along(imputed_sets), function(i) {
   )
 })
 
+pipeline_phase_info("04b_gee", "pooling GEE contrasts across imputations")
 pool_gee_models <- function(gee_list) {
   coefs_list <- lapply(gee_list, coef)
   vars_list <- lapply(gee_list, vcov)
@@ -182,3 +189,8 @@ saveRDS(
 )
 
 cat("04b_gee: GEE models fit on imputed data and saved summaries.\n")
+pipeline_phase_end(
+  "04b_gee",
+  pipeline_started,
+  "saved GEE model summaries"
+)

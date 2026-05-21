@@ -7,6 +7,7 @@ IMPUTATION_REPLICATES <- 20L
 INTERVENTION_COST_PER_CONSULTATION <- 40
 WTP_THRESHOLD_EUR_PER_QALY <- 25000
 BOOTSTRAP_ITERATIONS <- 5000
+PIPELINE_PROGRESS_LOG <- file.path("outputs", "pipeline_progress.log")
 
 COST_MONTHS_FIRST_HALF <- c("2022_06", "2022_07", "2022_08", "2022_09", "2022_10", "2022_11")
 COST_MONTHS_SECOND_HALF <- c("2022_12", "2023_01", "2023_02", "2023_03", "2023_04", "2023_05")
@@ -85,6 +86,45 @@ ensure_numeric_columns <- function(df, cols) {
 
 present_cols <- function(df, cols) {
   cols[cols %in% names(df)]
+}
+
+pipeline_log_line <- function(phase, status, detail = NULL, elapsed = NULL, log_file = PIPELINE_PROGRESS_LOG) {
+  timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  pieces <- c(
+    sprintf("[%s]", timestamp),
+    sprintf("[%s]", toupper(status)),
+    phase
+  )
+  if (!is.null(detail) && nzchar(detail)) {
+    pieces <- c(pieces, "-", detail)
+  }
+  if (!is.null(elapsed) && is.finite(elapsed)) {
+    pieces <- c(pieces, sprintf("(elapsed %.1fs)", elapsed))
+  }
+  line <- paste(pieces, collapse = " ")
+  cat(line, "\n")
+  try(flush.console(), silent = TRUE)
+
+  if (!is.null(log_file) && nzchar(log_file)) {
+    dir.create(dirname(log_file), showWarnings = FALSE, recursive = TRUE)
+    cat(line, "\n", file = log_file, append = TRUE)
+  }
+
+  invisible(line)
+}
+
+pipeline_phase_start <- function(phase, detail = NULL, log_file = PIPELINE_PROGRESS_LOG) {
+  pipeline_log_line(phase, "start", detail = detail, log_file = log_file)
+  Sys.time()
+}
+
+pipeline_phase_info <- function(phase, detail, log_file = PIPELINE_PROGRESS_LOG) {
+  pipeline_log_line(phase, "info", detail = detail, log_file = log_file)
+}
+
+pipeline_phase_end <- function(phase, started_at = NULL, detail = NULL, log_file = PIPELINE_PROGRESS_LOG) {
+  elapsed <- if (!is.null(started_at)) as.numeric(difftime(Sys.time(), started_at, units = "secs")) else NA_real_
+  pipeline_log_line(phase, "done", detail = detail, elapsed = elapsed, log_file = log_file)
 }
 
 row_sums_strict <- function(df, cols) {

@@ -21,12 +21,18 @@ library(broom.mixed)
 
 if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
 
+pipeline_started <- pipeline_phase_start(
+  "04_models",
+  "fitting the pooled mixed-effects effectiveness model"
+)
+
 imputation_path <- "data_processed/mids_imputation.rds"
 if (!file.exists(imputation_path)) {
   stop("Missing ", imputation_path, ". Run R/02_imputation.R first.")
 }
 
 imputation <- readRDS(imputation_path)
+pipeline_phase_info("04_models", sprintf("reconstructing %d imputed long datasets", imputation$m))
 make_long_data <- function(frame) {
   frame <- as.data.frame(frame)
 
@@ -136,6 +142,8 @@ mids_data_og[".imp"] <- 0
 mids_data_long <- Reduce(mice::rbind, c(list(mids_data_og), long_sets))
 mids_data_long <- as.mids(mids_data_long)
 
+pipeline_phase_info("04_models", "fitting and pooling mixed-effects models")
+
 mira_glmm <- with(
   mids_data_long,
   glmer(
@@ -219,3 +227,8 @@ saveRDS(
 )
 
 cat("04_models: pooled mixed-effects model fit on imputed data and saved summaries.\n")
+pipeline_phase_end(
+  "04_models",
+  pipeline_started,
+  "saved mixed-effects model summaries"
+)

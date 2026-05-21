@@ -13,6 +13,12 @@ Core outputs include:
 - Publication tables
 - Figures and diagnostics
 
+Current state:
+- The active pipeline lives in `R/01_cleaning.R` through `R/07_manuscript_report.R`.
+- The master full-pipeline launcher is PowerShell (`run_full_pipeline.ps1`).
+- Each stage reports progress in the console and writes the same markers to `outputs/pipeline_progress.log`.
+- The CEA branch keeps GLM and GEE families side by side in the exported summary tables.
+
 ---
 
 # Study Summary
@@ -53,8 +59,10 @@ Current refactor entry points:
 - `R/03_descriptives.R`: writes baseline, missingness, and disease-stratified descriptive outputs.
 - `R/04_models.R`: fits the mixed-effects sensitivity model on the imputed data.
 - `R/04b_gee.R`: fits the protocol-style GEE effectiveness model on the imputed data.
-- `R/05_cost_effectiveness.R`: fits complete-case cost/QALY GLMs, parallel GEE sensitivity models on the same patient-level covariates, pairs them with the mixed/GEE effectiveness outputs, and runs 5000 bootstrap CEA simulations for both model families.
+- `R/05_cost_effectiveness.R`: fits complete-case cost/QALY GLMs, parallel GEE sensitivity models on the same patient-level covariates, pairs them with the mixed/GEE effectiveness outputs, and runs 5000 bootstrap CEA simulations for both model families in serial mode.
+- `R/05_cost_effectiveness_parallel.R`: wrapper that enables the parallel bootstrap mode used by the master runner.
 - `R/06_outputs.R`: exports legacy-style CSVs, manuscript-ready comparison tables (`manuscript_results_summary.csv`, `manuscript_results_effectiveness.csv`, `manuscript_results_cea.csv`, `manuscript_results_cea_summary.csv`), and a validation summary.
+- `R/07_manuscript_report.R`: compiles a readable manuscript brief with the key effectiveness and cost-effectiveness results, including GLMM vs GEE comparison notes.
 - `R/utils.R`: central constants, variable derivations, long-format construction, cost aggregation, and shared helpers.
 
 Recommended run order from the project root:
@@ -63,10 +71,20 @@ Recommended run order from the project root:
 3. `source("R/03_descriptives.R")`
 4. `source("R/04_models.R")`
 5. `source("R/04b_gee.R")`
-6. `source("R/05_cost_effectiveness.R")`
+6. `source("R/05_cost_effectiveness_parallel.R")`
 7. `source("R/06_outputs.R")`
+8. `source("R/07_manuscript_report.R")`
 
-For a one-shot run from Bash, use `./run_full_pipeline.sh`.
+For PowerShell on Windows, use `.\run_full_pipeline.ps1`.
+
+Progress tracking:
+- Each stage prints `START`, `INFO`, and `DONE` messages in the console.
+- `R/utils.R` writes the same messages to `outputs/pipeline_progress.log`.
+- The CEA bootstrap emits periodic iteration checkpoints so long runs stay visible.
+- The master runner uses the parallel CEA bootstrap wrapper for faster runtime.
+- The CEA outputs preserve the family split in `manuscript_results_cea.csv` and `manuscript_results_cea_summary.csv`.
+- `run_full_pipeline.ps1` stops on the first failed phase and reports the failed step.
+- The final manuscript brief is written to `outputs/manuscript_results_brief.md` and `outputs/manuscript_results_brief.txt`, with a compact table in `outputs/manuscript_results_overview.csv`.
 
 ### `deprecated/new_data_cleaning_pipe.R`
 Legacy data-cleaning and reconstruction pipeline.

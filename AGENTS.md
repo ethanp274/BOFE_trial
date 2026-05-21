@@ -19,6 +19,14 @@ Key references:
 
 Historical legacy scripts now live in `deprecated/`; the active pipeline is under `R/`.
 
+Current pipeline status:
+- `R/01_cleaning.R` through `R/07_manuscript_report.R` are the active modular stages.
+- `run_full_pipeline.ps1` is the master launcher for the full sequence.
+- Each stage writes console progress markers and appends them to `outputs/pipeline_progress.log`.
+- `R/05_cost_effectiveness.R` keeps the GLM and GEE CEA branches aligned on `group + age + gender` and can run serially.
+- `R/05_cost_effectiveness_parallel.R` is the master-runner wrapper that enables parallel bootstrap mode.
+- `R/07_manuscript_report.R` writes a human-readable manuscript brief plus a compact overview CSV for quick review.
+
 ---
 
 # Scientific Summary
@@ -486,10 +494,15 @@ Use this space to create a running list of brief summaries of each action taken 
 - 2026-05-18: Reworked the CEA manuscript output so `manuscript_results_cea.csv` is an explicit GLM-vs-GEE comparison table, while `manuscript_results_cea_summary.csv` reports bootstrap summaries for both GLM and GEE CEA branches.
 - 2026-05-18: Updated `R/05_cost_effectiveness.R` to bootstrap both GLM and GEE CEA models from the same resampled patients, and updated `R/06_outputs.R` to preserve `model_family` in the manuscript-ready bootstrap summary.
 - 2026-05-18: Began re-aligning the CEA GEE branch back onto the same patient-level `group + age + gender` structure as the GLM branch so the two bootstrap families are directly comparable. The current state is code-only and has not yet been revalidated end-to-end after the latest refactor.
+- 2026-05-21: Added shared pipeline progress tracking helpers in `R/utils.R`, stage-level console/log reporting to `R/01_cleaning.R` through `R/07_manuscript_report.R`, periodic bootstrap checkpoints in `R/05_cost_effectiveness.R`, and the Windows runner `run_full_pipeline.ps1`.
+- 2026-05-21: Refreshed repository docs to describe the current modular pipeline, progress logging, and the `run_full_pipeline.ps1` entrypoint.
+- 2026-05-21: Promoted `run_full_pipeline.ps1` to the master pipeline runner and removed the legacy Bash launcher.
+- 2026-05-21: Added `R/07_manuscript_report.R` to produce a readable manuscript-facing brief with GLMM vs GEE comparisons and CEA summaries.
+- 2026-05-21: Added `R/05_cost_effectiveness_parallel.R` plus a parallel bootstrap path in `R/05_cost_effectiveness.R`, and updated the master runner to use it.
 
 Next steps:
 1. Re-run `R/05_cost_effectiveness.R` on its own first and confirm the new patient-level GEE branch parses and fits without warnings or `glm.fit` errors.
-2. If that succeeds, run the full pipeline in order via `run_full_pipeline.sh`.
+2. If that succeeds, run the full pipeline in order via `.\run_full_pipeline.ps1`.
 3. Inspect `outputs/cea_model_summaries.csv`, `outputs/cea_bootstrap_results.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv` to confirm the GLM/GEE bootstrap outputs are now side by side and use the same covariates.
 4. Then compare `outputs/manuscript_results_summary.csv` and `outputs/manuscript_results_effectiveness.csv` against the manuscript draft.
 
@@ -507,7 +520,7 @@ Immediate next tasks (priority order):
 2. Inspect `outputs/pipeline_validation_summary.csv`, `outputs/manuscript_results_summary.csv`, `outputs/manuscript_results_effectiveness.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv`.
 3. Compare regenerated `clean_data/*_from_pipeline.csv` files with legacy CSVs before replacing any manuscript values.
 4. Re-run the model scripts after the 20-repeat imputation is regenerated, then compare the mixed-effects and GEE outputs against the manuscript draft.
-5. Use `run_full_pipeline.sh` for a one-shot Bash run when manual step-by-step execution is not needed.
+5. Use `.\run_full_pipeline.ps1` for a one-shot run when manual step-by-step execution is not needed.
 
 Where to look:
 - Legacy reference scripts: `deprecated/BOFE script_copy.R`, `deprecated/new_data_cleaning_pipe.R`, `deprecated/regression_script.R`

@@ -10,7 +10,13 @@ library(tidyverse)
 library(haven)
 library(labelled)
 
+pipeline_started <- pipeline_phase_start(
+  "01_cleaning",
+  "reading raw questionnaire and cost files"
+)
+
 raw_dir <- file.path("raw_data")
+pipeline_phase_info("01_cleaning", "loading baseline and follow-up questionnaires")
 
 # Read questionnaires
 T0 <- read_sav(file.path(raw_dir, 'T0.sav'))
@@ -92,3 +98,8 @@ saveRDS(all_cases, file = 'data_processed/all_cases.rds')
 saveRDS(economic_data, file = 'data_processed/economic_data.rds')
 
 message('01_cleaning: created complete_cases.rds, all_cases.rds, and economic_data.rds')
+pipeline_phase_end(
+  "01_cleaning",
+  pipeline_started,
+  "saved analysis-ready datasets"
+)

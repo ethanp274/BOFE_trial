@@ -1,0 +1,40 @@
+[2026-05-21 14:16:31] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-05-21 14:16:31] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-05-21 14:16:34] [DONE] 01_cleaning - saved analysis-ready datasets (elapsed 3.0s) 
+[2026-05-21 14:16:40] [START] 02_imputation - building the legacy-style MICE frame 
+[2026-05-21 14:16:40] [INFO] 02_imputation - splitting by arm and disease before MICE 
+[2026-05-21 14:16:40] [INFO] 02_imputation - running 20 PMM imputations per subset 
+[2026-05-21 14:18:28] [DONE] 02_imputation - saved mids_imputation.rds and diagnostics (elapsed 108.8s) 
+[2026-05-21 14:18:30] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-05-21 14:18:30] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-05-21 14:18:32] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-05-21 14:18:32] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 2.8s) 
+[2026-05-21 14:18:37] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-21 14:18:37] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-21 14:18:45] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-21 14:42:58] [DONE] 04_models - saved mixed-effects model summaries (elapsed 1461.8s) 
+[2026-05-21 14:43:04] [START] 04b_gee - fitting the protocol-style GEE effectiveness model 
+[2026-05-21 14:43:04] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-05-21 14:43:12] [INFO] 04b_gee - pooling GEE contrasts across imputations 
+[2026-05-21 14:43:16] [DONE] 04b_gee - saved GEE model summaries (elapsed 12.4s) 
+[2026-05-21 14:43:18] [START] 05_cost_effectiveness - building complete-case CEA models and bootstrap summaries 
+[2026-05-21 14:43:18] [INFO] 05_cost_effectiveness - attaching observed cost summaries and preparing patient-level CEA data 
+[2026-05-21 14:43:23] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-21 14:43:24] [INFO] 05_cost_effectiveness - fitting GLM and GEE cost-effectiveness models 
+[2026-05-21 14:43:24] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-05-21 15:33:04] [START] 05_cost_effectiveness - building complete-case CEA models and bootstrap summaries 
+[2026-05-21 15:33:04] [INFO] 05_cost_effectiveness - attaching observed cost summaries and preparing patient-level CEA data 
+[2026-05-21 15:33:10] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-21 15:33:11] [INFO] 05_cost_effectiveness - fitting GLM and GEE cost-effectiveness models 
+[2026-05-21 15:33:11] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 2 workers 
+[2026-05-21 15:34:25] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1-1/4 
+[2026-05-21 15:34:49] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2-2/4 
+[2026-05-21 15:35:13] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3-3/4 
+[2026-05-21 15:35:41] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4-4/4 
+[2026-05-21 15:35:41] [INFO] 05_cost_effectiveness - summarising bootstrap uncertainty and acceptability curves 
+[2026-05-21 15:35:42] [DONE] 05_cost_effectiveness - saved CEA model and bootstrap outputs (elapsed 157.9s) 
+[2026-05-21 15:38:27] [START] 05_cost_effectiveness - building complete-case CEA models and bootstrap summaries 
+[2026-05-21 15:38:29] [INFO] 05_cost_effectiveness - attaching observed cost summaries and preparing patient-level CEA data 
+[2026-05-21 15:38:35] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-21 15:38:35] [INFO] 05_cost_effectiveness - fitting GLM and GEE cost-effectiveness models 
+[2026-05-21 15:38:35] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 2 workers 
