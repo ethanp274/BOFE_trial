@@ -16,8 +16,9 @@ Core outputs include:
 Current state:
 - The active pipeline lives in `R/01_cleaning.R` through `R/07_manuscript_report.R`.
 - The master full-pipeline launcher is PowerShell (`run_full_pipeline.ps1`).
+- `bootstrap_bofe_vm.ps1` installs R, Rtools, and the CRAN packages needed to run the pipeline on a fresh Windows VM.
 - Each stage reports progress in the console and writes the same markers to `outputs/pipeline_progress.log`.
-- The CEA branch keeps GLM and GEE families side by side in the exported summary tables.
+- The CEA branch now reconstructs the legacy cost-complete cohort, uses arm-stratified GLM bootstrap inference only, and exports the reconstructed patient-level CEA cohort for validation.
 
 ---
 
@@ -59,9 +60,9 @@ Current refactor entry points:
 - `R/03_descriptives.R`: writes baseline, missingness, and disease-stratified descriptive outputs.
 - `R/04_models.R`: fits the mixed-effects sensitivity model on the imputed data.
 - `R/04b_gee.R`: fits the protocol-style GEE effectiveness model on the imputed data.
-- `R/05_cost_effectiveness.R`: fits complete-case cost/QALY GLMs, parallel GEE sensitivity models on the same patient-level covariates, pairs them with the mixed/GEE effectiveness outputs, and runs 5000 bootstrap CEA simulations for both model families in serial mode.
+- `R/05_cost_effectiveness.R`: reconstructs the legacy cost-complete CEA cohort, fits complete-case cost/QALY GLMs, and runs 5000 arm-stratified bootstrap CEA simulations using the GLM branch only.
 - `R/05_cost_effectiveness_parallel.R`: wrapper that enables the parallel bootstrap mode used by the master runner.
-- `R/06_outputs.R`: exports legacy-style CSVs, manuscript-ready comparison tables (`manuscript_results_summary.csv`, `manuscript_results_effectiveness.csv`, `manuscript_results_cea.csv`, `manuscript_results_cea_summary.csv`), and a validation summary.
+- `R/06_outputs.R`: exports legacy-style CSVs, manuscript-ready comparison tables (`manuscript_results_summary.csv`, `manuscript_results_effectiveness.csv`, `manuscript_results_cea.csv`, `manuscript_results_cea_summary.csv`), the reconstructed 745-patient CEA cohort, and a validation summary.
 - `R/07_manuscript_report.R`: compiles a readable manuscript brief with the key effectiveness and cost-effectiveness results, including GLMM vs GEE comparison notes.
 - `R/utils.R`: central constants, variable derivations, long-format construction, cost aggregation, and shared helpers.
 
@@ -76,6 +77,7 @@ Recommended run order from the project root:
 8. `source("R/07_manuscript_report.R")`
 
 For PowerShell on Windows, use `.\run_full_pipeline.ps1`.
+For a fresh VM bootstrap, use `.\bootstrap_bofe_vm.ps1` (add `-SkipRtools` only if you already have a suitable toolchain).
 
 Progress tracking:
 - Each stage prints `START`, `INFO`, and `DONE` messages in the console.
@@ -83,6 +85,7 @@ Progress tracking:
 - The CEA bootstrap emits periodic iteration checkpoints so long runs stay visible.
 - The master runner uses the parallel CEA bootstrap wrapper for faster runtime.
 - The CEA outputs preserve the family split in `manuscript_results_cea.csv` and `manuscript_results_cea_summary.csv`.
+- The latest rerun after fixing the legacy long-data helper shows nonzero bootstrap variation in incremental cost again.
 - `run_full_pipeline.ps1` stops on the first failed phase and reports the failed step.
 - The final manuscript brief is written to `outputs/manuscript_results_brief.md` and `outputs/manuscript_results_brief.txt`, with a compact table in `outputs/manuscript_results_overview.csv`.
 
@@ -228,9 +231,9 @@ Manuscript-aligned refactor:
 - `R/02_imputation.R` reproduces the legacy wide imputation frame, splits by arm and disease, and runs 20 PMM imputations per subset before recombining them
 - `R/04_models.R` reconstructs the repeated-measures analysis set and pools mixed-effects logistic regressions fit to the 20 imputed datasets
 - `R/04b_gee.R` runs the protocol-style GEE analysis separately on the same imputed datasets
-- `R/05_cost_effectiveness.R` combines the mixed-effects and GEE effectiveness outputs with complete-case CEA GLMs and parallel CEA GEE sensitivity models on the same patient-level covariates, then bootstraps both CEA families on the same resampled patients for comparable uncertainty intervals
-- `R/06_outputs.R` writes manuscript-ready summary CSVs for both model families and the cost-effectiveness results, preserving family labels in the bootstrap summary table
-- Key CEA outputs include `cea_model_summaries.csv`, `cea_model_comparison.csv`, `cea_longitudinal.csv`, `cea_summary.csv`, `manuscript_results_cea.csv` (GLM vs GEE comparison), and `manuscript_results_cea_summary.csv` (bootstrap summary by model family)
+- `R/05_cost_effectiveness.R` combines the mixed-effects and GEE effectiveness outputs with complete-case CEA GLMs, reconstructs the legacy cost-complete patient cohort, and bootstraps the GLM CEA branch with separate intervention/control resampling
+- `R/06_outputs.R` writes manuscript-ready summary CSVs for the effectiveness comparisons and the legacy-style cost-effectiveness results
+- Key CEA outputs include `cea_patient_level.csv`, `cea_longitudinal.csv`, `cea_model_summaries.csv`, `cea_model_comparison.csv`, `cea_summary.csv`, and `cea_bootstrap_results.csv`
 - Cost models remain complete-case
 
 Validation note:
@@ -260,7 +263,7 @@ QALYs:
 - Calculated using EQ-5D-5L area-under-curve approach
 
 Current modular output:
-- `R/05_cost_effectiveness.R` creates patient-level CEA data, Gamma-log cost models, Gaussian-identity QALY models, parallel GEE sensitivity models on the same patient-level covariates, bootstrap results for both GLM and GEE branches, and cost-effectiveness acceptability probabilities.
+- `R/05_cost_effectiveness.R` creates the legacy cost-complete patient-level CEA data, Gamma-log cost models, Gaussian-identity QALY models, arm-stratified GLM bootstrap results, and cost-effectiveness acceptability probabilities.
 
 ---
 

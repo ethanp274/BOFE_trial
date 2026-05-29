@@ -155,6 +155,7 @@ pool_gee_timepoints <- function(gee_list) {
     b <- if (nrow(contrasts) > 1) stats::var(contrasts[, "log_or"]) else 0
     total_var <- ubar + (1 + 1 / nrow(contrasts)) * b
     se <- sqrt(total_var)
+    z <- qbar / se
 
     data.frame(
       time = tp,
@@ -162,6 +163,7 @@ pool_gee_timepoints <- function(gee_list) {
       odds_ratio = exp(qbar),
       ci_low = exp(qbar - 1.96 * se),
       ci_high = exp(qbar + 1.96 * se),
+      p_value = 2 * (1 - pnorm(abs(z))),
       n_imputations = nrow(contrasts),
       stringsAsFactors = FALSE
     )

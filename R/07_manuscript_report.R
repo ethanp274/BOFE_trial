@@ -138,7 +138,7 @@ effectiveness <- effectiveness %>%
 
 timepoint_table <- effectiveness %>%
   arrange(time, model) %>%
-  select(model, time, odds_ratio, ci_low, ci_high, n_imputations)
+  select(model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
 
 timepoint_12 <- timepoint_table %>% filter(time == 12)
 mixed_12 <- pick_family_row(timepoint_12, c("mixed_effects"))
@@ -162,6 +162,12 @@ effectiveness_overview <- data.frame(
   upper_95 = c(
     if (!is.null(mixed_12)) mixed_12$ci_high else NA_real_,
     if (!is.null(gee_12)) gee_12$ci_high else NA_real_,
+    NA_real_,
+    NA_real_
+  ),
+  p_value = c(
+    if (!is.null(mixed_12) && "p_value" %in% names(mixed_12)) mixed_12$p_value else NA_real_,
+    if (!is.null(gee_12) && "p_value" %in% names(gee_12)) gee_12$p_value else NA_real_,
     NA_real_,
     NA_real_
   ),

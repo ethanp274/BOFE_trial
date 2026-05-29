@@ -6,8 +6,8 @@
 ###########################################################################
 
 options(bofe.parallel_bootstrap = TRUE)
-options(bofe.bootstrap_workers = 2)
-options(bofe.bootstrap_iterations = 100)
+options(bofe.bootstrap_workers = 4)
+options(bofe.bootstrap_iterations = 5000)
 
 message("05_cost_effectiveness_parallel: enabling parallel bootstrap mode.")
 source("R/05_cost_effectiveness.R")

@@ -1,62 +1,87 @@
 ###########################################################################
 # R/05_cost_effectiveness.R
-# Purpose: Complete-case cost-effectiveness analysis.
+# Purpose: Legacy-faithful complete-case cost-effectiveness analysis.
+#
+# This rewrite reconstructs the original CEA cohort logic:
+#   - baseline group and disease are fixed from D1.4_0 / D1.3_0
+#   - the cost-complete cohort is defined as in the legacy script
+#   - one patient-level row is retained per patient
+#   - bootstrap resampling is stratified by treatment arm only
+#   - GLM models are used for CEA inference; GEE is not fitted here
+#
 # Inputs:
 #   - data_processed/complete_cases.rds
 #   - data_processed/economic_data.rds
+#   - outputs/models_mixed_imputed.rds
+#   - outputs/models_gee_imputed.rds
 # Outputs:
 #   - outputs/cea_patient_level.csv
+#   - outputs/cea_longitudinal.csv
 #   - outputs/cea_model_summaries.csv
+#   - outputs/cea_model_comparison.csv
 #   - outputs/cea_bootstrap_results.csv
 #   - outputs/cea_acceptability_curve.csv
 #   - outputs/cea_summary.csv
-#   - outputs/cea_model_comparison.csv
 #   - outputs/effectiveness_model_comparison.csv
 #   - outputs/effectiveness_12mo_comparison.csv
 #   - outputs/manuscript_results_summary.csv
-#   - outputs/manuscript_results_cea_summary.csv
+#   - outputs/cea_models.rds
 ###########################################################################
 
 source("R/utils.R")
 
 library(dplyr)
-library(geepack)
 
 if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
 
 pipeline_started <- pipeline_phase_start(
   "05_cost_effectiveness",
-  "building complete-case CEA models and bootstrap summaries"
+  "reconstructing the legacy cost-complete cohort and bootstrap summaries"
 )
 
 complete_cases <- readRDS("data_processed/complete_cases.rds")
-complete_cases <- add_analysis_derivations(complete_cases)
-pipeline_phase_info("05_cost_effectiveness", "attaching observed cost summaries and preparing patient-level CEA data")
+economic_data_path <- "data_processed/economic_data.rds"
+if (!file.exists(economic_data_path)) {
+  stop("Missing ", economic_data_path, ". Run R/01_cleaning.R first.")
+}
+economic_data <- readRDS(economic_data_path)
 
-if (!all(COST_SUMMARY_COLUMNS %in% names(complete_cases)) && file.exists("data_processed/economic_data.rds")) {
-  complete_cases <- attach_cost_summaries(complete_cases, readRDS("data_processed/economic_data.rds"))
+complete_cases <- add_analysis_derivations(complete_cases)
+if (!all(COST_SUMMARY_COLUMNS %in% names(complete_cases))) {
+  complete_cases <- attach_cost_summaries(complete_cases, economic_data)
 }
 
-cea_df <- prepare_cea_patient_level(complete_cases)
-cea_long <- make_longitudinal_analysis_data(complete_cases)
-cea_long <- cea_long %>%
-  filter(patient %in% cea_df$patient)
+legacy_cost_complete_ids <- legacy_cost_complete_patient_ids(complete_cases, economic_data)
+cea_df <- prepare_legacy_cea_patient_level(complete_cases, economic_data)
+cea_long <- make_legacy_cea_longitudinal_data(complete_cases) %>%
+  filter(as.character(patient) %in% legacy_cost_complete_ids)
 
-cea_long$interval_cost <- rowSums(
-  cea_long[, c("interv_cost", "outpatient_cost", "lab_cost", "med_cost", "delivery_cost", "inpatient_cost")],
-  na.rm = TRUE
+if (nrow(cea_df) == 0) {
+  stop("05_cost_effectiveness: the reconstructed legacy CEA cohort is empty.")
+}
+if (anyDuplicated(cea_df$patient)) {
+  stop("05_cost_effectiveness: duplicated patient IDs were created in the CEA cohort.")
+}
+if (nrow(cea_df) != length(legacy_cost_complete_ids)) {
+  stop("05_cost_effectiveness: reconstructed CEA cohort size does not match the legacy patient set.")
+}
+
+pipeline_phase_info(
+  "05_cost_effectiveness",
+  sprintf(
+    "legacy CEA cohort rebuilt: %d patients (%d intervention, %d control)",
+    nrow(cea_df),
+    sum(cea_df$group == "ig (intervention group)", na.rm = TRUE),
+    sum(cea_df$group == "cg (control group)", na.rm = TRUE)
+  )
 )
-cea_long$interval_cost_gamma <- cea_long$interval_cost + 0.001
-cea_long$qaly_interval_model <- ifelse(cea_long$qaly_interval > 0, cea_long$qaly_interval, 0.0001)
-cea_long$patient <- factor(cea_long$patient)
-cea_long$group <- factor(cea_long$group, levels = GROUP_LEVELS)
-cea_long$age <- factor(cea_long$age)
-cea_long$gender <- factor(cea_long$gender)
-cea_long$time <- factor(cea_long$time, levels = TIMEPOINTS)
 
-clean_model_data <- function(formula, data, id_col = NULL) {
+cea_df$group <- factor(cea_df$group, levels = GROUP_LEVELS)
+cea_df$age <- factor(cea_df$age)
+cea_df$gender <- factor(cea_df$gender)
+
+clean_model_data <- function(formula, data) {
   vars <- unique(all.vars(formula))
-  if (!is.null(id_col)) vars <- unique(c(vars, id_col))
   vars <- vars[vars %in% names(data)]
   if (length(vars) == 0) return(NULL)
 
@@ -81,23 +106,6 @@ fit_stable_glm <- function(formula, data, family, maxit = 100) {
       data = data,
       family = family,
       control = glm.control(maxit = maxit, epsilon = 1e-08)
-    )
-  )
-}
-
-fit_stable_geeglm <- function(formula, data, id_col, family) {
-  data <- clean_model_data(formula, data, id_col = id_col)
-  if (is.null(data)) return(NULL)
-  if (n_distinct(data[[id_col]]) < 2) return(NULL)
-  data$gee_id <- data[[id_col]]
-  suppressWarnings(
-    geeglm(
-      formula = formula,
-      data = data,
-      id = gee_id,
-      family = family,
-      corstr = "exchangeable",
-      std.err = "san.se"
     )
   )
 }
@@ -136,46 +144,21 @@ qaly_model <- glm(
   control = glm.control(maxit = 100, epsilon = 1e-08)
 )
 
-gee_cost_model <- fit_stable_geeglm(
-  total_cost_gamma ~ group + age + gender,
-  cea_df,
-  id_col = "patient",
-  family = Gamma(link = "log")
-)
-
-gee_qaly_model <- fit_stable_geeglm(
-  QALY_model ~ group + age + gender,
-  cea_df,
-  id_col = "patient",
-  family = gaussian(link = "identity")
-)
-
 glm_cost_summary <- summarise_model_terms(cost_model, "GLM_Gamma_log_cost", exponentiate = TRUE) %>%
   mutate(model_family = "glm", outcome = "cost")
 glm_qaly_summary <- summarise_model_terms(qaly_model, "GLM_Gaussian_identity_QALY", exponentiate = FALSE) %>%
   mutate(model_family = "glm", outcome = "qaly")
-gee_cost_summary <- summarise_model_terms(gee_cost_model, "GEE_Gamma_log_cost", exponentiate = TRUE) %>%
-  mutate(model_family = "gee", outcome = "cost")
-gee_qaly_summary <- summarise_model_terms(gee_qaly_model, "GEE_Gaussian_identity_QALY", exponentiate = FALSE) %>%
-  mutate(model_family = "gee", outcome = "qaly")
 
-model_summaries <- bind_rows(
-  glm_cost_summary,
-  glm_qaly_summary,
-  gee_cost_summary,
-  gee_qaly_summary
-)
-
-model_summaries <- model_summaries %>%
+model_summaries <- bind_rows(glm_cost_summary, glm_qaly_summary) %>%
   mutate(
     estimate_exp = ifelse(
       is.na(estimate_exp) & outcome == "cost",
       exp(estimate),
       estimate_exp
+    )
   )
-)
 
-pipeline_phase_info("05_cost_effectiveness", "fitting GLM and GEE cost-effectiveness models")
+pipeline_phase_info("05_cost_effectiveness", "fitting legacy GLM cost-effectiveness models")
 
 cea_model_comparison <- model_summaries %>%
   filter(grepl("^group", term)) %>%
@@ -196,73 +179,57 @@ cea_model_comparison <- model_summaries %>%
     p_value
   )
 
-bootstrap_iteration_result <- function(i, patient_level, patient_ids) {
+bootstrap_iteration_result <- function(i, patient_level) {
   set.seed(i * 37)
-  sample_ids <- sample(patient_ids, length(patient_ids), replace = TRUE)
 
-  sample_patient <- patient_level[match(sample_ids, patient_level$patient), , drop = FALSE]
-  sample_patient$patient <- as.character(sample_patient$patient)
-  sample_patient$bootstrap_patient <- paste0(sample_patient$patient, "_", seq_along(sample_ids))
+  sample_arm <- function(df_arm) {
+    if (nrow(df_arm) == 0) return(df_arm)
+    df_arm[sample(seq_len(nrow(df_arm)), nrow(df_arm), replace = TRUE), , drop = FALSE]
+  }
 
-  boot_glm_cost <- tryCatch(
+  sample_ig <- sample_arm(patient_level[patient_level$group == "ig (intervention group)", , drop = FALSE])
+  sample_cg <- sample_arm(patient_level[patient_level$group == "cg (control group)", , drop = FALSE])
+  sample_patient <- rbind(sample_ig, sample_cg)
+
+  boot_cost <- tryCatch(
     fit_stable_glm(total_cost_gamma ~ group + age + gender, sample_patient, Gamma(link = "log"), maxit = 200),
     error = function(e) NULL
   )
-  boot_glm_qaly <- tryCatch(
+  boot_qaly <- tryCatch(
     fit_stable_glm(QALY_model ~ group + age + gender, sample_patient, gaussian(link = "identity"), maxit = 100),
     error = function(e) NULL
   )
-  boot_gee_cost <- tryCatch(
-    fit_stable_geeglm(total_cost_gamma ~ group + age + gender, sample_patient, id_col = "bootstrap_patient", family = Gamma(link = "log")),
-    error = function(e) NULL
+
+  if (is.null(boot_cost) || is.null(boot_qaly)) return(NULL)
+  if (!isTRUE(boot_cost$converged)) return(NULL)
+
+  group_term <- grep("^groupig", names(coef(boot_cost)), value = TRUE)
+  qaly_group_term <- grep("^groupig", names(coef(boot_qaly)), value = TRUE)
+  if (length(group_term) == 0 || length(qaly_group_term) == 0) return(NULL)
+
+  cost_intercept <- unname(coef(boot_cost)[["(Intercept)"]])
+  cost_group_log_ratio <- unname(coef(boot_cost)[group_term[1]])
+  qaly_intercept <- unname(coef(boot_qaly)[["(Intercept)"]])
+  incremental_qaly <- unname(coef(boot_qaly)[qaly_group_term[1]])
+  baseline_cost <- exp(cost_intercept)
+  intervention_cost <- exp(cost_intercept) * exp(cost_group_log_ratio)
+  incremental_cost <- intervention_cost - baseline_cost
+
+  data.frame(
+    iteration = i,
+    model_family = "glm",
+    cost_intercept = cost_intercept,
+    cost_group_log_ratio = cost_group_log_ratio,
+    qaly_intercept = qaly_intercept,
+    incremental_qaly = incremental_qaly,
+    baseline_cost = baseline_cost,
+    intervention_cost = intervention_cost,
+    incremental_cost = incremental_cost,
+    stringsAsFactors = FALSE
   )
-  boot_gee_qaly <- tryCatch(
-    fit_stable_geeglm(QALY_model ~ group + age + gender, sample_patient, id_col = "bootstrap_patient", family = gaussian(link = "identity")),
-    error = function(e) NULL
-  )
-
-  models <- list(
-    glm = list(cost = boot_glm_cost, qaly = boot_glm_qaly),
-    gee = list(cost = boot_gee_cost, qaly = boot_gee_qaly)
-  )
-
-  rows <- list()
-  row_idx <- 0L
-
-  for (model_family in names(models)) {
-    boot_cost <- models[[model_family]]$cost
-    boot_qaly <- models[[model_family]]$qaly
-
-    if (is.null(boot_cost) || is.null(boot_qaly)) next
-    if (model_family == "glm" && !isTRUE(boot_cost$converged)) next
-
-    group_term <- grep("^groupig", names(coef(boot_cost)), value = TRUE)
-    qaly_group_term <- grep("^groupig", names(coef(boot_qaly)), value = TRUE)
-
-    if (length(group_term) == 0 || length(qaly_group_term) == 0) next
-
-    row_idx <- row_idx + 1L
-    rows[[row_idx]] <- data.frame(
-      iteration = i,
-      model_family = model_family,
-      cost_intercept = unname(coef(boot_cost)[["(Intercept)"]]),
-      cost_group_log_ratio = unname(coef(boot_cost)[group_term[1]]),
-      qaly_intercept = unname(coef(boot_qaly)[["(Intercept)"]]),
-      incremental_qaly = unname(coef(boot_qaly)[qaly_group_term[1]]),
-      baseline_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])),
-      intervention_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])) * exp(unname(coef(boot_cost)[group_term[1]])),
-      incremental_cost = exp(unname(coef(boot_cost)[["(Intercept)"]])) * exp(unname(coef(boot_cost)[group_term[1]])) - exp(unname(coef(boot_cost)[["(Intercept)"]])),
-      stringsAsFactors = FALSE
-    )
-  }
-
-  if (length(rows) == 0) return(NULL)
-  do.call(rbind, rows)
 }
 
 run_bootstrap_serial <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS) {
-  patient_level$patient <- as.character(patient_level$patient)
-  patient_ids <- unique(as.character(patient_level$patient))
   out <- data.frame(
     iteration = integer(0),
     model_family = character(0),
@@ -283,19 +250,19 @@ run_bootstrap_serial <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS)
         sprintf("bootstrap iteration %d/%d", i, num_iter)
       )
     }
-    boot_row <- bootstrap_iteration_result(i, patient_level, patient_ids)
+
+    boot_row <- bootstrap_iteration_result(i, patient_level)
     if (!is.null(boot_row)) {
       out <- rbind(out, boot_row)
     }
   }
 
+  if (nrow(out) == 0) return(out)
   out$icer <- out$incremental_cost / out$incremental_qaly
   out
 }
 
 run_bootstrap_parallel <- function(patient_level, num_iter = BOOTSTRAP_ITERATIONS, workers = NULL) {
-  patient_level$patient <- as.character(patient_level$patient)
-  patient_ids <- unique(as.character(patient_level$patient))
   if (is.null(workers)) {
     workers <- getOption("bofe.bootstrap_workers", NULL)
   }
@@ -322,19 +289,13 @@ run_bootstrap_parallel <- function(patient_level, num_iter = BOOTSTRAP_ITERATION
 
   cl <- parallel::makeCluster(workers)
   on.exit(parallel::stopCluster(cl), add = TRUE)
-  parallel::clusterEvalQ(cl, {
-    library(dplyr)
-    library(geepack)
-  })
   parallel::clusterExport(
     cl,
     varlist = c(
       "patient_level",
-      "patient_ids",
       "bootstrap_iteration_result",
       "clean_model_data",
-      "fit_stable_glm",
-      "fit_stable_geeglm"
+      "fit_stable_glm"
     ),
     envir = environment()
   )
@@ -347,7 +308,7 @@ run_bootstrap_parallel <- function(patient_level, num_iter = BOOTSTRAP_ITERATION
   for (idx in seq_along(batches)) {
     batch <- batches[[idx]]
     batch_results[[idx]] <- parallel::parLapply(cl, batch, function(i) {
-      bootstrap_iteration_result(i, patient_level, patient_ids)
+      bootstrap_iteration_result(i, patient_level)
     })
     batch_start <- min(batch)
     batch_end <- max(batch)
@@ -373,6 +334,11 @@ bootstrap_results <- if (use_parallel_bootstrap) {
 } else {
   run_bootstrap_serial(cea_df)
 }
+
+if (is.null(bootstrap_results) || nrow(bootstrap_results) == 0) {
+  stop("05_cost_effectiveness: bootstrap produced no usable iterations.")
+}
+
 pipeline_phase_info("05_cost_effectiveness", "summarising bootstrap uncertainty and acceptability curves")
 
 thresholds <- seq(0, 40000, by = 10)
@@ -460,8 +426,6 @@ saveRDS(
     effectiveness_12mo_comparison = effectiveness_12mo_comparison,
     cost_model = cost_model,
     qaly_model = qaly_model,
-    gee_cost_model = gee_cost_model,
-    gee_qaly_model = gee_qaly_model,
     bootstrap_results = bootstrap_results,
     acceptability_curve = acceptability_curve,
     model_summaries = model_summaries,
@@ -472,9 +436,9 @@ saveRDS(
   file = "outputs/cea_models.rds"
 )
 
-cat("05_cost_effectiveness: saved complete-case CEA outputs.\n")
+cat("05_cost_effectiveness: saved legacy-faithful complete-case CEA outputs.\n")
 pipeline_phase_end(
   "05_cost_effectiveness",
   pipeline_started,
-  "saved CEA model and bootstrap outputs"
+  "saved legacy-faithful CEA model and bootstrap outputs"
 )

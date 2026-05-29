@@ -22,10 +22,12 @@ Historical legacy scripts now live in `deprecated/`; the active pipeline is unde
 Current pipeline status:
 - `R/01_cleaning.R` through `R/07_manuscript_report.R` are the active modular stages.
 - `run_full_pipeline.ps1` is the master launcher for the full sequence.
+- `bootstrap_bofe_vm.ps1` provisions R, Rtools, and the CRAN package set needed for a fresh Windows VM.
 - Each stage writes console progress markers and appends them to `outputs/pipeline_progress.log`.
-- `R/05_cost_effectiveness.R` keeps the GLM and GEE CEA branches aligned on `group + age + gender` and can run serially.
+- `R/05_cost_effectiveness.R` reconstructs the legacy cost-complete CEA cohort, uses baseline group assignment, and fits GLM-only bootstrap CEA models.
 - `R/05_cost_effectiveness_parallel.R` is the master-runner wrapper that enables parallel bootstrap mode.
 - `R/07_manuscript_report.R` writes a human-readable manuscript brief plus a compact overview CSV for quick review.
+- `R/05_cost_effectiveness.R` now reconstructs the legacy cost-complete CEA cohort, uses baseline group assignment plus arm-stratified GLM bootstrap inference, and does not fit the CEA GEE branch.
 
 ---
 
@@ -170,7 +172,7 @@ Models:
 
 Sensitivity:
 - 5000 bootstrap simulations
-- Bootstrap summaries are now computed for both the GLM and GEE CEA branches so the uncertainty output is directly comparable across families
+- Bootstrap summaries are computed from the arm-stratified GLM CEA branch only
 
 ---
 
@@ -499,16 +501,20 @@ Use this space to create a running list of brief summaries of each action taken 
 - 2026-05-21: Promoted `run_full_pipeline.ps1` to the master pipeline runner and removed the legacy Bash launcher.
 - 2026-05-21: Added `R/07_manuscript_report.R` to produce a readable manuscript-facing brief with GLMM vs GEE comparisons and CEA summaries.
 - 2026-05-21: Added `R/05_cost_effectiveness_parallel.R` plus a parallel bootstrap path in `R/05_cost_effectiveness.R`, and updated the master runner to use it.
+- 2026-05-21: Added `bootstrap_bofe_vm.ps1` to provision R, Rtools, and required CRAN packages on a fresh Windows VM.
+- 2026-05-29: Rewrote `R/05_cost_effectiveness.R` to reconstruct the legacy 745-patient cost-complete cohort, fix baseline group assignment for the CEA sample, and bootstrap intervention/control arms separately using GLM-only CEA models.
+- 2026-05-29: Added legacy CEA helper functions to `R/utils.R`, aligned `R/06_outputs.R` with the reconstructed cohort, and updated `README.md` to describe the GLM-only legacy-faithful CEA path.
+- 2026-05-29: Fixed a vector recycling bug in the legacy CEA long-data helper that had flattened bootstrap costs; reran `R/05_cost_effectiveness.R` and confirmed the incremental cost now varies across bootstrap iterations.
 
 Next steps:
-1. Re-run `R/05_cost_effectiveness.R` on its own first and confirm the new patient-level GEE branch parses and fits without warnings or `glm.fit` errors.
+1. Re-run `R/05_cost_effectiveness.R` on its own first and confirm the reconstructed 745-patient cohort, GLM models, and arm-stratified bootstrap all complete cleanly.
 2. If that succeeds, run the full pipeline in order via `.\run_full_pipeline.ps1`.
-3. Inspect `outputs/cea_model_summaries.csv`, `outputs/cea_bootstrap_results.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv` to confirm the GLM/GEE bootstrap outputs are now side by side and use the same covariates.
+3. Inspect `outputs/cea_patient_level.csv`, `outputs/cea_bootstrap_results.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv` to confirm the reconstructed cohort and GLM-only bootstrap outputs match the legacy analysis pattern.
 4. Then compare `outputs/manuscript_results_summary.csv` and `outputs/manuscript_results_effectiveness.csv` against the manuscript draft.
 
 ## Handoff summary for next agent
 
-Summary: The modular pipeline now has implemented cleaning derivations, descriptives, GEE/mixed-effects models, complete-case cost-effectiveness analysis, and legacy-style output validation scripts. The most recent turn was actively re-aligning the CEA GEE branch to the same patient-level covariate structure as the GLM branch so bootstrap results stay comparable. The latest edits were code-only; the pipeline has not yet been re-run to validate the new CEA configuration.
+Summary: The modular pipeline now has implemented cleaning derivations, descriptives, GEE/mixed-effects models, and a legacy-faithful complete-case cost-effectiveness analysis. The most recent turn rebuilt the CEA cohort to match the original analysis more closely by fixing baseline group assignment, restoring arm-stratified bootstrap sampling, and dropping the CEA GEE branch in favor of GLM-only inference. The latest edits were code-only; the pipeline has not yet been re-run to validate the new CEA configuration.
 
 Important manual fixes applied in R/01_cleaning.R:
 - Excluded patient PR2B (only appears at T12; not in baseline)
@@ -517,9 +523,9 @@ Important manual fixes applied in R/01_cleaning.R:
 
 Immediate next tasks (priority order):
 1. From the IDE, run `source("R/01_cleaning.R")`, `source("R/02_imputation.R")`, `source("R/03_descriptives.R")`, `source("R/04_models.R")`, `source("R/04b_gee.R")`, `source("R/05_cost_effectiveness.R")`, and `source("R/06_outputs.R")`.
-2. Inspect `outputs/pipeline_validation_summary.csv`, `outputs/manuscript_results_summary.csv`, `outputs/manuscript_results_effectiveness.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv`.
+2. Inspect `outputs/pipeline_validation_summary.csv`, `outputs/cea_patient_level.csv`, `outputs/manuscript_results_summary.csv`, `outputs/manuscript_results_effectiveness.csv`, `outputs/manuscript_results_cea.csv`, and `outputs/manuscript_results_cea_summary.csv`.
 3. Compare regenerated `clean_data/*_from_pipeline.csv` files with legacy CSVs before replacing any manuscript values.
-4. Re-run the model scripts after the 20-repeat imputation is regenerated, then compare the mixed-effects and GEE outputs against the manuscript draft.
+4. Re-run the model scripts after the 20-repeat imputation is regenerated, then compare the mixed-effects and GEE effectiveness outputs against the manuscript draft.
 5. Use `.\run_full_pipeline.ps1` for a one-shot run when manual step-by-step execution is not needed.
 
 Where to look:

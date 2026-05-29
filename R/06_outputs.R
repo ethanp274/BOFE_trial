@@ -31,12 +31,18 @@ pipeline_started <- pipeline_phase_start(
 
 all_cases <- readRDS("data_processed/all_cases.rds")
 complete_cases <- readRDS("data_processed/complete_cases.rds")
+economic_data_path <- "data_processed/economic_data.rds"
 
 all_cases <- add_analysis_derivations(all_cases)
 complete_cases <- add_analysis_derivations(complete_cases)
 
-if (!all(COST_SUMMARY_COLUMNS %in% names(all_cases)) && file.exists("data_processed/economic_data.rds")) {
-  economic_data <- readRDS("data_processed/economic_data.rds")
+if (!file.exists(economic_data_path)) {
+  stop("Missing ", economic_data_path, ". Run R/01_cleaning.R first.")
+}
+
+economic_data <- readRDS(economic_data_path)
+
+if (!all(COST_SUMMARY_COLUMNS %in% names(all_cases))) {
   all_cases <- attach_cost_summaries(all_cases, economic_data)
   complete_cases <- attach_cost_summaries(complete_cases, economic_data)
 }
@@ -44,8 +50,8 @@ if (!all(COST_SUMMARY_COLUMNS %in% names(all_cases)) && file.exists("data_proces
 all_cases <- add_completeness_flags(all_cases)
 complete_cases <- add_completeness_flags(complete_cases)
 
-complete_long <- make_longitudinal_analysis_data(complete_cases)
-complete_cea <- prepare_cea_patient_level(complete_cases)
+complete_long <- make_legacy_cea_longitudinal_data(complete_cases)
+complete_cea <- prepare_legacy_cea_patient_level(complete_cases, economic_data)
 
 mixed_results_path <- "outputs/models_mixed_imputed.rds"
 gee_results_path <- "outputs/models_gee_imputed.rds"
@@ -64,7 +70,7 @@ effectiveness_results <- bind_rows(
   mixed_results$timepoint_effects %>% mutate(model = "mixed_effects"),
   gee_results$gee_timepoint_effects %>% mutate(model = "gee")
 ) %>%
-  select(model, time, odds_ratio, ci_low, ci_high, n_imputations)
+  select(model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
 
 effectiveness_12mo <- effectiveness_results %>%
   filter(time == 12)
@@ -91,7 +97,8 @@ manuscript_results_summary <- bind_rows(
       metric = paste0(model, "_12mo_or"),
       estimate = odds_ratio,
       lower_95 = ci_low,
-      upper_95 = ci_high
+      upper_95 = ci_high,
+      p_value = p_value
   ),
   cea_summary
 )
@@ -109,7 +116,7 @@ write.csv(manuscript_results_summary, "outputs/manuscript_results_summary.csv", 
 
 expected_counts <- data.frame(
   object = c("all_cases", "complete_cases", "complete_cases_long", "complete_cases_CEA"),
-  expected_n = c(835, 756, 756 * length(TIMEPOINTS), NA_integer_)
+  expected_n = c(835, 756, 756 * length(TIMEPOINTS), 745)
 )
 
 observed_counts <- data.frame(

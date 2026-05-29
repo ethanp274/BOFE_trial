@@ -475,6 +475,202 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
   long_df
 }
 
+legacy_cost_complete_patient_ids <- function(df, economic_data) {
+  if (is.null(economic_data) || !("D1.2" %in% names(economic_data))) {
+    stop("legacy_cost_complete_patient_ids: economic_data must contain D1.2.")
+  }
+
+  keep_cols <- setdiff(names(economic_data), c("D1.2", "D1.3_0", "D1.4_0"))
+  keep_cols <- keep_cols[keep_cols %in% names(economic_data)]
+  if (length(keep_cols) == 0) {
+    return(unique(as.character(df[["D1.2"]])))
+  }
+
+  econ_no_missing <- economic_data[rowSums(is.na(economic_data[, keep_cols, drop = FALSE])) != length(keep_cols), , drop = FALSE]
+  intersect(
+    unique(as.character(df[["D1.2"]])),
+    unique(as.character(econ_no_missing$D1.2))
+  )
+}
+
+make_legacy_cea_longitudinal_data <- function(df, timepoints = TIMEPOINTS) {
+  if (!all(c("D1.2", "D1.3_0", "D1.4_0", "D2.2_0", "D2.3_0") %in% names(df))) {
+    stop("make_legacy_cea_longitudinal_data: missing required baseline columns.")
+  }
+
+  resource_map <- c(
+    GP_visits = "D3.10_1",
+    nurse_visits = "D3.10_2",
+    therapist_visits = "D3.10_3",
+    AE_visits = "D3.10_4",
+    outpatient_visits = "D3.10_5",
+    inpatient_visits = "D3.10_6",
+    inpatient_days = "D3.10_7",
+    sw_visits = "D3.11_1",
+    carecentre_visits_pw = "D3.11_2"
+  )
+
+  rows <- lapply(timepoints, function(tp) {
+    prev_tp <- if (tp == min(timepoints)) NA_integer_ else timepoints[match(tp, timepoints) - 1]
+    qalys <- if (tp == min(timepoints)) {
+      rep(0, nrow(df))
+    } else {
+      prev_col <- paste0("EQindex_", prev_tp)
+      curr_col <- paste0("EQindex_", tp)
+      0.25 * (as_numeric_safe(df[[prev_col]]) + as_numeric_safe(df[[curr_col]])) / 2
+    }
+
+    outpatient_cost <- rep(0, nrow(df))
+    lab_cost <- rep(0, nrow(df))
+    med_cost <- rep(0, nrow(df))
+    delivery_cost <- rep(0, nrow(df))
+    inpatient_cost <- rep(0, nrow(df))
+    if (tp == 6) {
+      outpatient_cost <- as_numeric_safe(df[["cost_M6"]])
+      lab_cost <- as_numeric_safe(df[["cost_C6"]])
+      med_cost <- as_numeric_safe(df[["cost_F6"]])
+      delivery_cost <- as_numeric_safe(df[["cost_H6"]])
+      inpatient_cost <- as_numeric_safe(df[["cost_O6"]])
+    } else if (tp == 12) {
+      outpatient_cost <- as_numeric_safe(df[["cost_M12"]])
+      lab_cost <- as_numeric_safe(df[["cost_C12"]])
+      med_cost <- as_numeric_safe(df[["cost_F12"]])
+      delivery_cost <- as_numeric_safe(df[["cost_H12"]])
+      inpatient_cost <- as_numeric_safe(df[["cost_O12"]])
+    }
+
+    data.frame(
+      patient = df[["D1.2"]],
+      time = tp,
+      condition = as_numeric_safe(df[["D1.3_0"]]),
+      group = as.character(df[["D1.4_0"]]),
+      gender = as_numeric_safe(df[["D2.2_0"]]),
+      age = as_numeric_safe(df[["D2.3_0"]]),
+      controlled_0 = as_numeric_safe(df[["controlled_0"]]),
+      controlled_t = as_numeric_safe(df[[paste0("controlled_", tp)]]),
+      qalys = qalys,
+      interv_cost = ifelse(
+        tp %in% c(0, 6) & as.character(df[["D1.4_0"]]) == "ig (intervention group)",
+        INTERVENTION_COST_PER_CONSULTATION,
+        0
+      ),
+      outpatient_cost = outpatient_cost,
+      lab_cost = lab_cost,
+      med_cost = med_cost,
+      delivery_cost = delivery_cost,
+      inpatient_cost = inpatient_cost,
+      GP_visits = if (paste0(resource_map[["GP_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["GP_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      nurse_visits = if (paste0(resource_map[["nurse_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["nurse_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      therapist_visits = if (paste0(resource_map[["therapist_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["therapist_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      AE_visits = if (paste0(resource_map[["AE_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["AE_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      outpatient_visits = if (paste0(resource_map[["outpatient_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["outpatient_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      inpatient_visits = if (paste0(resource_map[["inpatient_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["inpatient_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      inpatient_days = if (paste0(resource_map[["inpatient_days"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["inpatient_days"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      sw_visits = if (paste0(resource_map[["sw_visits"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["sw_visits"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      carecentre_visits_pw = if (paste0(resource_map[["carecentre_visits_pw"]], "_", tp) %in% names(df)) {
+        as_numeric_safe(df[[paste0(resource_map[["carecentre_visits_pw"]], "_", tp)]])
+      } else {
+        NA_real_
+      },
+      stringsAsFactors = FALSE
+    )
+  })
+
+  long_df <- do.call(rbind, rows)
+  long_df$group <- factor(long_df$group, levels = GROUP_LEVELS)
+  long_df$time <- factor(long_df$time, levels = timepoints)
+  long_df$patient <- factor(long_df$patient)
+  long_df$gender <- factor(long_df$gender)
+  long_df$age <- factor(long_df$age)
+  long_df$controlled_0 <- factor(long_df$controlled_0, levels = c(0, 1))
+
+  long_df
+}
+
+prepare_legacy_cea_patient_level <- function(df, economic_data = NULL) {
+  if (!all(COST_SUMMARY_COLUMNS %in% names(df))) {
+    if (is.null(economic_data)) {
+      stop("prepare_legacy_cea_patient_level: cost summaries are missing and no economic_data was supplied.")
+    }
+    df <- attach_cost_summaries(df, economic_data)
+  }
+
+  long_df <- make_legacy_cea_longitudinal_data(df)
+  cost_complete_ids <- if (is.null(economic_data)) {
+    unique(as.character(df[["D1.2"]]))
+  } else {
+    legacy_cost_complete_patient_ids(df, economic_data)
+  }
+
+  long_df <- long_df[as.character(long_df$patient) %in% cost_complete_ids, , drop = FALSE]
+  if (nrow(long_df) == 0) {
+    stop("prepare_legacy_cea_patient_level: no patients matched the legacy cost-complete cohort.")
+  }
+
+  patient_level <- stats::aggregate(
+    long_df[, c("qalys", "interv_cost", "outpatient_cost", "lab_cost", "med_cost", "delivery_cost", "inpatient_cost"), drop = FALSE],
+    by = list(
+      patient = long_df$patient,
+      condition = long_df$condition,
+      group = long_df$group,
+      gender = long_df$gender,
+      age = long_df$age,
+      controlled_0 = long_df$controlled_0
+    ),
+    FUN = function(x) sum(x, na.rm = TRUE)
+  )
+
+  names(patient_level)[names(patient_level) == "qalys"] <- "QALY"
+  patient_level$total_cost <- rowSums(
+    patient_level[, c("interv_cost", "outpatient_cost", "lab_cost", "med_cost", "delivery_cost", "inpatient_cost"), drop = FALSE],
+    na.rm = TRUE
+  )
+  patient_level$total_cost_gamma <- patient_level$total_cost + 0.001
+  patient_level$QALY_model <- ifelse(patient_level$QALY > 0, patient_level$QALY, 0.0001)
+  patient_level$group <- factor(patient_level$group, levels = GROUP_LEVELS)
+  patient_level$gender <- factor(patient_level$gender)
+  patient_level$age <- factor(patient_level$age)
+  patient_level$controlled_0 <- factor(patient_level$controlled_0, levels = c(0, 1))
+
+  if (anyDuplicated(patient_level$patient)) {
+    stop("prepare_legacy_cea_patient_level: duplicated patient IDs were created in the legacy CEA cohort.")
+  }
+
+  patient_level
+}
+
 prepare_cea_patient_level <- function(df) {
   long_df <- make_longitudinal_analysis_data(df)
   cost_cols <- c("interv_cost", "outpatient_cost", "lab_cost", "med_cost", "delivery_cost", "inpatient_cost")
