@@ -38,3 +38,256 @@
 [2026-05-21 15:38:35] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
 [2026-05-21 15:38:35] [INFO] 05_cost_effectiveness - fitting GLM and GEE cost-effectiveness models 
 [2026-05-21 15:38:35] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 2 workers 
+[2026-05-21 19:35:46] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-05-21 19:35:46] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-05-21 19:35:49] [DONE] 01_cleaning - saved analysis-ready datasets (elapsed 3.1s) 
+[2026-05-21 19:35:54] [START] 02_imputation - building the legacy-style MICE frame 
+[2026-05-21 19:35:55] [INFO] 02_imputation - splitting by arm and disease before MICE 
+[2026-05-21 19:35:55] [INFO] 02_imputation - running 20 PMM imputations per subset 
+[2026-05-21 19:38:31] [DONE] 02_imputation - saved mids_imputation.rds and diagnostics (elapsed 156.8s) 
+[2026-05-21 19:38:33] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-05-21 19:38:33] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-05-21 19:38:35] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-05-21 19:38:36] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 3.3s) 
+[2026-05-21 19:38:40] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-21 19:38:40] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-21 19:38:51] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-21 19:56:37] [DONE] 04_models - saved mixed-effects model summaries (elapsed 1076.2s) 
+[2026-05-21 19:56:39] [START] 04b_gee - fitting the protocol-style GEE effectiveness model 
+[2026-05-21 19:56:39] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-05-21 19:56:45] [INFO] 04b_gee - pooling GEE contrasts across imputations 
+[2026-05-21 19:56:48] [DONE] 04b_gee - saved GEE model summaries (elapsed 9.0s) 
+[2026-05-21 19:56:49] [START] 05_cost_effectiveness - building complete-case CEA models and bootstrap summaries 
+[2026-05-21 19:56:49] [INFO] 05_cost_effectiveness - attaching observed cost summaries and preparing patient-level CEA data 
+[2026-05-21 19:56:52] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-21 19:56:52] [INFO] 05_cost_effectiveness - fitting GLM and GEE cost-effectiveness models 
+[2026-05-21 19:56:53] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 2 workers 
+[2026-05-21 20:46:40] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1-313/5000 
+[2026-05-21 22:08:02] [INFO] 05_cost_effectiveness - finished bootstrap iterations 314-626/5000 
+[2026-05-22 09:20:52] [START] 05_cost_effectiveness - building complete-case CEA models and bootstrap summaries 
+[2026-05-22 09:20:53] [INFO] 05_cost_effectiveness - attaching observed cost summaries and preparing patient-level CEA data 
+[2026-05-22 09:20:59] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-22 09:21:00] [INFO] 05_cost_effectiveness - fitting GLM and GEE cost-effectiveness models 
+[2026-05-22 09:21:00] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 4 workers 
+[2026-05-22 09:45:07] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1-157/5000 
+[2026-05-29 13:53:04] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-05-29 13:53:04] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-05-29 13:53:05] [DONE] 01_cleaning - saved analysis-ready datasets (elapsed 1.3s) 
+[2026-05-29 13:53:07] [START] 02_imputation - building the legacy-style MICE frame 
+[2026-05-29 13:53:07] [INFO] 02_imputation - splitting by arm and disease before MICE 
+[2026-05-29 13:53:07] [INFO] 02_imputation - running 20 PMM imputations per subset 
+[2026-05-29 13:53:58] [DONE] 02_imputation - saved mids_imputation.rds and diagnostics (elapsed 51.3s) 
+[2026-05-29 13:53:59] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-05-29 13:53:59] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-05-29 13:54:00] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-05-29 13:54:00] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 1.3s) 
+[2026-05-29 13:54:02] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 13:54:02] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 13:54:06] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 14:08:02] [DONE] 04_models - saved mixed-effects model summaries (elapsed 839.5s) 
+[2026-05-29 14:08:03] [START] 04b_gee - fitting the protocol-style GEE effectiveness model 
+[2026-05-29 14:08:03] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-05-29 14:08:09] [INFO] 04b_gee - pooling GEE contrasts across imputations 
+[2026-05-29 14:08:12] [DONE] 04b_gee - saved GEE model summaries (elapsed 8.5s) 
+[2026-05-29 14:08:12] [START] 05_cost_effectiveness - reconstructing the legacy cost-complete cohort and bootstrap summaries 
+[2026-05-29 14:08:13] [INFO] 05_cost_effectiveness - legacy CEA cohort rebuilt: 745 patients (487 intervention, 258 control) 
+[2026-05-29 14:08:15] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-29 14:08:15] [INFO] 05_cost_effectiveness - fitting legacy GLM cost-effectiveness models 
+[2026-05-29 14:08:15] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 4 workers 
+[2026-05-29 14:08:16] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1-157/5000 
+[2026-05-29 14:08:16] [INFO] 05_cost_effectiveness - finished bootstrap iterations 158-314/5000 
+[2026-05-29 14:08:17] [INFO] 05_cost_effectiveness - finished bootstrap iterations 315-471/5000 
+[2026-05-29 14:08:17] [INFO] 05_cost_effectiveness - finished bootstrap iterations 472-628/5000 
+[2026-05-29 14:08:18] [INFO] 05_cost_effectiveness - finished bootstrap iterations 629-785/5000 
+[2026-05-29 14:08:19] [INFO] 05_cost_effectiveness - finished bootstrap iterations 786-942/5000 
+[2026-05-29 14:08:20] [INFO] 05_cost_effectiveness - finished bootstrap iterations 943-1099/5000 
+[2026-05-29 14:08:21] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1100-1256/5000 
+[2026-05-29 14:08:22] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1257-1413/5000 
+[2026-05-29 14:08:22] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1414-1570/5000 
+[2026-05-29 14:08:23] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1571-1727/5000 
+[2026-05-29 14:08:24] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1728-1884/5000 
+[2026-05-29 14:08:25] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1885-2041/5000 
+[2026-05-29 14:08:26] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2042-2198/5000 
+[2026-05-29 14:08:26] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2199-2355/5000 
+[2026-05-29 14:08:27] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2356-2512/5000 
+[2026-05-29 14:08:28] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2513-2669/5000 
+[2026-05-29 14:08:29] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2670-2826/5000 
+[2026-05-29 14:08:30] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2827-2983/5000 
+[2026-05-29 14:08:30] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2984-3140/5000 
+[2026-05-29 14:08:34] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3141-3297/5000 
+[2026-05-29 14:08:35] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3298-3454/5000 
+[2026-05-29 14:08:36] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3455-3611/5000 
+[2026-05-29 14:08:38] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3612-3768/5000 
+[2026-05-29 14:08:39] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3769-3925/5000 
+[2026-05-29 14:08:40] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3926-4082/5000 
+[2026-05-29 14:08:41] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4083-4239/5000 
+[2026-05-29 14:08:43] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4240-4396/5000 
+[2026-05-29 14:08:44] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4397-4553/5000 
+[2026-05-29 14:08:46] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4554-4710/5000 
+[2026-05-29 14:08:47] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4711-4867/5000 
+[2026-05-29 14:08:47] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4868-5000/5000 
+[2026-05-29 14:08:48] [INFO] 05_cost_effectiveness - summarising bootstrap uncertainty and acceptability curves 
+[2026-05-29 14:08:54] [DONE] 05_cost_effectiveness - saved legacy-faithful CEA model and bootstrap outputs (elapsed 41.8s) 
+[2026-05-29 14:08:55] [START] 06_outputs - writing legacy-style CSV exports and manuscript summaries 
+[2026-05-29 14:08:58] [INFO] 06_outputs - loaded effectiveness and CEA model artefacts 
+[2026-05-29 14:08:58] [INFO] 06_outputs - assembling manuscript-ready comparison tables 
+[2026-05-29 14:09:00] [DONE] 06_outputs - saved manuscript outputs and validation summary (elapsed 5.5s) 
+[2026-05-29 14:09:01] [START] 07_manuscript_report - assembling a readable manuscript results brief 
+[2026-05-29 14:09:04] [DONE] 07_manuscript_report - saved manuscript brief outputs (elapsed 3.0s) 
+[2026-05-29 14:17:25] [START] 05_cost_effectiveness - reconstructing the legacy cost-complete cohort and bootstrap summaries 
+[2026-05-29 14:17:25] [INFO] 05_cost_effectiveness - legacy CEA cohort rebuilt: 745 patients (487 intervention, 258 control) 
+[2026-05-29 14:17:27] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-29 14:17:27] [INFO] 05_cost_effectiveness - fitting legacy GLM cost-effectiveness models 
+[2026-05-29 14:17:27] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-05-29 14:17:34] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-05-29 14:17:41] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-05-29 14:17:49] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-05-29 14:17:56] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-05-29 14:18:03] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-05-29 14:18:10] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-05-29 14:18:17] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-05-29 14:18:23] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-05-29 14:18:30] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-05-29 14:18:37] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-05-29 14:18:37] [INFO] 05_cost_effectiveness - summarising bootstrap uncertainty and acceptability curves 
+[2026-05-29 14:18:40] [DONE] 05_cost_effectiveness - saved legacy-faithful CEA model and bootstrap outputs (elapsed 75.4s) 
+[2026-05-29 14:20:15] [START] 05_cost_effectiveness - reconstructing the legacy cost-complete cohort and bootstrap summaries 
+[2026-05-29 14:20:15] [INFO] 05_cost_effectiveness - legacy CEA cohort rebuilt: 745 patients (487 intervention, 258 control) 
+[2026-05-29 14:20:17] [INFO] 05_cost_effectiveness - loading mixed-effects and GEE effectiveness outputs 
+[2026-05-29 14:20:17] [INFO] 05_cost_effectiveness - fitting legacy GLM cost-effectiveness models 
+[2026-05-29 14:20:17] [INFO] 05_cost_effectiveness - starting parallel bootstrap with 4 workers 
+[2026-05-29 14:20:19] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1-157/5000 
+[2026-05-29 14:20:19] [INFO] 05_cost_effectiveness - finished bootstrap iterations 158-314/5000 
+[2026-05-29 14:20:20] [INFO] 05_cost_effectiveness - finished bootstrap iterations 315-471/5000 
+[2026-05-29 14:20:21] [INFO] 05_cost_effectiveness - finished bootstrap iterations 472-628/5000 
+[2026-05-29 14:20:22] [INFO] 05_cost_effectiveness - finished bootstrap iterations 629-785/5000 
+[2026-05-29 14:20:23] [INFO] 05_cost_effectiveness - finished bootstrap iterations 786-942/5000 
+[2026-05-29 14:20:24] [INFO] 05_cost_effectiveness - finished bootstrap iterations 943-1099/5000 
+[2026-05-29 14:20:26] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1100-1256/5000 
+[2026-05-29 14:20:27] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1257-1413/5000 
+[2026-05-29 14:20:28] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1414-1570/5000 
+[2026-05-29 14:20:30] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1571-1727/5000 
+[2026-05-29 14:20:31] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1728-1884/5000 
+[2026-05-29 14:20:32] [INFO] 05_cost_effectiveness - finished bootstrap iterations 1885-2041/5000 
+[2026-05-29 14:20:33] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2042-2198/5000 
+[2026-05-29 14:20:34] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2199-2355/5000 
+[2026-05-29 14:20:35] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2356-2512/5000 
+[2026-05-29 14:20:36] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2513-2669/5000 
+[2026-05-29 14:20:37] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2670-2826/5000 
+[2026-05-29 14:20:38] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2827-2983/5000 
+[2026-05-29 14:20:40] [INFO] 05_cost_effectiveness - finished bootstrap iterations 2984-3140/5000 
+[2026-05-29 14:20:40] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3141-3297/5000 
+[2026-05-29 14:20:42] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3298-3454/5000 
+[2026-05-29 14:20:43] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3455-3611/5000 
+[2026-05-29 14:20:45] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3612-3768/5000 
+[2026-05-29 14:20:46] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3769-3925/5000 
+[2026-05-29 14:20:47] [INFO] 05_cost_effectiveness - finished bootstrap iterations 3926-4082/5000 
+[2026-05-29 14:20:49] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4083-4239/5000 
+[2026-05-29 14:20:50] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4240-4396/5000 
+[2026-05-29 14:20:51] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4397-4553/5000 
+[2026-05-29 14:20:53] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4554-4710/5000 
+[2026-05-29 14:20:54] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4711-4867/5000 
+[2026-05-29 14:20:56] [INFO] 05_cost_effectiveness - finished bootstrap iterations 4868-5000/5000 
+[2026-05-29 14:20:57] [INFO] 05_cost_effectiveness - summarising bootstrap uncertainty and acceptability curves 
+[2026-05-29 14:21:00] [DONE] 05_cost_effectiveness - saved legacy-faithful CEA model and bootstrap outputs (elapsed 45.3s) 
+[2026-05-29 14:22:15] [START] 06_outputs - writing legacy-style CSV exports and manuscript summaries 
+[2026-05-29 14:22:17] [INFO] 06_outputs - loaded effectiveness and CEA model artefacts 
+[2026-05-29 14:22:17] [INFO] 06_outputs - assembling manuscript-ready comparison tables 
+[2026-05-29 14:22:19] [DONE] 06_outputs - saved manuscript outputs and validation summary (elapsed 3.5s) 
+[2026-05-29 14:22:47] [START] 07_manuscript_report - assembling a readable manuscript results brief 
+[2026-05-29 14:22:49] [DONE] 07_manuscript_report - saved manuscript brief outputs (elapsed 1.9s) 
+[2026-05-29 17:15:13] [START] 04b_gee - fitting the protocol-style GEE effectiveness model 
+[2026-05-29 17:15:13] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-05-29 17:15:14] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 17:15:14] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 17:15:18] [INFO] 04b_gee - pooling GEE contrasts across imputations 
+[2026-05-29 17:15:19] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 17:15:20] [DONE] 04b_gee - saved GEE model summaries (elapsed 6.4s) 
+[2026-05-29 17:25:23] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 17:25:23] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 17:25:27] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 17:26:11] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 17:26:11] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 17:26:18] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 17:32:37] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 17:32:37] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 17:32:44] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 17:38:46] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 17:38:46] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 17:38:52] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 17:39:20] [DONE] 04_models - saved mixed-effects model summaries (elapsed 837.1s) 
+[2026-05-29 17:41:29] [START] 04_models - fitting the pooled mixed-effects effectiveness model 
+[2026-05-29 17:41:29] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-05-29 17:41:29] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-05-29 17:41:29] [INFO] 04_models - building long dataset 1/20 
+[2026-05-29 17:41:29] [INFO] 04_models - built long dataset 1/20 (4175 rows) in 0.2s 
+[2026-05-29 17:41:29] [INFO] 04_models - building long dataset 2/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 2/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 3/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 3/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 4/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 4/20 (4175 rows) in 0.2s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 5/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 5/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 6/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 6/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 7/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 7/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 8/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 8/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 9/20 
+[2026-05-29 17:41:30] [INFO] 04_models - built long dataset 9/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:30] [INFO] 04_models - building long dataset 10/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 10/20 (4175 rows) in 0.2s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 11/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 11/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 12/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 12/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 13/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 13/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 14/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 14/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 15/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 15/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 16/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 16/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 17/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 17/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 18/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 18/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 19/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 19/20 (4175 rows) in 0.2s 
+[2026-05-29 17:41:31] [INFO] 04_models - building long dataset 20/20 
+[2026-05-29 17:41:31] [INFO] 04_models - built long dataset 20/20 (4175 rows) in 0.1s 
+[2026-05-29 17:41:31] [INFO] 04_models - building .imp = 0 reference long data 
+[2026-05-29 17:41:36] [INFO] 04_models - fitting and pooling mixed-effects models 
+[2026-05-29 17:41:36] [INFO] 04_models - fitting glmer on imputation 1/20 
+[2026-05-29 17:41:55] [DONE] 04_models - saved mixed-effects model summaries (elapsed 557.7s) 
+[2026-05-29 17:42:01] [INFO] 04_models - finished imputation 1/20 in 25.3s 
+[2026-05-29 17:42:01] [INFO] 04_models - fitting glmer on imputation 2/20 
+[2026-05-29 17:42:26] [INFO] 04_models - finished imputation 2/20 in 24.6s 
+[2026-05-29 17:42:26] [INFO] 04_models - fitting glmer on imputation 3/20 
+[2026-05-29 17:42:46] [INFO] 04_models - finished imputation 3/20 in 20.6s 
+[2026-05-29 17:42:46] [INFO] 04_models - fitting glmer on imputation 4/20 
+[2026-05-29 17:43:07] [INFO] 04_models - finished imputation 4/20 in 20.3s 
+[2026-05-29 17:43:07] [INFO] 04_models - fitting glmer on imputation 5/20 
+[2026-05-29 17:43:35] [INFO] 04_models - finished imputation 5/20 in 27.9s 
+[2026-05-29 17:43:35] [INFO] 04_models - fitting glmer on imputation 6/20 
+[2026-05-29 17:44:00] [INFO] 04_models - finished imputation 6/20 in 24.9s 
+[2026-05-29 17:44:00] [INFO] 04_models - fitting glmer on imputation 7/20 
+[2026-05-29 17:44:18] [INFO] 04_models - finished imputation 7/20 in 18.2s 
+[2026-05-29 17:44:18] [INFO] 04_models - fitting glmer on imputation 8/20 
+[2026-05-29 17:44:38] [INFO] 04_models - finished imputation 8/20 in 20.0s 
+[2026-05-29 17:44:38] [INFO] 04_models - fitting glmer on imputation 9/20 
+[2026-05-29 17:45:03] [INFO] 04_models - finished imputation 9/20 in 25.4s 
+[2026-05-29 17:45:03] [INFO] 04_models - fitting glmer on imputation 10/20 
+[2026-05-29 17:45:29] [INFO] 04_models - finished imputation 10/20 in 25.5s 
+[2026-05-29 17:45:29] [INFO] 04_models - fitting glmer on imputation 11/20 
+[2026-05-29 17:45:54] [INFO] 04_models - finished imputation 11/20 in 25.8s 
+[2026-05-29 17:45:54] [INFO] 04_models - fitting glmer on imputation 12/20 
+[2026-05-29 17:46:19] [INFO] 04_models - finished imputation 12/20 in 24.7s 
+[2026-05-29 17:46:19] [INFO] 04_models - fitting glmer on imputation 13/20 
+[2026-05-29 17:46:45] [INFO] 04_models - finished imputation 13/20 in 26.4s 
+[2026-05-29 17:46:45] [INFO] 04_models - fitting glmer on imputation 14/20 
+[2026-05-29 17:47:18] [INFO] 04_models - finished imputation 14/20 in 32.1s 
+[2026-05-29 17:47:18] [INFO] 04_models - fitting glmer on imputation 15/20 

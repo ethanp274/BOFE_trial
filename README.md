@@ -58,8 +58,8 @@ Current refactor entry points:
 - `R/01_cleaning.R`: reads raw questionnaire/cost files, applies manual corrections, derives `controlled_*`, `EQindex_*`, cost summaries, and completeness flags.
 - `R/02_imputation.R`: creates the MICE input dataset for outcome/QoL imputation with 20 PMM repetitions; cost summaries are explicitly excluded.
 - `R/03_descriptives.R`: writes baseline, missingness, and disease-stratified descriptive outputs.
-- `R/04_models.R`: fits the mixed-effects sensitivity model on the imputed data.
-- `R/04b_gee.R`: fits the protocol-style GEE effectiveness model on the imputed data.
+- `R/04_models.R`: fits the mixed-effects sensitivity model on the imputed data with per-imputation progress checkpoints and a faster `bobyqa` optimizer.
+- `R/04b_gee.R`: fits the protocol-style GEE effectiveness model on the imputed data with per-imputation progress checkpoints.
 - `R/05_cost_effectiveness.R`: reconstructs the legacy cost-complete CEA cohort, fits complete-case cost/QALY GLMs, and runs 5000 arm-stratified bootstrap CEA simulations using the GLM branch only.
 - `R/05_cost_effectiveness_parallel.R`: wrapper that enables the parallel bootstrap mode used by the master runner.
 - `R/06_outputs.R`: exports legacy-style CSVs, manuscript-ready comparison tables (`manuscript_results_summary.csv`, `manuscript_results_effectiveness.csv`, `manuscript_results_cea.csv`, `manuscript_results_cea_summary.csv`), the reconstructed 745-patient CEA cohort, and a validation summary.
@@ -82,6 +82,8 @@ For a fresh VM bootstrap, use `.\bootstrap_bofe_vm.ps1` (add `-SkipRtools` only 
 Progress tracking:
 - Each stage prints `START`, `INFO`, and `DONE` messages in the console.
 - `R/utils.R` writes the same messages to `outputs/pipeline_progress.log`.
+- `R/04_models.R` now reports progress while reconstructing each imputation and while fitting each mixed-effects model.
+- `R/04b_gee.R` now reports progress while reconstructing each imputation and while fitting each GEE model.
 - The CEA bootstrap emits periodic iteration checkpoints so long runs stay visible.
 - The master runner uses the parallel CEA bootstrap wrapper for faster runtime.
 - The CEA outputs preserve the family split in `manuscript_results_cea.csv` and `manuscript_results_cea_summary.csv`.

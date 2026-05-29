@@ -24,6 +24,8 @@ Current pipeline status:
 - `run_full_pipeline.ps1` is the master launcher for the full sequence.
 - `bootstrap_bofe_vm.ps1` provisions R, Rtools, and the CRAN package set needed for a fresh Windows VM.
 - Each stage writes console progress markers and appends them to `outputs/pipeline_progress.log`.
+- `R/04_models.R` reconstructs each imputation explicitly, logs progress while building and fitting the long datasets, and uses `bobyqa` for the mixed-effects optimizer.
+- `R/04b_gee.R` reconstructs each imputation explicitly too, logs progress while building and fitting the long datasets, and remains much faster than `glmer()` because it fits marginal estimating equations rather than a random-effects likelihood.
 - `R/05_cost_effectiveness.R` reconstructs the legacy cost-complete CEA cohort, uses baseline group assignment, and fits GLM-only bootstrap CEA models.
 - `R/05_cost_effectiveness_parallel.R` is the master-runner wrapper that enables parallel bootstrap mode.
 - `R/07_manuscript_report.R` writes a human-readable manuscript brief plus a compact overview CSV for quick review.
@@ -505,6 +507,8 @@ Use this space to create a running list of brief summaries of each action taken 
 - 2026-05-29: Rewrote `R/05_cost_effectiveness.R` to reconstruct the legacy 745-patient cost-complete cohort, fix baseline group assignment for the CEA sample, and bootstrap intervention/control arms separately using GLM-only CEA models.
 - 2026-05-29: Added legacy CEA helper functions to `R/utils.R`, aligned `R/06_outputs.R` with the reconstructed cohort, and updated `README.md` to describe the GLM-only legacy-faithful CEA path.
 - 2026-05-29: Fixed a vector recycling bug in the legacy CEA long-data helper that had flattened bootstrap costs; reran `R/05_cost_effectiveness.R` and confirmed the incremental cost now varies across bootstrap iterations.
+- 2026-05-29: Added verbose per-imputation checkpoints to `R/04_models.R` and switched the mixed-effects optimizer to `bobyqa` to reduce runtime and make the slow step easier to monitor.
+- 2026-05-29: Added verbose per-imputation checkpoints to `R/04b_gee.R` and confirmed the GEE branch is much faster than the mixed-effects branch because it avoids random-effects optimization.
 
 Next steps:
 1. Re-run `R/05_cost_effectiveness.R` on its own first and confirm the reconstructed 745-patient cohort, GLM models, and arm-stratified bootstrap all complete cleanly.

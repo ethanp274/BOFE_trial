@@ -114,7 +114,15 @@ make_long_data <- function(frame) {
 
 imputed_long_source <- mice::complete(imputation, action = "long", include = TRUE)
 
-  long_sets <- lapply(seq_len(imputation$m), function(i) {
+pipeline_phase_info("04_models", "reconstructing completed long data for each imputation")
+long_sets <- vector("list", imputation$m)
+for (i in seq_len(imputation$m)) {
+  long_started <- proc.time()[["elapsed"]]
+  pipeline_phase_info(
+    "04_models",
+    sprintf("building long dataset %d/%d", i, imputation$m)
+  )
+
   frame <- imputed_long_source %>%
     filter(.imp == i) %>%
     select(-c(.imp, .id))
@@ -125,9 +133,21 @@ imputed_long_source <- mice::complete(imputation, action = "long", include = TRU
   long_data$group <- factor(long_data$group, levels = GROUP_LEVELS)
   long_data$age <- as.factor(long_data$age)
   long_data[".imp"] <- i
-  long_data
-})
+  long_sets[[i]] <- long_data
 
+  pipeline_phase_info(
+    "04_models",
+    sprintf(
+      "built long dataset %d/%d (%d rows) in %.1fs",
+      i,
+      imputation$m,
+      nrow(long_data),
+      proc.time()[["elapsed"]] - long_started
+    )
+  )
+}
+
+pipeline_phase_info("04_models", "building .imp = 0 reference long data")
 mids_data_og <- imputed_long_source %>%
   filter(.imp == 0) %>%
   select(-c(.imp, .id)) %>%
@@ -144,17 +164,45 @@ mids_data_long <- as.mids(mids_data_long)
 
 pipeline_phase_info("04_models", "fitting and pooling mixed-effects models")
 
-mira_glmm <- with(
-  mids_data_long,
-  glmer(
+fit_list <- vector("list", imputation$m)
+for (i in seq_len(imputation$m)) {
+  fit_started <- proc.time()[["elapsed"]]
+  pipeline_phase_info(
+    "04_models",
+    sprintf("fitting glmer on imputation %d/%d", i, imputation$m)
+  )
+
+  fit_list[[i]] <- glmer(
     formula = controlled_t ~ controlled_0 + age + gender + group * time + (1 | patient),
     family = "binomial",
-    control = glmerControl(optimizer = "optimx", optCtrl = list(method = "L-BFGS-B"))
+    # `bobyqa` is materially faster than the previous optimx/L-BFGS-B path
+    # on this dataset and converges cleanly for the pooled imputation fits.
+    control = glmerControl(optimizer = "bobyqa"),
+    data = long_sets[[i]]
   )
-)
 
-mira_glmm <- as.mira(mira_glmm)
-fit_list <- mira_glmm$analyses
+  fit_elapsed <- proc.time()[["elapsed"]] - fit_started
+  fit_messages <- fit_list[[i]]@optinfo$conv$lme4$messages
+  if (is.null(fit_messages)) {
+    pipeline_phase_info(
+      "04_models",
+      sprintf("finished imputation %d/%d in %.1fs", i, imputation$m, fit_elapsed)
+    )
+  } else {
+    pipeline_phase_info(
+      "04_models",
+      sprintf(
+        "finished imputation %d/%d in %.1fs with convergence warning: %s",
+        i,
+        imputation$m,
+        fit_elapsed,
+        paste(fit_messages, collapse = " | ")
+      )
+    )
+  }
+}
+
+mira_glmm <- as.mira(fit_list)
 pooled_fit <- pool(mira_glmm)
 pooled_summary <- summary(pooled_fit)
 

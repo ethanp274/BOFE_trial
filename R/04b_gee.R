@@ -62,29 +62,71 @@ make_gee_long_data <- function(frame) {
   long_data
 }
 
-fit_gee_model <- function(frame, imputation_index) {
-  long_data <- make_gee_long_data(frame)
+pipeline_phase_info("04b_gee", "building per-imputation long datasets")
+long_sets <- vector("list", length(imputed_sets))
+for (i in seq_along(imputed_sets)) {
+  long_started <- proc.time()[["elapsed"]]
+  pipeline_phase_info(
+    "04b_gee",
+    sprintf("building long dataset %d/%d", i, length(imputed_sets))
+  )
 
-  message("04b_gee: fitting imputation ", imputation_index, "/", length(imputed_sets))
+  long_sets[[i]] <- make_gee_long_data(imputed_sets[[i]])
 
-  geeglm(
-    formula = controlled_t ~ controlled_0 + age + gender + group * time,
-    family = binomial(link = "logit"),
-    id = patient,
-    data = long_data,
-    corstr = "exchangeable",
-    std.err = "san.se"
+  pipeline_phase_info(
+    "04b_gee",
+    sprintf(
+      "built long dataset %d/%d (%d rows) in %.1fs",
+      i,
+      length(imputed_sets),
+      nrow(long_sets[[i]]),
+      proc.time()[["elapsed"]] - long_started
+    )
   )
 }
 
-fit_gee_list <- lapply(seq_along(imputed_sets), function(i) {
-  tryCatch(
-    fit_gee_model(imputed_sets[[i]], i),
+fit_gee_list <- vector("list", length(imputed_sets))
+for (i in seq_along(imputed_sets)) {
+  fit_started <- proc.time()[["elapsed"]]
+  pipeline_phase_info(
+    "04b_gee",
+    sprintf("fitting geeglm on imputation %d/%d", i, length(imputed_sets))
+  )
+
+  fit_gee_list[[i]] <- tryCatch(
+    geeglm(
+      formula = controlled_t ~ controlled_0 + age + gender + group * time,
+      family = binomial(link = "logit"),
+      id = patient,
+      data = long_sets[[i]],
+      corstr = "exchangeable",
+      std.err = "san.se"
+    ),
     error = function(e) {
       stop("GEE model failed for imputation ", i, ": ", conditionMessage(e), call. = FALSE)
     }
   )
-})
+
+  fit_elapsed <- proc.time()[["elapsed"]] - fit_started
+  fit_messages <- fit_gee_list[[i]]$geese$conv
+  if (is.null(fit_messages) || identical(fit_messages, 0L)) {
+    pipeline_phase_info(
+      "04b_gee",
+      sprintf("finished imputation %d/%d in %.1fs", i, length(imputed_sets), fit_elapsed)
+    )
+  } else {
+    pipeline_phase_info(
+      "04b_gee",
+      sprintf(
+        "finished imputation %d/%d in %.1fs with convergence flag %s",
+        i,
+        length(imputed_sets),
+        fit_elapsed,
+        paste(fit_messages, collapse = " | ")
+      )
+    )
+  }
+}
 
 pipeline_phase_info("04b_gee", "pooling GEE contrasts across imputations")
 pool_gee_models <- function(gee_list) {
