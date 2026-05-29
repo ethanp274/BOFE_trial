@@ -9,6 +9,7 @@
 *.dta
 *.xls
 *.xlsx
+*.rds
 
 clean_data/
 data_processed/
@@ -23,7 +24,6 @@ context_source_files/
 .RData
 .RDataTmp
 *.RData
-.rds
 
 # User-specific files
 .Ruserdata
