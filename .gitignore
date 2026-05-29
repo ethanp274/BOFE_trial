@@ -13,6 +13,8 @@
 clean_data/
 data_processed/
 raw_data/
+outputs/
+outputs-vm/
 
 # Context files
 context_source_files/
@@ -21,6 +23,8 @@ context_source_files/
 .RData
 .RDataTmp
 *.RData
+.rds
+
 # User-specific files
 .Ruserdata
 
