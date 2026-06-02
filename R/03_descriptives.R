@@ -1,10 +1,8 @@
 ###########################################################################
 # R/03_descriptives.R
-# Purpose: Generate descriptive statistics and baseline characteristics tables
-# Input:   data_processed/all_cases.rds and complete_cases.rds
-# Output:
-#   - results/table1_complete_cases_characteristics.csv
-#   - results/missingness_summary.csv
+# Purpose: Generate descriptive statistics and baseline characteristics tables.
+# Input:   canonical cleaning artifact.
+# Output:  canonical descriptives artifact.
 ###########################################################################
 
 library(dplyr)
@@ -17,16 +15,15 @@ pipeline_started <- pipeline_phase_start(
   "generating baseline tables and missingness summaries"
 )
 
-# Load data
-all_cases_raw <- readRDS("data_processed/all_cases.rds")
-complete_cases_raw <- readRDS("data_processed/complete_cases.rds")
+cleaning_artifact <- read_canonical_artifact("cleaning")
+all_cases_raw <- cleaning_artifact$all_cases
+complete_cases_raw <- cleaning_artifact$complete_cases
 
 # Remove labels to avoid vctrs comparison issues.
 all_cases <- remove_labels(all_cases_raw)
 complete_cases <- remove_labels(complete_cases_raw)
 
-cat("Loaded all_cases.rds: ", nrow(all_cases), " rows (ITT population)\n", sep = "")
-cat("Loaded complete_cases.rds: ", nrow(complete_cases), " rows (analyzed population)\n\n", sep = "")
+cat("Loaded cleaning artifact: ", nrow(all_cases), " ITT rows and ", nrow(complete_cases), " analyzed rows\n\n", sep = "")
 
 ensure_artifact_dirs()
 
@@ -325,9 +322,7 @@ generate_table1 <- function(data, missingness_data, dataset_name) {
 pipeline_phase_info("03_descriptives", "building baseline characteristics tables")
 table1_analyzed <- generate_table1(complete_cases, all_cases, "COMPLETE_CASES (ANALYZED, N=757)")
 
-write.csv(table1_analyzed, result_path("table1_complete_cases_characteristics.csv"), row.names = FALSE)
-
-cat("  results/table1_complete_cases_characteristics.csv (N=", nrow(complete_cases), ")\n\n", sep = "")
+cat("Built analyzed-population Table 1 (N=", nrow(complete_cases), ")\n\n", sep = "")
 
 # Missingness is summarized separately so the Table 1 outputs stay focused.
 
@@ -335,7 +330,7 @@ cat("=== GENERATING MISSINGNESS SUMMARY ===\n")
 pipeline_phase_info("03_descriptives", "summarising outcome missingness across timepoints")
 
 outcome_vars <- c("ACT.SCORE", "CCQ.SCORE", "EQindex", "controlled")
-timepoints <- c(0, 3, 6, 9, 12)
+timepoints <- TIMEPOINTS
 
 missingness_summary <- data.frame(
   Timepoint = integer(0),
@@ -382,8 +377,7 @@ for (tp in timepoints) {
   }
 }
 
-write.csv(missingness_summary, result_path("missingness_summary.csv"), row.names = FALSE)
-cat("Saved: results/missingness_summary.csv\n")
+cat("Built missingness summary\n")
 
 # Add the two extra descriptive tables requested for the complete-case cohort.
 cost_summary_vars <- c(
@@ -399,8 +393,8 @@ cost_summary_names <- c(
   "inpatient_cost" = "Inpatient Cost",
   "total_cost" = "Total Cost"
 )
-cost_summary <- generate_continuous_summary(complete_cases, cost_summary_vars, cost_summary_names)
-write.csv(cost_summary, result_path("cost_summary_complete_cases.csv"), row.names = FALSE)
+complete_cases_cea <- prepare_cea_patient_level(complete_cases, require_cost_data = FALSE)
+cost_summary <- generate_continuous_summary(complete_cases_cea, cost_summary_vars, cost_summary_names)
 
 resource_use_vars <- c(
   "D3.10_1_0", "D3.10_2_0", "D3.10_3_0", "D3.10_4_0",
@@ -418,7 +412,15 @@ resource_use_names <- c(
   "D3.11_2_0" = "Day Centre Attendance"
 )
 resource_use_summary <- generate_continuous_summary(complete_cases, resource_use_vars, resource_use_names)
-write.csv(resource_use_summary, result_path("resource_use_summary_complete_cases.csv"), row.names = FALSE)
+
+descriptives_artifact <- list(
+  stage = "03_descriptives",
+  table1_analyzed = table1_analyzed,
+  missingness_summary = missingness_summary,
+  cost_summary = cost_summary,
+  resource_use_summary = resource_use_summary
+)
+write_canonical_artifact("descriptives", descriptives_artifact)
 
 cat("\n=== MISSINGNESS PREVIEW ===\n")
 print(missingness_summary)
@@ -426,7 +428,7 @@ print(missingness_summary)
 pipeline_phase_end(
   "03_descriptives",
   pipeline_started,
-  "saved descriptive CSV exports"
+  "saved canonical descriptives artifact"
 )
 
 cat("\nR/03_descriptives.R completed successfully\n")

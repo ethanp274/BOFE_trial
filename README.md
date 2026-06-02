@@ -19,8 +19,8 @@ Current state:
 - `bootstrap_bofe_vm.ps1` installs R, Rtools, and the CRAN packages needed to run the pipeline on a fresh Windows VM.
 - Each stage reports progress in the console and writes the same markers to `logs/pipeline_progress.log`.
 - Trained model objects are written to `models/`; manuscript-facing tables and summaries are written to `results/`; runtime logs are written to `logs/`.
-- The main CEA branch now uses the complex-MICE imputed wide cohort with a nested bootstrap that resamples the same patients across all imputations before pooling within each draw; the main cost model is currently Gaussian-identity on `total_cost`, and secondary CEA/effectiveness sensitivity analyses reuse the same core helpers wherever possible.
-- The CEA acceptability threshold is now set to `29000` euros per QALY, which better matches the manuscript's `25000` GBP comparison point after currency conversion.
+- `R/00_methods_config.R` is the central source of truth for methodological choices, including outcome thresholds, imputation rules, model families, cost model, EQ-5D tariffs, intervention cost, WTP threshold, bootstrap counts, and sensitivity settings.
+- The main CEA branch uses the complex-MICE imputed wide cohort with a nested bootstrap that resamples the same patients across all imputations before pooling within each draw; the exact cost model and acceptability threshold are configured in `R/00_methods_config.R`.
 - The CEA ICER point estimate is reported as pooled incremental cost divided by pooled incremental QALY, while the bootstrap ICER percentiles still come from the iteration-level ratio distribution.
 - The manuscript summary now labels uncertainty explicitly with `pooled_ci_lower` / `pooled_ci_upper` and `bootstrap_ci_lower` / `bootstrap_ci_upper`.
 
@@ -59,17 +59,22 @@ Disease control at 12 months:
 ### Modular pipeline in `R/`
 
 Current refactor entry points:
-- `R/01_cleaning.R`: reads raw questionnaire/cost files, applies manual corrections, derives `controlled_*`, `EQindex_*`, cost summaries, and completeness flags.
-- `R/02_imputation.R`: creates the MICE input dataset for outcome/QoL and cost imputation with 20 PMM repetitions. The `full` MICE branch is the pipeline standard; cost summaries are imputed but are not allowed to predict non-cost targets. The `basic` MICE sensitivity mirrors the legacy predictor matrix (baseline age/sex, baseline control, baseline EQindex, and lagged control only).
-- `R/03_descriptives.R`: writes the analyzed-population Table 1 with disease-aware missingness columns, plus a separate disease-aware missingness summary; continuous Table 1 entries are reported as means with 95% CIs and p-values are rounded to 3 decimals.
-- `R/04b_gee.R`: fits the protocol-style GEE effectiveness model on the selected imputation variant with per-imputation progress checkpoints, using follow-up observations only and sorting rows so each patient cluster is contiguous. This is the default effectiveness analysis.
-- `R/04_models.R`: fits the mixed-effects sensitivity model on the selected imputation variant with the same follow-up-only long-panel reconstruction helper and a faster `bobyqa` optimizer.
-- `R/05_cost_effectiveness.R`: fits the main wide-imputed CEA branch using the complex MICE dataset and writes the manuscript-facing CEA outputs.
-- `R/08_sensitivity_analyses.R`: runs the secondary effectiveness and CEA sensitivity analyses, including alternate imputation variants, intervention-cost sweeps, and the UK EQ-5D tariff sensitivity branch. CEA sensitivity branches reuse the Gaussian-identity cost model, and MI CEA sensitivity branches use the nested bootstrap path where applicable.
-- `R/06_outputs.R`: exports the manuscript-ready summary table (`manuscript_results_summary.csv`), using the shared wide-to-long helper only for the effectiveness export.
-- `R/07_manuscript_report.R`: compiles a readable manuscript brief with the key effectiveness and cost-effectiveness results without creating an extra overview CSV.
-- `R/utils.R`: central constants, variable derivations, long-format construction, cost aggregation, and shared helpers.
-- `R/utils.R::build_economic_data()` collapses the raw monthly cost panels into canonical half-year `cost_*` summaries and returns only the patient identifier plus those summaries.
+- `R/01_cleaning.R`: reads raw questionnaire/cost files, applies manual corrections, derives `controlled_*`, `EQindex_*`, cost summaries, and completeness flags, then writes `data_processed/cleaning_artifact.rds`.
+- `R/02_imputation.R`: creates the MICE input dataset for outcome/QoL and cost imputation with 20 PMM repetitions, then writes `data_processed/imputation_artifact.rds`.
+- `R/03_descriptives.R`: builds the analyzed-population Table 1, disease-aware missingness summary, cost summary, and resource-use summary, then writes `results/descriptives_artifact.rds`.
+- `R/04b_gee.R`: fits the protocol-style GEE effectiveness model and writes `models/effectiveness_gee_artifact.rds`. This is the default effectiveness analysis.
+- `R/04_models.R`: fits the mixed-effects sensitivity model and writes `models/effectiveness_mixed_artifact.rds`.
+- `R/05_cost_effectiveness.R`: fits the main wide-imputed CEA branch using the complex MICE dataset and writes `models/cea_artifact.rds`.
+- `R/08_sensitivity_analyses.R`: runs the secondary effectiveness and CEA sensitivity analyses, including alternate imputation variants, intervention-cost sweeps, and the UK EQ-5D tariff sensitivity branch, then writes `results/sensitivity_analyses_artifact.rds`.
+- `R/06_outputs.R`: assembles manuscript-facing summary data from canonical stage artifacts and writes `results/manuscript_outputs_artifact.rds`.
+- `R/07_manuscript_report.R`: compiles a readable manuscript brief from canonical GEE and CEA artifacts and writes `results/manuscript_report_artifact.rds`.
+- `R/utils.R`: compatibility loader for focused helper modules; active code should edit the specific helper file rather than rebuilding a monolithic utility script.
+- `R/00_contracts.R`: explicit data-shape contracts for canonical wide data, economic cost summaries, imputation-wide frames, effectiveness long frames, and CEA patient-level data.
+- `R/00_methods_config.R`: central method configuration and rationale notes; change method choices here rather than in stage scripts.
+- `R/00_constants.R`, `R/cleaning_helpers.R`, `R/data_dictionary_helpers.R`, `R/imputation_core_helpers.R`, `R/pipeline_io_helpers.R`, `R/outcome_qol_helpers.R`, `R/cost_helpers.R`, `R/longitudinal_helpers.R`, `R/uncertainty_helpers.R`, `R/cea_patient_helpers.R`, and `R/model_summary_helpers.R`: focused shared helper modules loaded by `R/utils.R`.
+- `R/validation_helpers.R`: fast artifact and data-shape validation checks used by the smoke-test runner.
+- `R/run_smoke_tests.R`: tiny debugging runner that refreshes cleaning, validates canonical data contracts, builds the imputation frame without running MICE, validates any existing downstream artifacts, and writes `results/smoke_test_artifact.rds`.
+- `R/cost_helpers.R::build_economic_data()` collapses the raw monthly cost panels into canonical half-year `cost_*` summaries and returns only the patient identifier plus those summaries.
 
 Recommended run order from the project root:
 1. `source("R/01_cleaning.R")`
@@ -83,10 +88,11 @@ Recommended run order from the project root:
 
 For PowerShell on Windows, use `.\run_full_pipeline.ps1`.
 For a fresh VM bootstrap, use `.\bootstrap_bofe_vm.ps1` (add `-SkipRtools` only if you already have a suitable toolchain).
+For a quick debugging pass before expensive models, use `Rscript R/run_smoke_tests.R`.
 
 Progress tracking:
 - Each stage prints `START`, `INFO`, and `DONE` messages in the console.
-- `R/utils.R` writes the same messages to `logs/pipeline_progress.log`.
+- `R/pipeline_io_helpers.R` writes the same messages to `logs/pipeline_progress.log`.
 - `R/04b_gee.R` now reports progress while reconstructing each imputation and while fitting the unadjusted and adjusted GEE models.
 - `R/04_models.R` is reserved for sensitivity runs and uses the same shared long-panel reconstruction helper as the GEE script.
 - The main CEA branch now runs directly from `R/05_cost_effectiveness.R`; the optional sensitivity runner handles heavier alternate scenarios separately.
@@ -106,7 +112,7 @@ Responsibilities:
 - Merge longitudinal datasets
 - Prepare analysis-ready data
 
-Historical reference only; the modular pipeline now keeps structural-zero rules in `R/utils.R`.
+Historical reference only; the modular pipeline now keeps structural-zero rules in `R/00_methods_config.R`, exposed through compatibility constants in `R/00_constants.R`.
 
 ---
 
@@ -216,10 +222,8 @@ Example:
 
 ## Missing Data
 Outcome data:
-- Multiple imputation (MICE)
-- 20 imputations
-- Split by treatment arm before imputation
-- Time-aware predictor matrix to prevent later variables from imputing earlier ones
+- Multiple imputation settings are declared in `R/00_methods_config.R`
+- The configured main branch uses arm-split MICE, PMM for numeric variables, and a time-aware predictor matrix to prevent later variables from imputing earlier ones
 
 Cost data:
 - Included in the main MICE stage as cost components and resource-utilisation auxiliaries
@@ -238,17 +242,17 @@ Main effectiveness analysis in `R/04b_gee.R`:
 
 Manuscript-aligned refactor:
 - `R/01_cleaning.R` reads only raw questionnaire and cost files, then derives a single wide analysis dataset for downstream stages
-- `R/02_imputation.R` builds one wide MICE frame, splits by arm before imputation, uses a time-aware predictor matrix for the pipeline-standard `full` branch, and writes `audit/imputation_predictor_audit.csv` for line-by-line auditability; cost summaries are excluded as predictors for non-cost targets, and sensitivity imputation variants now live in `R/08_sensitivity_analyses.R`, where `audit/imputation_predictor_audit_basic.csv`, `audit/imputation_variant_summary.csv`, and the simple within-arm imputed dataset are generated only when the secondary analyses are run
-- `R/04b_gee.R` reconstructs the follow-up repeated-measures analysis set, keeps patient clusters contiguous, and pools the protocol-style GEE analyses fit to the selected imputation variant through a shared helper
+- `R/02_imputation.R` builds one wide MICE frame using the configured imputation settings and stores the predictor audit inside the canonical imputation artifact
+- `R/04b_gee.R` reconstructs the follow-up repeated-measures analysis set, keeps patient clusters contiguous, and pools the configured primary GEE analyses fit to the selected imputation variant through a shared helper
 - `R/04_models.R` keeps the mixed-effects logistic regression as a sensitivity analysis only and also delegates to the shared effectiveness helper
-- Both `R/04_models.R` and `R/04b_gee.R` accept `BOFE_IMPUTATION_VARIANT` values of `full` (default), `basic`, `simple`, or `complete_cases`; the main scripts now call reusable helpers instead of shelling out to variant subprocesses
-- `R/05_cost_effectiveness.R` combines the complex-MICE imputed wide cohort with the main CEA branch and leaves secondary scenarios to `R/08_sensitivity_analyses.R`; the main branch currently uses the Gaussian-identity cost model on `total_cost`, preserves negative QALYs in the Gaussian QALY model, and uses strict cost-component handling
+- Both `R/04_models.R` and `R/04b_gee.R` use the configured imputation variant default and environment override declared in `R/00_methods_config.R`
+- `R/05_cost_effectiveness.R` combines the complex-MICE imputed wide cohort with the configured main CEA branch and leaves secondary scenarios to `R/08_sensitivity_analyses.R`
 - `R/05_cost_effectiveness_helpers.R` prepares one patient-level CEA frame per completed imputation before bootstrapping, then each nested bootstrap draw resamples the same patient IDs across those prepared frames and pools the GLM results across imputations
-- `R/06_outputs.R` writes one manuscript-ready summary CSV for the effectiveness comparisons and the main cost-effectiveness results, using the shared wide-to-long helper only for the effectiveness export
+- `R/06_outputs.R` writes one canonical manuscript-output artifact for the effectiveness comparisons and the main cost-effectiveness results, using the shared wide-to-long helper only for the effectiveness export object
 - `R/07_manuscript_report.R` reads only the canonical current GEE and CEA artifacts and fails fast if they are missing, so it cannot silently rebuild a report from stale fallbacks
-- Key CEA outputs include `results/cea_model_summaries.csv`, `results/cea_model_comparison.csv`, `results/cea_bootstrap_results.csv`, and `results/cea_acceptability_curve.csv`
+- The key main CEA output is now `models/cea_artifact.rds`, which bundles model summaries, model comparison rows, bootstrap draws, the acceptability curve, and the pooled summary
 - The bootstrap cost coefficient column is now named `cost_group_effect` so the Gaussian-identity branch is not mislabeled as a log ratio in exported tables
-- Cost models are available as the main complex-MICE branch, with alternate CEA scenarios reported separately in `R/08_sensitivity_analyses.R` using the same cost model unless the sensitivity explicitly tests a different model
+- Cost models and alternate CEA scenarios are configured in `R/00_methods_config.R`; `R/08_sensitivity_analyses.R` uses those settings unless a sensitivity explicitly overrides one element.
 
 ---
 
@@ -303,7 +307,7 @@ Recommended improvements:
 Many questionnaire variables use:
 - `0 = structurally missing`
 
-The cleaning script now applies these rules from a centralized mapping in `R/utils.R`.
+The cleaning script now applies these rules from the centralized methods config via `R/00_constants.R`.
 
 ## Legacy duplication
 There is substantial repeated cleaning code across scripts.

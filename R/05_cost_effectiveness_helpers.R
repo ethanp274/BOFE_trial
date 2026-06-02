@@ -69,7 +69,7 @@ fit_pooled_mi_glm <- function(completed_sets, formula, family, maxit = 100) {
   )
 }
 
-cost_model_spec <- function(cost_family = c("gamma_log", "gaussian_identity")) {
+cost_model_spec <- function(cost_family = method_config("economics", "available_cost_families")) {
   cost_family <- match.arg(cost_family)
   if (cost_family == "gamma_log") {
     return(list(
@@ -102,7 +102,7 @@ extract_summary_term_row <- function(summary_df, pattern = "^group") {
 }
 
 # Convert the cost-model group coefficient into an incremental cost estimate.
-extract_incremental_cost_delta <- function(cost_fit, cost_family = c("gamma_log", "gaussian_identity")) {
+extract_incremental_cost_delta <- function(cost_fit, cost_family = method_config("economics", "available_cost_families")) {
   cost_family <- match.arg(cost_family)
   coef_names <- names(coef(cost_fit))
   group_term <- grep("^group", coef_names, value = TRUE)[1]
@@ -236,11 +236,11 @@ bootstrap_mi_iteration_result <- function(
   cea_sets,
   base_patient_level,
   intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
-  tariff = c("italian", "uk"),
-  cost_family = c("gamma_log", "gaussian_identity"),
+  tariff = method_config("economics", "main_eq5d_tariff"),
+  cost_family = method_config("economics", "available_cost_families"),
   model_family = "mi_bootstrap"
 ) {
-  tariff <- match.arg(tariff)
+  tariff <- match.arg(tariff, configured_eq5d_tariffs())
   cost_family <- match.arg(cost_family)
   cost_spec <- cost_model_spec(cost_family)
   set.seed(i * 37)
@@ -356,11 +356,11 @@ run_mi_bootstrap_serial <- function(
   base_patient_level,
   num_iter = BOOTSTRAP_ITERATIONS,
   intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
-  tariff = c("italian", "uk"),
-  cost_family = c("gamma_log", "gaussian_identity"),
+  tariff = method_config("economics", "main_eq5d_tariff"),
+  cost_family = method_config("economics", "available_cost_families"),
   model_family = "mi_bootstrap"
 ) {
-  tariff <- match.arg(tariff)
+  tariff <- match.arg(tariff, configured_eq5d_tariffs())
   cost_family <- match.arg(cost_family)
   empty_out <- data.frame(
     iteration = integer(0),
@@ -420,7 +420,7 @@ bootstrap_iteration_result <- function(
   patient_level,
   model_family = "glm",
   intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
-  cost_family = c("gamma_log", "gaussian_identity")
+  cost_family = method_config("economics", "available_cost_families")
 ) {
   cost_family <- match.arg(cost_family)
   cost_spec <- cost_model_spec(cost_family)
@@ -483,7 +483,7 @@ run_bootstrap_serial <- function(
     patient_level,
     num_iter = BOOTSTRAP_ITERATIONS,
     model_family = "glm",
-    cost_family = c("gamma_log", "gaussian_identity")) {
+    cost_family = method_config("economics", "available_cost_families")) {
   cost_family <- match.arg(cost_family)
   out <- data.frame(
     iteration = integer(0),
@@ -676,30 +676,33 @@ adjust_nested_cea_for_intervention_cost <- function(
 
 # Build the main MI CEA branch with a bootstrap over the same sampled patients in each imputation.
 run_nested_mi_cea_branch <- function(
-    mids_path,
+    mids_path = NULL,
+    mids_obj = NULL,
     branch_label,
     intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
     economic_data = NULL,
-    tariff = c("italian", "uk"),
+    tariff = method_config("economics", "main_eq5d_tariff"),
     bootstrap_iterations = BOOTSTRAP_ITERATIONS,
-    cost_family = c("gamma_log", "gaussian_identity")) {
-  tariff <- match.arg(tariff)
+    cost_family = method_config("economics", "available_cost_families")) {
+  tariff <- match.arg(tariff, configured_eq5d_tariffs())
   cost_family <- match.arg(cost_family)
   cost_spec <- cost_model_spec(cost_family)
-  if (!file.exists(mids_path)) {
-    pipeline_phase_info(
-      "05_cost_effectiveness",
-      sprintf("skipping %s MI bootstrap branch because %s is missing", branch_label, mids_path)
-    )
-    return(NULL)
+  if (is.null(mids_obj)) {
+    if (is.null(mids_path) || !file.exists(mids_path)) {
+      pipeline_phase_info(
+        "05_cost_effectiveness",
+        sprintf("skipping %s MI bootstrap branch because no MICE object was available", branch_label)
+      )
+      return(NULL)
+    }
+    mids_obj <- readRDS(mids_path)
   }
 
   pipeline_phase_info(
     "05_cost_effectiveness",
-    sprintf("running %s MI bootstrap branch from %s", branch_label, basename(mids_path))
+    sprintf("running %s MI bootstrap branch", branch_label)
   )
 
-  mids_obj <- readRDS(mids_path)
   completed_sets <- mice::complete(mids_obj, action = "all", include = FALSE)
   if (length(completed_sets) == 0) {
     stop("05_cost_effectiveness: no completed imputations were available for ", branch_label, ".")
@@ -827,9 +830,9 @@ run_wide_cea_branch <- function(
     model_family = "wide",
     num_iter = BOOTSTRAP_ITERATIONS,
     economic_data = NULL,
-    tariff = c("italian", "uk"),
-    cost_family = c("gamma_log", "gaussian_identity")) {
-  tariff <- match.arg(tariff)
+    tariff = method_config("economics", "main_eq5d_tariff"),
+    cost_family = method_config("economics", "available_cost_families")) {
+  tariff <- match.arg(tariff, configured_eq5d_tariffs())
   cost_family <- match.arg(cost_family)
   cost_spec <- cost_model_spec(cost_family)
   cea_df <- prepare_cea_patient_level(

@@ -18,7 +18,7 @@ pipeline_started <- pipeline_phase_start(
 raw_dir <- file.path("raw_data")
 pipeline_phase_info("01_cleaning", "loading baseline and follow-up questionnaires")
 
-# Read each timepoint separately so the legacy merge logic stays explicit.
+# Read each timepoint separately so the visit-wise merge logic stays explicit.
 T0 <- read_sav(file.path(raw_dir, 'T0.sav'))
 T3 <- read_sav(file.path(raw_dir, 'T3.sav'))
 T6 <- read_sav(file.path(raw_dir, 'T6.sav'))
@@ -40,39 +40,42 @@ T9 <- apply_structural_zero_rules(T9, "T9")
 T12 <- apply_structural_zero_rules(T12, "T12")
 
 # Rename variables to include time suffix and merge.
-# Legacy scripts only kept pharmacy/patient IDs unsuffixed; disease and group
-# remained time-specific after merging.
-rename_vars_legacy_merge <- function(data, suffix) {
+# Only pharmacy/patient IDs remain unsuffixed; disease and group remain
+# time-specific after merging.
+rename_vars_for_timepoint_merge <- function(data, suffix) {
   id_vars <- c("D1.1", "D1.2")
   vars_to_rename <- setdiff(names(data), id_vars)
   names(data)[names(data) %in% vars_to_rename] <- paste0(vars_to_rename, "_", suffix)
   data
 }
 
-T0 <- rename_vars_legacy_merge(T0, 0)
-T3 <- rename_vars_legacy_merge(T3, 3)
-T6 <- rename_vars_legacy_merge(T6, 6)
-T9 <- rename_vars_legacy_merge(T9, 9)
-T12 <- rename_vars_legacy_merge(T12, 12)
+T0 <- rename_vars_for_timepoint_merge(T0, 0)
+T3 <- rename_vars_for_timepoint_merge(T3, 3)
+T6 <- rename_vars_for_timepoint_merge(T6, 6)
+T9 <- rename_vars_for_timepoint_merge(T9, 9)
+T12 <- rename_vars_for_timepoint_merge(T12, 12)
 
 # Merge the five visits into one long-wide analysis frame.
 survey_data <- Reduce(function(x,y) merge(x, y, by = c('D1.1','D1.2'), all = TRUE), list(T0, T3, T6, T9, T12))
 
 survey_data_complete <- Reduce(function(x,y) merge(x, y, by = c('D1.1','D1.2')), list(T0, T3, T6, T9, T12))
 
-# Apply the two manual corrections carried forward from the legacy scripts.
-# 1. Remove PR2B: patient only in T12, not in baseline (T0) - not ITT eligible
+# Apply configured manual data corrections.
 cat("Before exclusions: survey_data N =", nrow(survey_data), ", survey_data_complete N =", nrow(survey_data_complete), "\n")
-survey_data <- survey_data[survey_data$D1.2 != "PR2B", ]
-survey_data_complete <- survey_data_complete[survey_data_complete$D1.2 != "PR2B", ]
+manual_exclusions <- method_config("cleaning", "manual_exclusions")
+survey_data <- survey_data[!survey_data$D1.2 %in% manual_exclusions, ]
+survey_data_complete <- survey_data_complete[!survey_data_complete$D1.2 %in% manual_exclusions, ]
 
-# 2. Fix OH5A disease coding inconsistency: this patient is COPD.
-survey_data$D1.3_6[survey_data$D1.2 == "OH5A"] <- 2
-survey_data_complete$D1.3_6[survey_data_complete$D1.2 == "OH5A"] <- 2
+manual_disease_corrections <- method_config("cleaning", "manual_disease_corrections")
+for (patient_id in names(manual_disease_corrections)) {
+  corrected_condition <- manual_disease_corrections[[patient_id]]
+  survey_data$D1.3_6[survey_data$D1.2 == patient_id] <- corrected_condition
+  survey_data_complete$D1.3_6[survey_data_complete$D1.2 == patient_id] <- corrected_condition
+}
 
 cat("After corrections: survey_data N =", nrow(survey_data), ", survey_data_complete N =", nrow(survey_data_complete), "\n")
 
-# Keep baseline aliases for the refactor, but preserve legacy columns too.
+# Keep baseline aliases alongside time-suffixed source columns.
 survey_data$D1.3 <- survey_data$D1.3_0
 survey_data$D1.4 <- survey_data$D1.4_0
 survey_data_complete$D1.3 <- survey_data_complete$D1.3_0
@@ -87,18 +90,25 @@ economic_data <- build_economic_data(raw_dir)
 complete_cases <- attach_cost_summaries(complete_cases, economic_data)
 all_cases <- attach_cost_summaries(all_cases, economic_data)
 
+complete_cases <- standardize_core_identifiers(complete_cases)
+all_cases <- standardize_core_identifiers(all_cases)
 complete_cases <- add_completeness_flags(complete_cases)
 all_cases <- add_completeness_flags(all_cases)
+assert_data_contract(complete_cases, "analysis_wide")
+assert_data_contract(all_cases, "analysis_wide")
 
-# Save the cleaned analysis sets for later stages.
-dir.create('data_processed', showWarnings = FALSE)
-saveRDS(complete_cases, file = 'data_processed/complete_cases.rds')
-saveRDS(all_cases, file = 'data_processed/all_cases.rds')
-saveRDS(economic_data, file = 'data_processed/economic_data.rds')
+cleaning_artifact <- list(
+  stage = "01_cleaning",
+  all_cases = all_cases,
+  complete_cases = complete_cases,
+  economic_data = economic_data,
+  contracts = c("analysis_wide", "economic_cost_summary")
+)
+write_canonical_artifact("cleaning", cleaning_artifact)
 
-message('01_cleaning: created complete_cases.rds, all_cases.rds, and economic_data.rds')
+message("01_cleaning: saved canonical cleaning artifact.")
 pipeline_phase_end(
   "01_cleaning",
   pipeline_started,
-  "saved analysis-ready datasets"
+  "saved canonical cleaning artifact"
 )

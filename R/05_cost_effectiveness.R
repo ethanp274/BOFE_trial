@@ -2,12 +2,7 @@
 # R/05_cost_effectiveness.R
 # Purpose: Main cost-effectiveness analysis using the complex MICE dataset.
 #
-# Main analysis:
-#   - wide imputed patient-level cohort from R/02_imputation.R
-#   - pooled MI CEA results using Rubin-style uncertainty combination
-#
-# Sensitivity analyses are now kept in separate scripts so the main
-# manuscript pipeline stays readable and focused.
+# Method choices are declared in R/00_methods_config.R.
 ###########################################################################
 
 source("R/05_cost_effectiveness_helpers.R")
@@ -19,14 +14,11 @@ pipeline_started <- pipeline_phase_start(
   "running the main wide-imputed CEA branch"
 )
 
-mids_path <- "data_processed/mids_imputation.rds"
-if (!file.exists(mids_path)) {
-  stop("Missing ", mids_path, ". Run R/02_imputation.R first.")
-}
+imputation_artifact <- read_canonical_artifact("imputation")
 
 bootstrap_iterations <- getOption("bofe.bootstrap_iterations", NULL)
 if (is.null(bootstrap_iterations)) {
-  env_bootstrap_iterations <- Sys.getenv("BOFE_BOOTSTRAP_ITERATIONS", "")
+  env_bootstrap_iterations <- Sys.getenv(method_config("environment_overrides", "bootstrap_iterations"), "")
   bootstrap_iterations <- if (nzchar(env_bootstrap_iterations)) {
     suppressWarnings(as.integer(env_bootstrap_iterations))
   } else {
@@ -39,11 +31,12 @@ if (!is.finite(bootstrap_iterations) || bootstrap_iterations < 1L) {
 
 # Fit the main MI CEA branch with a bootstrap that is nested inside the imputations.
 main_results <- run_nested_mi_cea_branch(
-  mids_path = mids_path,
+  mids_obj = imputation_artifact$full_mids,
   branch_label = "mi_main",
   intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
+  tariff = method_config("economics", "main_eq5d_tariff"),
   bootstrap_iterations = as.integer(bootstrap_iterations),
-  cost_family = "gaussian_identity"
+  cost_family = method_config("economics", "main_cost_family")
 )
 
 if (is.null(main_results) || is.null(main_results$summary) || nrow(main_results$summary) == 0) {
@@ -59,20 +52,11 @@ pipeline_phase_info(
   )
 )
 
-# Save only the manuscript-facing summaries and bootstrap outputs.
-write.csv(main_results$model_summaries, result_path("cea_model_summaries.csv"), row.names = FALSE)
-write.csv(main_results$cea_model_comparison, result_path("cea_model_comparison.csv"), row.names = FALSE)
-write.csv(main_results$bootstrap_results, result_path("cea_bootstrap_results.csv"), row.names = FALSE)
-write.csv(main_results$acceptability_curve, result_path("cea_acceptability_curve.csv"), row.names = FALSE)
+write_canonical_artifact("cea", main_results)
 
-saveRDS(
-  main_results,
-  file = model_path("cea_models.rds")
-)
-
-cat("05_cost_effectiveness: saved main wide-imputed CEA outputs.\n")
+cat("05_cost_effectiveness: saved canonical CEA artifact.\n")
 pipeline_phase_end(
   "05_cost_effectiveness",
   pipeline_started,
-  "saved main wide-imputed CEA outputs"
+  "saved canonical CEA artifact"
 )

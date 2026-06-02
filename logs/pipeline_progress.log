@@ -1046,3 +1046,60 @@
 [2026-06-02 16:14:08] [INFO] 05_cost_effectiveness - running mi_main MI bootstrap branch from mids_imputation.rds 
 [2026-06-02 16:14:10] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
 [2026-06-02 16:15:55] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 16:17:34] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 16:19:47] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 16:22:08] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 16:24:38] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 16:24:42] [INFO] 05_cost_effectiveness - running contract_split_smoke MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 16:24:47] [INFO] 05_cost_effectiveness - bootstrap iteration 1/2 
+[2026-06-02 16:24:47] [INFO] 05_cost_effectiveness - bootstrap iteration 2/2 
+[2026-06-02 16:26:57] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 16:26:57] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 16:26:59] [DONE] 01_cleaning - saved analysis-ready datasets (elapsed 2.0s) 
+[2026-06-02 16:27:13] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 16:29:11] [INFO] 05_cost_effectiveness - running post_contract_smoke MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 16:29:14] [INFO] 05_cost_effectiveness - bootstrap iteration 1/2 
+[2026-06-02 16:29:15] [INFO] 05_cost_effectiveness - bootstrap iteration 2/2 
+[2026-06-02 16:29:20] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 16:31:54] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 16:34:30] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 16:37:11] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 16:37:12] [INFO] 05_cost_effectiveness - main MI CEA cohort built: 835 patients, 5000 bootstrap estimates 
+[2026-06-02 16:37:12] [DONE] 05_cost_effectiveness - saved main wide-imputed CEA outputs (elapsed 1384.2s) 
+[2026-06-02 16:38:30] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 16:38:30] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 16:38:32] [DONE] 01_cleaning - saved canonical cleaning artifact (elapsed 2.4s) 
+[2026-06-02 16:38:32] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 16:38:33] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 16:38:36] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 16:38:37] [DONE] 03_descriptives - saved canonical descriptives artifact (elapsed 4.1s) 
+[2026-06-02 16:40:16] [INFO] 05_cost_effectiveness - running artifact_interface_smoke MI bootstrap branch 
+[2026-06-02 16:40:17] [INFO] 05_cost_effectiveness - bootstrap iteration 1/1 
+[2026-06-02 16:47:40] [START] smoke_tests - running fast validation checks 
+[2026-06-02 16:47:40] [INFO] smoke_tests - checking canonical cleaning stage 
+[2026-06-02 16:47:41] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 16:47:41] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 16:47:43] [DONE] 01_cleaning - saved canonical cleaning artifact (elapsed 2.6s) 
+[2026-06-02 16:47:43] [INFO] smoke_tests - building imputation frame without running MICE 
+[2026-06-02 16:47:43] [INFO] smoke_tests - checking optional canonical artifacts 
+[2026-06-02 16:47:44] [DONE] smoke_tests - smoke tests failed (elapsed 2.9s) 
+[2026-06-02 16:48:39] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 16:48:39] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 16:48:40] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 16:48:41] [DONE] 03_descriptives - saved canonical descriptives artifact (elapsed 2.4s) 
+[2026-06-02 16:49:09] [START] smoke_tests - running fast validation checks 
+[2026-06-02 16:49:09] [INFO] smoke_tests - checking canonical cleaning stage 
+[2026-06-02 16:49:10] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 16:49:10] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 16:49:14] [DONE] 01_cleaning - saved canonical cleaning artifact (elapsed 3.2s) 
+[2026-06-02 16:49:14] [INFO] smoke_tests - building imputation frame without running MICE 
+[2026-06-02 16:49:14] [INFO] smoke_tests - checking optional canonical artifacts 
+[2026-06-02 16:49:14] [DONE] smoke_tests - smoke tests passed (elapsed 3.6s) 
+[2026-06-02 17:05:58] [START] smoke_tests - running fast validation checks 
+[2026-06-02 17:05:58] [INFO] smoke_tests - checking canonical cleaning stage 
+[2026-06-02 17:05:58] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 17:05:58] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 17:06:00] [DONE] 01_cleaning - saved canonical cleaning artifact (elapsed 1.6s) 
+[2026-06-02 17:06:00] [INFO] smoke_tests - building imputation frame without running MICE 
+[2026-06-02 17:06:00] [INFO] smoke_tests - checking optional canonical artifacts 
+[2026-06-02 17:06:00] [DONE] smoke_tests - smoke tests passed (elapsed 1.9s) 

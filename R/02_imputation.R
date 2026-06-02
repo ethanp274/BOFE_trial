@@ -22,38 +22,37 @@ pipeline_started <- pipeline_phase_start(
   "building the main wide imputation frame"
 )
 
-proc_path <- "data_processed/all_cases.rds"
-out_dir <- "data_processed"
-clean_out_dir <- "clean_data"
-results_dir <- "results"
-dir.create(out_dir, showWarnings = FALSE)
-dir.create(clean_out_dir, showWarnings = FALSE)
-dir.create(results_dir, showWarnings = FALSE)
+out_dir <- DATA_PROCESSED_DIR
+ensure_artifact_dirs()
 
-if (!file.exists(proc_path)) stop(proc_path, " not found. Run R/01_cleaning.R first.")
-
-trial_df <- readRDS(proc_path)
+cleaning_artifact <- read_canonical_artifact("cleaning")
+trial_df <- cleaning_artifact$all_cases
 df_impute <- build_imputation_wide_frame(trial_df)
 
 pipeline_phase_info("02_imputation", "building the wide frame used by the main MICE branch")
 full_mids <- run_full_mice_imputation(df_impute, out_dir = out_dir)
 
-if (file.exists(file.path(out_dir, "mids_imputation_full.rds"))) {
-  file.copy(
-    file.path(out_dir, "mids_imputation_full.rds"),
-    file.path(out_dir, "mids_imputation.rds"),
-    overwrite = TRUE
-  )
-}
-
 miss_report <- df_impute %>%
   summarise(across(everything(), ~ sum(is.na(.)))) %>%
   pivot_longer(everything(), names_to = "variable", values_to = "n_missing")
-write.csv(miss_report, file.path(out_dir, "imputation_missingness_summary.csv"), row.names = FALSE)
 
-message("02_imputation: created the full MICE branch and diagnostics.")
+imputation_artifact <- list(
+  stage = "02_imputation",
+  df_impute = df_impute,
+  full_mids = full_mids$mids,
+  full_predictor_matrix = full_mids$predictor_matrix,
+  full_methods = full_mids$methods,
+  full_predictor_audit = full_mids$predictor_audit,
+  full_diagnostics = full_mids$diagnostics,
+  first_completion = full_mids$first_completion,
+  missingness_report = miss_report,
+  contracts = "imputation_wide"
+)
+write_canonical_artifact("imputation", imputation_artifact)
+
+message("02_imputation: saved canonical imputation artifact.")
 pipeline_phase_end(
   "02_imputation",
   pipeline_started,
-  "saved full imputation branch and diagnostics"
+  "saved canonical imputation artifact"
 )

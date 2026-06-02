@@ -6,7 +6,7 @@
 #   - GLM 12-month outcome comparison
 #   - GLMM over all timepoints
 #   - CEA intervention-cost sweep
-#   - CEA UK EQ-5D tariff sensitivity
+#   - CEA EQ-5D tariff sensitivity configured in R/00_methods_config.R
 
 source("R/02_imputation_helpers.R")
 source("R/04_effectiveness_helpers.R")
@@ -21,20 +21,39 @@ pipeline_started <- pipeline_phase_start(
   "running secondary effectiveness and CEA analyses"
 )
 
-# Refresh the sensitivity imputation artifacts from the current clean wide frame.
-trial_df <- readRDS("data_processed/all_cases.rds")
+cleaning_artifact <- read_canonical_artifact("cleaning")
+main_imputation_artifact <- read_canonical_artifact("imputation")
+
+# Refresh the sensitivity imputation objects from the current clean wide frame.
+trial_df <- cleaning_artifact$all_cases
 df_impute <- build_imputation_wide_frame(trial_df)
 basic_mids <- run_basic_mice_imputation(df_impute)
-simple_imputed <- run_simple_within_arm_imputation(df_impute)
-write_imputation_variant_summary(df_impute, simple_imputed)
+simple_branch <- run_simple_within_arm_imputation(df_impute)
+simple_imputed <- simple_branch$data
+imputation_variant_summary <- write_imputation_variant_summary(df_impute, simple_imputed)
 
 # Keep the main effectiveness artefacts for the full variant, and compute the
 # alternative variants directly in-process so the runner stays filesystem-light.
+variant_imputations <- list(
+  full = main_imputation_artifact$full_mids,
+  basic = basic_mids$mids,
+  simple = simple_imputed,
+  complete_cases = cleaning_artifact$complete_cases
+)
+
 read_variant_effectiveness <- function(variant) {
   pipeline_phase_info("08_sensitivity_analyses", sprintf("running effectiveness variant '%s'", variant))
 
-  mixed_df <- run_mixed_effectiveness_analysis(imputation_variant = variant, write_outputs = FALSE)$timepoint_effects
-  gee_df <- run_gee_effectiveness_analysis(imputation_variant = variant, write_outputs = FALSE)$gee_timepoint_effects
+  mixed_df <- run_mixed_effectiveness_analysis(
+    imputation_variant = variant,
+    write_outputs = FALSE,
+    imputation_override = variant_imputations[[variant]]
+  )$timepoint_effects
+  gee_df <- run_gee_effectiveness_analysis(
+    imputation_variant = variant,
+    write_outputs = FALSE,
+    imputation_override = variant_imputations[[variant]]
+  )$gee_timepoint_effects
 
   bind_rows(mixed_df, gee_df) %>%
     filter(time == 12) %>%
@@ -44,32 +63,17 @@ read_variant_effectiveness <- function(variant) {
     )
 }
 
-effectiveness_variants <- c(
-  full = "full",
-  basic = "basic",
-  simple = "simple",
-  complete_cases = "complete_cases"
-)
+effectiveness_variants <- method_config("imputation", "sensitivity_variants")
 
 pipeline_phase_info("08_sensitivity_analyses", "running effectiveness sensitivity variants")
 effectiveness_sensitivity <- bind_rows(lapply(effectiveness_variants, read_variant_effectiveness))
-write.csv(effectiveness_sensitivity, result_path("effectiveness_sensitivity_summary.csv"), row.names = FALSE)
 
-# The main result tables are canonical; the sensitivity runner should not leave
-# alternate model CSVs lying around if prior runs created them.
-if (file.exists(result_path("model_summaries.csv"))) file.remove(result_path("model_summaries.csv"))
-if (file.exists(result_path("model_timepoint_effects.csv"))) file.remove(result_path("model_timepoint_effects.csv"))
-
-economic_data_path <- "data_processed/economic_data.rds"
-if (!file.exists(economic_data_path)) {
-  stop("Missing ", economic_data_path, ". Run R/01_cleaning.R first.")
-}
-economic_data <- readRDS(economic_data_path)
-complete_cases <- readRDS("data_processed/complete_cases.rds")
-cea_cost_family <- "gaussian_identity"
+economic_data <- cleaning_artifact$economic_data
+complete_cases <- cleaning_artifact$complete_cases
+cea_cost_family <- method_config("economics", "main_cost_family")
 cea_bootstrap_iterations <- getOption("bofe.sensitivity_bootstrap_iterations", NULL)
 if (is.null(cea_bootstrap_iterations)) {
-  env_cea_bootstrap_iterations <- Sys.getenv("BOFE_SENSITIVITY_BOOTSTRAP_ITERATIONS", "")
+  env_cea_bootstrap_iterations <- Sys.getenv(method_config("environment_overrides", "sensitivity_bootstrap_iterations"), "")
   cea_bootstrap_iterations <- if (nzchar(env_cea_bootstrap_iterations)) {
     suppressWarnings(as.integer(env_cea_bootstrap_iterations))
   } else {
@@ -99,12 +103,13 @@ cea_simple <- run_wide_cea_branch(
   cost_family = cea_cost_family
 )
 
-cea_full <- readRDS(model_path("cea_models.rds"))
-if (!any(cea_full$cea_model_comparison$model == "GLM_Gaussian_identity_cost", na.rm = TRUE)) {
-  stop("Current main CEA artifact is not using the Gaussian-identity cost model. Re-run R/05_cost_effectiveness.R first.")
+cea_full <- read_canonical_artifact("cea")
+expected_cost_model <- cost_model_spec(cea_cost_family)$model
+if (!any(cea_full$cea_model_comparison$model == expected_cost_model, na.rm = TRUE)) {
+  stop("Current main CEA artifact is not using the configured cost model (", expected_cost_model, "). Re-run R/05_cost_effectiveness.R first.")
 }
 cea_basic <- run_nested_mi_cea_branch(
-  mids_path = "data_processed/mids_imputation_basic.rds",
+  mids_obj = basic_mids$mids,
   branch_label = "basic_mice",
   economic_data = economic_data,
   bootstrap_iterations = as.integer(cea_bootstrap_iterations),
@@ -134,10 +139,8 @@ cea_sensitivity_summary <- bind_rows(
     uncertainty_method
   )
 
-write.csv(cea_sensitivity_summary, result_path("cea_sensitivity_summary.csv"), row.names = FALSE)
-
 # Sweep the intervention cost so the economic conclusion is easy to stress test.
-cost_values <- seq(40, 200, by = 20)
+cost_values <- method_config("economics", "intervention_cost_sweep")
 cea_cost_sensitivity <- bind_rows(lapply(cost_values, function(cost_per_consultation) {
   cea_cost <- adjust_nested_cea_for_intervention_cost(
     cea_results = cea_full,
@@ -151,27 +154,27 @@ cea_cost_sensitivity <- bind_rows(lapply(cost_values, function(cost_per_consulta
     )
 }))
 
-write.csv(cea_cost_sensitivity, result_path("cea_cost_sensitivity_summary.csv"), row.names = FALSE)
-
-# Recompute QALYs under the UK EQ-5D tariff on the same MI cohort.
+# Recompute QALYs under the configured alternate EQ-5D tariff on the same MI cohort.
+tariff_sensitivity <- method_config("economics", "tariff_sensitivity")
+tariff_sensitivity_label <- paste0(tariff_sensitivity, "_eq5d_tariff")
 uk_tariff_summary <- tryCatch({
   uk_cea <- run_nested_mi_cea_branch(
-    mids_path = "data_processed/mids_imputation.rds",
-    branch_label = "uk_eq5d_tariff",
-    tariff = "uk",
+    mids_obj = main_imputation_artifact$full_mids,
+    branch_label = tariff_sensitivity_label,
+    tariff = tariff_sensitivity,
     economic_data = economic_data,
     bootstrap_iterations = as.integer(cea_bootstrap_iterations),
     cost_family = cea_cost_family
   )
   uk_cea$summary %>%
     mutate(
-      scenario = "uk_eq5d_tariff",
-      note = "UK tariff coefficients applied successfully."
+      scenario = tariff_sensitivity_label,
+      note = paste0(tariff_sensitivity, " tariff coefficients applied successfully.")
     )
 }, error = function(e) {
   data.frame(
-    scenario = "uk_eq5d_tariff",
-    model_family = "uk_eq5d_tariff",
+    scenario = tariff_sensitivity_label,
+    model_family = tariff_sensitivity_label,
     metric = c("incremental_cost", "incremental_qaly", "ICER", paste0("probability_acceptable_at_", WTP_THRESHOLD_EUR_PER_QALY)),
     estimate = NA_real_,
     pooled_ci_lower = NA_real_,
@@ -189,23 +192,27 @@ uk_tariff_summary <- tryCatch({
   )
 })
 
-write.csv(uk_tariff_summary, result_path("cea_tariff_sensitivity_summary.csv"), row.names = FALSE)
-
-# Remove stale raw effectiveness CSVs that are no longer part of the canonical
-# output set. The combined sensitivity summaries above are the files we keep.
-stale_effectiveness_files <- unique(c(
-  list.files(RESULTS_DIR, pattern = "^model_summaries(_.*)?\\.csv$", full.names = TRUE),
-  list.files(RESULTS_DIR, pattern = "^model_timepoint_effects(_.*)?\\.csv$", full.names = TRUE),
-  list.files(RESULTS_DIR, pattern = "^model_gee_summaries_(basic|simple|complete_cases)\\.csv$", full.names = TRUE),
-  list.files(RESULTS_DIR, pattern = "^model_gee_timepoint_effects_(basic|simple|complete_cases)\\.csv$", full.names = TRUE)
-))
-if (length(stale_effectiveness_files) > 0) {
-  file.remove(stale_effectiveness_files)
-}
+sensitivity_artifact <- list(
+  stage = "08_sensitivity_analyses",
+  imputations = list(
+    basic_mids = basic_mids$mids,
+    basic_predictor_matrix = basic_mids$predictor_matrix,
+    basic_methods = basic_mids$methods,
+    basic_predictor_audit = basic_mids$predictor_audit,
+    basic_diagnostics = basic_mids$diagnostics,
+    simple_wide = simple_imputed,
+    variant_summary = imputation_variant_summary
+  ),
+  effectiveness_sensitivity = effectiveness_sensitivity,
+  cea_sensitivity_summary = cea_sensitivity_summary,
+  cea_cost_sensitivity = cea_cost_sensitivity,
+  uk_tariff_summary = uk_tariff_summary
+)
+write_canonical_artifact("sensitivity", sensitivity_artifact)
 
 pipeline_phase_info("08_sensitivity_analyses", "sensitivity analyses complete")
 pipeline_phase_end(
   "08_sensitivity_analyses",
   pipeline_started,
-  "saved secondary analysis tables"
+  "saved canonical sensitivity artifact"
 )

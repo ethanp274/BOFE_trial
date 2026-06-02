@@ -2,13 +2,10 @@
 # R/07_manuscript_report.R
 # Purpose: Produce a manuscript-facing results brief that is easy to scan.
 # Inputs:
-#   - models/models_gee_imputed.rds
-#   - models/cea_models.rds
-#   - results/manuscript_results_summary.csv
-#   - results/cea_model_summaries.csv
-#   - results/cea_bootstrap_results.csv
+#   - models/effectiveness_gee_artifact.rds
+#   - models/cea_artifact.rds
 # Outputs:
-#   - results/manuscript_results_brief.md
+#   - results/manuscript_report_artifact.rds
 ###########################################################################
 
 source("R/utils.R")
@@ -21,11 +18,6 @@ pipeline_started <- pipeline_phase_start(
   "07_manuscript_report",
   "assembling a readable manuscript results brief"
 )
-
-# Read an artifact only if it exists.
-safe_read_rds <- function(path) {
-  if (file.exists(path)) readRDS(path) else NULL
-}
 
 fmt_num <- function(x, digits = 3) {
   ifelse(is.na(x), "NA", formatC(x, format = "f", digits = digits))
@@ -74,22 +66,14 @@ normalize_effectiveness <- function(df, model_label) {
 
 # The brief reads directly from the current GEE artifact.
 load_effectiveness <- function() {
-  gee_rds <- safe_read_rds(model_path("models_gee_imputed.rds"))
-  if (is.null(gee_rds)) {
-    stop("Missing current GEE effectiveness artifact: ", model_path("models_gee_imputed.rds"))
-  }
-
+  gee_rds <- read_canonical_artifact("effectiveness_gee")
   gee_df <- normalize_effectiveness(gee_rds$gee_timepoint_effects, "gee")
   gee_df
 }
 
 # The brief reads the main CEA artifact and its bundled tables.
 load_cea_summary <- function() {
-  cea_rds <- safe_read_rds(model_path("cea_models.rds"))
-  if (is.null(cea_rds)) {
-    stop("Missing current CEA artifact: ", model_path("cea_models.rds"))
-  }
-
+  cea_rds <- read_canonical_artifact("cea")
   summary_df <- cea_rds$summary
   comparison_df <- cea_rds$cea_model_comparison
   bootstrap_df <- cea_rds$bootstrap_results
@@ -148,7 +132,7 @@ effectiveness_overview <- timepoint_12 %>%
 
 add_cea_family_summary <- function(summary_df) {
   if (is.null(summary_df) || nrow(summary_df) == 0 || !"metric" %in% names(summary_df)) {
-    stop("Missing current CEA summary artifact in models/cea_models.rds.")
+    stop("Missing current CEA summary in the canonical CEA artifact.")
   }
 
   summary_df %>%
@@ -228,7 +212,7 @@ report_lines <- c(
   if (!is.null(gee_12)) {
     paste0(
       "\n- Adjusted 12-month GEE OR: ", fmt_ci(gee_12$odds_ratio, gee_12$ci_low, gee_12$ci_high),
-      "\n- This is the primary effectiveness analysis."
+      "\n- This is the configured primary effectiveness analysis (", method_config("effectiveness", "primary_model_family"), ")."
     )
   } else {
     "- Effectiveness comparison could not be fully constructed from the available model outputs."
@@ -247,14 +231,19 @@ report_lines <- c(
   write_report_table(group_terms_table)
 )
 
-md_path <- result_path("manuscript_results_brief.md")
-
-writeLines(report_lines, md_path)
+write_canonical_artifact(
+  "manuscript_report",
+  list(
+    stage = "07_manuscript_report",
+    report_lines = report_lines,
+    markdown = paste(report_lines, collapse = "\n")
+  )
+)
 
 cat(paste(report_lines, collapse = "\n"), "\n")
 
 pipeline_phase_end(
   "07_manuscript_report",
   pipeline_started,
-  "saved manuscript brief outputs"
+  "saved canonical manuscript report artifact"
 )

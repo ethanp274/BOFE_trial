@@ -1,15 +1,10 @@
 # R/04_models.R
-# Purpose: Fit the mixed-effects sensitivity model on imputed data.
-# The model uses only the variables needed for the legacy primary analysis:
-# patient ID, treatment group, age, sex, baseline control, and time-varying
-# control status.
+# Purpose: Fit the configured mixed-effects sensitivity model on imputed data.
 #
 # Inputs:
-#   - data_processed/mids_imputation*.rds
-# Outputs:
-#   - results/model_summaries*.csv
-#   - results/model_timepoint_effects*.csv
-#   - models/models_mixed_imputed*.rds
+#   - canonical imputation, cleaning, or sensitivity artifacts
+# Output:
+#   - models/effectiveness_mixed_artifact.rds
 
 source("R/04_effectiveness_helpers.R")
 
@@ -21,7 +16,13 @@ pipeline_started <- pipeline_phase_start(
 )
 
 imputation_variant <- tolower(
-  getOption("bofe.imputation_variant", Sys.getenv("BOFE_IMPUTATION_VARIANT", "full"))
+  getOption(
+    "bofe.imputation_variant",
+    Sys.getenv(
+      method_config("environment_overrides", "imputation_variant"),
+      method_config("effectiveness", "default_imputation_variant")
+    )
+  )
 )
 
 mixed_results <- run_mixed_effectiveness_analysis(
@@ -29,9 +30,9 @@ mixed_results <- run_mixed_effectiveness_analysis(
   write_outputs = TRUE
 )
 
-cat("04_models: pooled mixed-effects models fit on imputed data and saved summaries.\n")
+cat("04_models: pooled mixed-effects models fit on imputed data and saved canonical artifact.\n")
 pipeline_phase_end(
   "04_models",
   pipeline_started,
-  "saved mixed-effects model summaries"
+  "saved canonical mixed-effects artifact"
 )

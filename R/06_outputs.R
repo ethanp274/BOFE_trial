@@ -1,15 +1,12 @@
 ###########################################################################
 # R/06_outputs.R
-# Purpose: Export modular pipeline data to legacy-style CSVs and create
-# lightweight validation reports.
+# Purpose: Assemble manuscript-facing outputs from canonical stage artifacts.
 # Inputs:
-#   - data_processed/all_cases.rds
-#   - data_processed/complete_cases.rds
+#   - data_processed/cleaning_artifact.rds
+#   - models/effectiveness_gee_artifact.rds
+#   - models/cea_artifact.rds
 # Outputs:
-#   - clean_data/all_cases_from_pipeline.csv
-#   - clean_data/complete_cases_from_pipeline.csv
-#   - clean_data/complete_cases_long_from_pipeline.csv
-#   - results/manuscript_results_summary.csv
+#   - results/manuscript_outputs_artifact.rds
 ###########################################################################
 
 source("R/utils.R")
@@ -20,22 +17,16 @@ ensure_artifact_dirs()
 
 pipeline_started <- pipeline_phase_start(
   "06_outputs",
-  "writing legacy-style CSV exports and manuscript summaries"
+  "assembling manuscript output artifact"
 )
 
-# Load the cleaned wide analysis sets used for validation exports.
-all_cases <- readRDS("data_processed/all_cases.rds")
-complete_cases <- readRDS("data_processed/complete_cases.rds")
-economic_data_path <- "data_processed/economic_data.rds"
+cleaning_artifact <- read_canonical_artifact("cleaning")
+all_cases <- cleaning_artifact$all_cases
+complete_cases <- cleaning_artifact$complete_cases
+economic_data <- cleaning_artifact$economic_data
 
 all_cases <- add_analysis_derivations(all_cases)
 complete_cases <- add_analysis_derivations(complete_cases)
-
-if (!file.exists(economic_data_path)) {
-  stop("Missing ", economic_data_path, ". Run R/01_cleaning.R first.")
-}
-
-economic_data <- readRDS(economic_data_path)
 
 if (!all(COST_SUMMARY_COLUMNS %in% names(all_cases))) {
   all_cases <- attach_cost_summaries(all_cases, economic_data)
@@ -47,17 +38,11 @@ complete_cases <- add_completeness_flags(complete_cases)
 
 # Rebuild the long panel only for the effectiveness export and validation checks.
 complete_long <- wide_to_analysis_long(complete_cases, analysis = "effectiveness")
-gee_results_path <- model_path("models_gee_imputed.rds")
-cea_results_path <- model_path("cea_models.rds")
-
-if (!file.exists(gee_results_path)) stop("Missing ", gee_results_path, ". Run R/04b_gee.R first.")
-if (!file.exists(cea_results_path)) stop("Missing ", cea_results_path, ". Run R/05_cost_effectiveness.R first.")
-
-gee_results <- readRDS(gee_results_path)
-cea_results <- readRDS(cea_results_path)
+gee_results <- read_canonical_artifact("effectiveness_gee")
+cea_results <- read_canonical_artifact("cea")
 pipeline_phase_info("06_outputs", "loaded effectiveness and CEA model artefacts")
 
-# Keep the main summary focused on the primary GEE effectiveness result.
+# Keep the main summary focused on the configured primary effectiveness result.
 effectiveness_results <- gee_results$gee_timepoint_effects %>%
   filter(time == 12) %>%
   select(model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
@@ -81,7 +66,12 @@ if (!"bootstrap_ci_upper" %in% names(cea_summary) && "bootstrap_upper_95" %in% n
 }
 cea_summary <- cea_summary %>%
   mutate(section = "cost_effectiveness") %>%
-  filter(metric %in% c("incremental_cost", "incremental_qaly", "ICER", "probability_acceptable_at_29000")) %>%
+  filter(metric %in% c(
+    "incremental_cost",
+    "incremental_qaly",
+    "ICER",
+    paste0("probability_acceptable_at_", WTP_THRESHOLD_EUR_PER_QALY)
+  )) %>%
   select(
     section,
     model_family,
@@ -125,14 +115,16 @@ manuscript_results_summary <- bind_rows(
 
 pipeline_phase_info("06_outputs", "assembling manuscript-ready comparison tables")
 
-write.csv(all_cases, "clean_data/all_cases_from_pipeline.csv", row.names = FALSE)
-write.csv(complete_cases, "clean_data/complete_cases_from_pipeline.csv", row.names = FALSE)
-write.csv(complete_long, "clean_data/complete_cases_long_from_pipeline.csv", row.names = FALSE)
-write.csv(manuscript_results_summary, result_path("manuscript_results_summary.csv"), row.names = FALSE)
+manuscript_outputs_artifact <- list(
+  stage = "06_outputs",
+  manuscript_results_summary = manuscript_results_summary,
+  complete_cases_long = complete_long
+)
+write_canonical_artifact("manuscript_outputs", manuscript_outputs_artifact)
 
-cat("06_outputs: saved manuscript outputs.\n")
+cat("06_outputs: saved canonical manuscript outputs artifact.\n")
 pipeline_phase_end(
   "06_outputs",
   pipeline_started,
-  "saved manuscript outputs"
+  "saved canonical manuscript outputs artifact"
 )

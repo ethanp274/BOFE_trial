@@ -9,28 +9,29 @@ library(lme4)
 library(broom.mixed)
 library(geepack)
 
-get_effectiveness_imputation_path <- function(imputation_variant) {
-  switch(
-    imputation_variant,
-    full = "data_processed/mids_imputation.rds",
-    basic = "data_processed/mids_imputation_basic.rds",
-    simple = "data_processed/simple_imputed_wide.rds",
-    complete_cases = "data_processed/complete_cases.rds"
-  )
-}
-
 load_effectiveness_imputation <- function(imputation_variant) {
   imputation_variant <- tolower(imputation_variant)
   if (!imputation_variant %in% c("full", "basic", "simple", "complete_cases")) {
     stop("Unsupported imputation variant '", imputation_variant, "'.")
   }
 
-  imputation_path <- get_effectiveness_imputation_path(imputation_variant)
-  if (!file.exists(imputation_path)) {
-    stop("Missing ", imputation_path, ". Run R/02_imputation.R first.")
+  if (imputation_variant == "full") {
+    return(read_canonical_artifact("imputation")$full_mids)
   }
 
-  readRDS(imputation_path)
+  if (imputation_variant == "complete_cases") {
+    return(read_canonical_artifact("cleaning")$complete_cases)
+  }
+
+  sensitivity_artifact <- read_canonical_artifact("sensitivity")
+  if (imputation_variant == "basic") {
+    return(sensitivity_artifact$imputations$basic_mids)
+  }
+  if (imputation_variant == "simple") {
+    return(sensitivity_artifact$imputations$simple_wide)
+  }
+
+  stop("Unsupported imputation variant '", imputation_variant, "'.")
 }
 
 followup_effectiveness_sets <- function(long_sets, timepoints = FOLLOWUP_TIMEPOINTS) {
@@ -82,7 +83,7 @@ fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label,
     fit_list[[i]] <- glmer(
       formula = model_formula,
       family = "binomial",
-      control = glmerControl(optimizer = "bobyqa"),
+        control = glmerControl(optimizer = method_config("effectiveness", "mixed_effects_optimizer")),
       data = long_sets[[i]]
     )
 
@@ -177,9 +178,14 @@ fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label,
 
 run_mixed_effectiveness_analysis <- function(
     imputation_variant = c("full", "basic", "simple", "complete_cases"),
-    write_outputs = TRUE) {
+    write_outputs = TRUE,
+    imputation_override = NULL) {
   imputation_variant <- match.arg(tolower(imputation_variant), c("full", "basic", "simple", "complete_cases"))
-  imputation <- load_effectiveness_imputation(imputation_variant)
+  imputation <- if (is.null(imputation_override)) {
+    load_effectiveness_imputation(imputation_variant)
+  } else {
+    imputation_override
+  }
   variant_suffix <- if (imputation_variant == "full") "" else paste0("_", imputation_variant)
 
   if (inherits(imputation, "mids")) {
@@ -202,8 +208,14 @@ run_mixed_effectiveness_analysis <- function(
 
   pipeline_phase_info("04_models", "fitting unadjusted and adjusted mixed-effects models")
   mixed_model_specs <- list(
-    unadjusted = controlled_t ~ group * time + (1 | patient),
-    adjusted = controlled_t ~ controlled_0 + age + gender + group * time + (1 | patient)
+    unadjusted = as.formula(paste(
+      method_config("effectiveness", "unadjusted_formula"),
+      method_config("effectiveness", "mixed_effects_formula_suffix")
+    )),
+    adjusted = as.formula(paste(
+      method_config("effectiveness", "adjusted_formula"),
+      method_config("effectiveness", "mixed_effects_formula_suffix")
+    ))
   )
 
   mixed_results <- lapply(names(mixed_model_specs), function(adj) {
@@ -230,9 +242,7 @@ run_mixed_effectiveness_analysis <- function(
   )
 
   if (isTRUE(write_outputs)) {
-    write.csv(pooled_summary, result_path(paste0("model_summaries", variant_suffix, ".csv")), row.names = FALSE)
-    write.csv(contrast_table, result_path(paste0("model_timepoint_effects", variant_suffix, ".csv")), row.names = FALSE)
-    saveRDS(result, file = model_path(paste0("models_mixed_imputed", variant_suffix, ".rds")))
+    write_canonical_artifact("effectiveness_mixed", result)
   }
 
   result
@@ -393,9 +403,14 @@ fit_and_pool_gee_models <- function(long_sets, model_formula, adjustment_label, 
 
 run_gee_effectiveness_analysis <- function(
     imputation_variant = c("full", "basic", "simple", "complete_cases"),
-    write_outputs = TRUE) {
+    write_outputs = TRUE,
+    imputation_override = NULL) {
   imputation_variant <- match.arg(tolower(imputation_variant), c("full", "basic", "simple", "complete_cases"))
-  imputation <- load_effectiveness_imputation(imputation_variant)
+  imputation <- if (is.null(imputation_override)) {
+    load_effectiveness_imputation(imputation_variant)
+  } else {
+    imputation_override
+  }
   variant_suffix <- if (imputation_variant == "full") "" else paste0("_", imputation_variant)
 
   if (inherits(imputation, "mids")) {
@@ -411,8 +426,8 @@ run_gee_effectiveness_analysis <- function(
 
   pipeline_phase_info("04b_gee", "fitting unadjusted and adjusted GEE models")
   gee_model_specs <- list(
-    unadjusted = controlled_t ~ group * time,
-    adjusted = controlled_t ~ controlled_0 + age + gender + group * time
+    unadjusted = as.formula(method_config("effectiveness", "unadjusted_formula")),
+    adjusted = as.formula(method_config("effectiveness", "adjusted_formula"))
   )
 
   gee_results <- lapply(names(gee_model_specs), function(adj) {
@@ -436,9 +451,7 @@ run_gee_effectiveness_analysis <- function(
   )
 
   if (isTRUE(write_outputs)) {
-    write.csv(gee_pooled_summary, result_path(paste0("model_gee_summaries", variant_suffix, ".csv")), row.names = FALSE)
-    write.csv(gee_contrast_table, result_path(paste0("model_gee_timepoint_effects", variant_suffix, ".csv")), row.names = FALSE)
-    saveRDS(result, file = model_path(paste0("models_gee_imputed", variant_suffix, ".rds")))
+    write_canonical_artifact("effectiveness_gee", result)
   }
 
   result
