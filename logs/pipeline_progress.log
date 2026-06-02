@@ -1,0 +1,1048 @@
+[2026-06-02 00:13:26] [START] 02_imputation - building wide imputation frames and sensitivity variants 
+[2026-06-02 00:13:26] [INFO] 02_imputation - splitting by arm before MICE 
+[2026-06-02 00:13:26] [INFO] 02_imputation - running the full chained MICE with all available predictors 
+[2026-06-02 00:20:38] [INFO] 02_imputation - running the basic MICE sensitivity with legacy predictors 
+[2026-06-02 00:21:20] [INFO] 02_imputation - running the simple within-arm mean/mode sensitivity 
+[2026-06-02 00:21:20] [DONE] 02_imputation - saved imputation variants and diagnostics (elapsed 474.3s) 
+[2026-06-02 00:34:07] [START] 06_outputs - writing legacy-style CSV exports and manuscript summaries 
+[2026-06-02 00:34:08] [INFO] 06_outputs - loaded effectiveness and CEA model artefacts 
+[2026-06-02 00:34:08] [INFO] 06_outputs - assembling manuscript-ready comparison tables 
+[2026-06-02 00:34:09] [DONE] 06_outputs - saved manuscript outputs (elapsed 2.5s) 
+[2026-06-02 00:34:09] [START] 07_manuscript_report - assembling a readable manuscript results brief 
+[2026-06-02 00:34:10] [DONE] 07_manuscript_report - saved manuscript brief outputs (elapsed 1.0s) 
+[2026-06-02 00:40:43] [START] 02_imputation - building the main wide imputation frame 
+[2026-06-02 00:40:43] [INFO] 02_imputation - building the wide frame used by the main MICE branch 
+[2026-06-02 00:40:43] [INFO] 02_imputation - running the full chained MICE with all available predictors 
+[2026-06-02 00:46:38] [DONE] 02_imputation - saved full imputation branch and diagnostics (elapsed 355.2s) 
+[2026-06-02 00:46:43] [START] 08_sensitivity_analyses - running secondary effectiveness and CEA analyses 
+[2026-06-02 00:46:43] [INFO] 02_imputation - running the basic MICE sensitivity with legacy predictors 
+[2026-06-02 00:47:14] [INFO] 02_imputation - running the simple within-arm mean/mode sensitivity 
+[2026-06-02 00:47:14] [INFO] 08_sensitivity_analyses - running effectiveness sensitivity variants 
+[2026-06-02 00:47:14] [INFO] 08_sensitivity_analyses - running effectiveness variant 'full' 
+[2026-06-02 00:47:16] [INFO] 08_sensitivity_analyses - running effectiveness variant 'basic' 
+[2026-06-02 00:47:16] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-06-02 00:47:16] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 00:47:17] [INFO] 04_models - keeping reconstructed long datasets for audit only 
+[2026-06-02 00:47:17] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 00:47:17] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/20 
+[2026-06-02 00:47:21] [INFO] 04_models - finished unadjusted imputation 1/20 in 4.1s 
+[2026-06-02 00:47:21] [INFO] 04_models - fitting glmer (unadjusted) on imputation 2/20 
+[2026-06-02 00:47:25] [INFO] 04_models - finished unadjusted imputation 2/20 in 3.6s 
+[2026-06-02 00:47:25] [INFO] 04_models - fitting glmer (unadjusted) on imputation 3/20 
+[2026-06-02 00:47:29] [INFO] 04_models - finished unadjusted imputation 3/20 in 4.6s 
+[2026-06-02 00:47:29] [INFO] 04_models - fitting glmer (unadjusted) on imputation 4/20 
+[2026-06-02 00:47:33] [INFO] 04_models - finished unadjusted imputation 4/20 in 3.7s 
+[2026-06-02 00:47:33] [INFO] 04_models - fitting glmer (unadjusted) on imputation 5/20 
+[2026-06-02 00:47:37] [INFO] 04_models - finished unadjusted imputation 5/20 in 3.8s 
+[2026-06-02 00:47:37] [INFO] 04_models - fitting glmer (unadjusted) on imputation 6/20 
+[2026-06-02 00:47:41] [INFO] 04_models - finished unadjusted imputation 6/20 in 4.5s 
+[2026-06-02 00:47:41] [INFO] 04_models - fitting glmer (unadjusted) on imputation 7/20 
+[2026-06-02 00:47:45] [INFO] 04_models - finished unadjusted imputation 7/20 in 3.9s 
+[2026-06-02 00:47:45] [INFO] 04_models - fitting glmer (unadjusted) on imputation 8/20 
+[2026-06-02 00:47:49] [INFO] 04_models - finished unadjusted imputation 8/20 in 3.9s 
+[2026-06-02 00:47:49] [INFO] 04_models - fitting glmer (unadjusted) on imputation 9/20 
+[2026-06-02 00:47:53] [INFO] 04_models - finished unadjusted imputation 9/20 in 4.1s 
+[2026-06-02 00:47:53] [INFO] 04_models - fitting glmer (unadjusted) on imputation 10/20 
+[2026-06-02 00:47:57] [INFO] 04_models - finished unadjusted imputation 10/20 in 4.1s 
+[2026-06-02 00:47:57] [INFO] 04_models - fitting glmer (unadjusted) on imputation 11/20 
+[2026-06-02 00:48:01] [INFO] 04_models - finished unadjusted imputation 11/20 in 3.8s 
+[2026-06-02 00:48:01] [INFO] 04_models - fitting glmer (unadjusted) on imputation 12/20 
+[2026-06-02 00:48:05] [INFO] 04_models - finished unadjusted imputation 12/20 in 3.6s 
+[2026-06-02 00:48:05] [INFO] 04_models - fitting glmer (unadjusted) on imputation 13/20 
+[2026-06-02 00:48:09] [INFO] 04_models - finished unadjusted imputation 13/20 in 3.9s 
+[2026-06-02 00:48:09] [INFO] 04_models - fitting glmer (unadjusted) on imputation 14/20 
+[2026-06-02 00:48:12] [INFO] 04_models - finished unadjusted imputation 14/20 in 3.5s 
+[2026-06-02 00:48:12] [INFO] 04_models - fitting glmer (unadjusted) on imputation 15/20 
+[2026-06-02 00:48:16] [INFO] 04_models - finished unadjusted imputation 15/20 in 4.0s 
+[2026-06-02 00:48:16] [INFO] 04_models - fitting glmer (unadjusted) on imputation 16/20 
+[2026-06-02 00:48:20] [INFO] 04_models - finished unadjusted imputation 16/20 in 3.7s 
+[2026-06-02 00:48:20] [INFO] 04_models - fitting glmer (unadjusted) on imputation 17/20 
+[2026-06-02 00:48:23] [INFO] 04_models - finished unadjusted imputation 17/20 in 3.7s 
+[2026-06-02 00:48:23] [INFO] 04_models - fitting glmer (unadjusted) on imputation 18/20 
+[2026-06-02 00:48:27] [INFO] 04_models - finished unadjusted imputation 18/20 in 3.7s 
+[2026-06-02 00:48:27] [INFO] 04_models - fitting glmer (unadjusted) on imputation 19/20 
+[2026-06-02 00:48:31] [INFO] 04_models - finished unadjusted imputation 19/20 in 3.9s 
+[2026-06-02 00:48:31] [INFO] 04_models - fitting glmer (unadjusted) on imputation 20/20 
+[2026-06-02 00:48:35] [INFO] 04_models - finished unadjusted imputation 20/20 in 3.9s 
+[2026-06-02 00:48:35] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/20 
+[2026-06-02 00:48:54] [INFO] 04_models - finished adjusted imputation 1/20 in 18.7s 
+[2026-06-02 00:48:54] [INFO] 04_models - fitting glmer (adjusted) on imputation 2/20 
+[2026-06-02 00:49:12] [INFO] 04_models - finished adjusted imputation 2/20 in 17.9s 
+[2026-06-02 00:49:12] [INFO] 04_models - fitting glmer (adjusted) on imputation 3/20 
+[2026-06-02 00:49:28] [INFO] 04_models - finished adjusted imputation 3/20 in 16.3s 
+[2026-06-02 00:49:28] [INFO] 04_models - fitting glmer (adjusted) on imputation 4/20 
+[2026-06-02 00:50:01] [INFO] 04_models - finished adjusted imputation 4/20 in 32.6s 
+[2026-06-02 00:50:01] [INFO] 04_models - fitting glmer (adjusted) on imputation 5/20 
+[2026-06-02 00:50:17] [INFO] 04_models - finished adjusted imputation 5/20 in 15.7s 
+[2026-06-02 00:50:17] [INFO] 04_models - fitting glmer (adjusted) on imputation 6/20 
+[2026-06-02 00:50:33] [INFO] 04_models - finished adjusted imputation 6/20 in 16.5s 
+[2026-06-02 00:50:33] [INFO] 04_models - fitting glmer (adjusted) on imputation 7/20 
+[2026-06-02 00:50:50] [INFO] 04_models - finished adjusted imputation 7/20 in 16.5s 
+[2026-06-02 00:50:50] [INFO] 04_models - fitting glmer (adjusted) on imputation 8/20 
+[2026-06-02 00:51:08] [INFO] 04_models - finished adjusted imputation 8/20 in 18.4s 
+[2026-06-02 00:51:08] [INFO] 04_models - fitting glmer (adjusted) on imputation 9/20 
+[2026-06-02 00:51:25] [INFO] 04_models - finished adjusted imputation 9/20 in 17.2s 
+[2026-06-02 00:51:25] [INFO] 04_models - fitting glmer (adjusted) on imputation 10/20 
+[2026-06-02 00:51:43] [INFO] 04_models - finished adjusted imputation 10/20 in 18.0s 
+[2026-06-02 00:51:43] [INFO] 04_models - fitting glmer (adjusted) on imputation 11/20 
+[2026-06-02 00:52:02] [INFO] 04_models - finished adjusted imputation 11/20 in 18.6s 
+[2026-06-02 00:52:02] [INFO] 04_models - fitting glmer (adjusted) on imputation 12/20 
+[2026-06-02 00:52:18] [INFO] 04_models - finished adjusted imputation 12/20 in 16.6s 
+[2026-06-02 00:52:18] [INFO] 04_models - fitting glmer (adjusted) on imputation 13/20 
+[2026-06-02 00:52:36] [INFO] 04_models - finished adjusted imputation 13/20 in 17.5s 
+[2026-06-02 00:52:36] [INFO] 04_models - fitting glmer (adjusted) on imputation 14/20 
+[2026-06-02 00:52:54] [INFO] 04_models - finished adjusted imputation 14/20 in 18.2s 
+[2026-06-02 00:52:54] [INFO] 04_models - fitting glmer (adjusted) on imputation 15/20 
+[2026-06-02 00:53:12] [INFO] 04_models - finished adjusted imputation 15/20 in 17.6s 
+[2026-06-02 00:53:12] [INFO] 04_models - fitting glmer (adjusted) on imputation 16/20 
+[2026-06-02 00:53:28] [INFO] 04_models - finished adjusted imputation 16/20 in 16.4s 
+[2026-06-02 00:53:28] [INFO] 04_models - fitting glmer (adjusted) on imputation 17/20 
+[2026-06-02 00:53:47] [INFO] 04_models - finished adjusted imputation 17/20 in 19.0s 
+[2026-06-02 00:53:47] [INFO] 04_models - fitting glmer (adjusted) on imputation 18/20 
+[2026-06-02 00:54:05] [INFO] 04_models - finished adjusted imputation 18/20 in 18.1s 
+[2026-06-02 00:54:05] [INFO] 04_models - fitting glmer (adjusted) on imputation 19/20 
+[2026-06-02 00:54:26] [INFO] 04_models - finished adjusted imputation 19/20 in 20.4s 
+[2026-06-02 00:54:26] [INFO] 04_models - fitting glmer (adjusted) on imputation 20/20 
+[2026-06-02 00:54:43] [INFO] 04_models - finished adjusted imputation 20/20 in 17.8s 
+[2026-06-02 00:54:44] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-02 00:54:44] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 00:54:44] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 00:54:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/20 
+[2026-06-02 00:54:44] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-02 00:54:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 2/20 
+[2026-06-02 00:54:44] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-02 00:54:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 3/20 
+[2026-06-02 00:54:44] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-02 00:54:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 4/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 5/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 6/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 7/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 8/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 9/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 10/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 11/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 12/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 13/20 
+[2026-06-02 00:54:45] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-02 00:54:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 14/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 15/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 16/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 17/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 18/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 19/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 20/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/20 
+[2026-06-02 00:54:46] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-02 00:54:46] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 2/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 3/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.1s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 4/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 5/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 6/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.2s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 7/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.1s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 8/20 
+[2026-06-02 00:54:47] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.1s 
+[2026-06-02 00:54:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 9/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 10/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 11/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 12/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 13/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 14/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 15/20 
+[2026-06-02 00:54:48] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.1s 
+[2026-06-02 00:54:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 16/20 
+[2026-06-02 00:54:49] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.1s 
+[2026-06-02 00:54:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 17/20 
+[2026-06-02 00:54:49] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.1s 
+[2026-06-02 00:54:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 18/20 
+[2026-06-02 00:54:49] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.1s 
+[2026-06-02 00:54:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 19/20 
+[2026-06-02 00:54:49] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.1s 
+[2026-06-02 00:54:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 20/20 
+[2026-06-02 00:54:49] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.3s 
+[2026-06-02 00:54:49] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 00:54:49] [INFO] 08_sensitivity_analyses - running effectiveness variant 'simple' 
+[2026-06-02 00:54:49] [INFO] 04_models - using single completed dataset for variant 'simple' 
+[2026-06-02 00:54:49] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 00:54:49] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 00:54:49] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 00:54:53] [INFO] 04_models - finished unadjusted imputation 1/1 in 4.0s 
+[2026-06-02 00:54:53] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 00:55:11] [INFO] 04_models - finished adjusted imputation 1/1 in 17.5s 
+[2026-06-02 00:55:11] [INFO] 04b_gee - using single completed dataset for variant 'simple' 
+[2026-06-02 00:55:11] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 00:55:11] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 00:55:11] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 00:55:11] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-02 00:55:11] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 00:55:11] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 00:55:11] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-02 00:55:11] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 00:55:11] [INFO] 08_sensitivity_analyses - running effectiveness variant 'complete_cases' 
+[2026-06-02 00:55:11] [INFO] 04_models - using single completed dataset for variant 'complete_cases' 
+[2026-06-02 00:55:11] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 00:55:11] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 00:55:11] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 00:55:15] [INFO] 04_models - finished unadjusted imputation 1/1 in 3.5s 
+[2026-06-02 00:55:15] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 00:55:28] [INFO] 04_models - finished adjusted imputation 1/1 in 13.7s 
+[2026-06-02 00:55:28] [INFO] 04b_gee - using single completed dataset for variant 'complete_cases' 
+[2026-06-02 00:55:28] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 00:55:28] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 00:55:28] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 00:55:28] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-02 00:55:28] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 00:55:28] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 00:55:29] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-02 00:55:29] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 00:55:29] [INFO] 08_sensitivity_analyses - running CEA sensitivity variants 
+[2026-06-02 00:55:29] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 00:55:36] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 00:55:44] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 00:55:52] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 00:56:02] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 00:56:10] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 00:56:18] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 00:56:27] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 00:56:35] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 00:56:44] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 00:56:52] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 00:56:52] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 00:57:00] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 00:57:07] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 00:57:14] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 00:57:20] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 00:57:27] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 00:57:34] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 00:57:41] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 00:57:48] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 00:57:55] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 00:58:02] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 00:58:03] [INFO] 05_cost_effectiveness - running basic_mice MI CEA branch from mids_imputation_basic.rds 
+[2026-06-02 00:58:40] [START] 08_sensitivity_analyses - running secondary effectiveness and CEA analyses 
+[2026-06-02 00:58:40] [INFO] 02_imputation - running the basic MICE sensitivity with legacy predictors 
+[2026-06-02 00:59:10] [INFO] 02_imputation - running the simple within-arm mean/mode sensitivity 
+[2026-06-02 00:59:10] [INFO] 08_sensitivity_analyses - running effectiveness sensitivity variants 
+[2026-06-02 00:59:10] [INFO] 08_sensitivity_analyses - running effectiveness variant 'full' 
+[2026-06-02 00:59:12] [INFO] 08_sensitivity_analyses - running effectiveness variant 'basic' 
+[2026-06-02 00:59:12] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-06-02 00:59:12] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 00:59:12] [INFO] 04_models - keeping reconstructed long datasets for audit only 
+[2026-06-02 00:59:12] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 00:59:12] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/20 
+[2026-06-02 00:59:16] [INFO] 04_models - finished unadjusted imputation 1/20 in 3.4s 
+[2026-06-02 00:59:16] [INFO] 04_models - fitting glmer (unadjusted) on imputation 2/20 
+[2026-06-02 00:59:19] [INFO] 04_models - finished unadjusted imputation 2/20 in 3.4s 
+[2026-06-02 00:59:19] [INFO] 04_models - fitting glmer (unadjusted) on imputation 3/20 
+[2026-06-02 00:59:23] [INFO] 04_models - finished unadjusted imputation 3/20 in 4.2s 
+[2026-06-02 00:59:23] [INFO] 04_models - fitting glmer (unadjusted) on imputation 4/20 
+[2026-06-02 00:59:27] [INFO] 04_models - finished unadjusted imputation 4/20 in 3.5s 
+[2026-06-02 00:59:27] [INFO] 04_models - fitting glmer (unadjusted) on imputation 5/20 
+[2026-06-02 00:59:30] [INFO] 04_models - finished unadjusted imputation 5/20 in 3.5s 
+[2026-06-02 00:59:30] [INFO] 04_models - fitting glmer (unadjusted) on imputation 6/20 
+[2026-06-02 00:59:35] [INFO] 04_models - finished unadjusted imputation 6/20 in 4.2s 
+[2026-06-02 00:59:35] [INFO] 04_models - fitting glmer (unadjusted) on imputation 7/20 
+[2026-06-02 00:59:39] [INFO] 04_models - finished unadjusted imputation 7/20 in 4.1s 
+[2026-06-02 00:59:39] [INFO] 04_models - fitting glmer (unadjusted) on imputation 8/20 
+[2026-06-02 00:59:43] [INFO] 04_models - finished unadjusted imputation 8/20 in 4.0s 
+[2026-06-02 00:59:43] [INFO] 04_models - fitting glmer (unadjusted) on imputation 9/20 
+[2026-06-02 00:59:47] [INFO] 04_models - finished unadjusted imputation 9/20 in 4.1s 
+[2026-06-02 00:59:47] [INFO] 04_models - fitting glmer (unadjusted) on imputation 10/20 
+[2026-06-02 00:59:51] [INFO] 04_models - finished unadjusted imputation 10/20 in 3.8s 
+[2026-06-02 00:59:51] [INFO] 04_models - fitting glmer (unadjusted) on imputation 11/20 
+[2026-06-02 00:59:54] [INFO] 04_models - finished unadjusted imputation 11/20 in 3.6s 
+[2026-06-02 00:59:54] [INFO] 04_models - fitting glmer (unadjusted) on imputation 12/20 
+[2026-06-02 00:59:58] [INFO] 04_models - finished unadjusted imputation 12/20 in 3.5s 
+[2026-06-02 00:59:58] [INFO] 04_models - fitting glmer (unadjusted) on imputation 13/20 
+[2026-06-02 01:00:02] [INFO] 04_models - finished unadjusted imputation 13/20 in 3.9s 
+[2026-06-02 01:00:02] [INFO] 04_models - fitting glmer (unadjusted) on imputation 14/20 
+[2026-06-02 01:00:05] [INFO] 04_models - finished unadjusted imputation 14/20 in 3.7s 
+[2026-06-02 01:00:05] [INFO] 04_models - fitting glmer (unadjusted) on imputation 15/20 
+[2026-06-02 01:00:10] [INFO] 04_models - finished unadjusted imputation 15/20 in 4.1s 
+[2026-06-02 01:00:10] [INFO] 04_models - fitting glmer (unadjusted) on imputation 16/20 
+[2026-06-02 01:00:13] [INFO] 04_models - finished unadjusted imputation 16/20 in 3.7s 
+[2026-06-02 01:00:13] [INFO] 04_models - fitting glmer (unadjusted) on imputation 17/20 
+[2026-06-02 01:00:17] [INFO] 04_models - finished unadjusted imputation 17/20 in 3.5s 
+[2026-06-02 01:00:17] [INFO] 04_models - fitting glmer (unadjusted) on imputation 18/20 
+[2026-06-02 01:00:21] [INFO] 04_models - finished unadjusted imputation 18/20 in 3.8s 
+[2026-06-02 01:00:21] [INFO] 04_models - fitting glmer (unadjusted) on imputation 19/20 
+[2026-06-02 01:00:24] [INFO] 04_models - finished unadjusted imputation 19/20 in 3.8s 
+[2026-06-02 01:00:24] [INFO] 04_models - fitting glmer (unadjusted) on imputation 20/20 
+[2026-06-02 01:00:28] [INFO] 04_models - finished unadjusted imputation 20/20 in 3.6s 
+[2026-06-02 01:00:28] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/20 
+[2026-06-02 01:00:45] [INFO] 04_models - finished adjusted imputation 1/20 in 16.3s 
+[2026-06-02 01:00:45] [INFO] 04_models - fitting glmer (adjusted) on imputation 2/20 
+[2026-06-02 01:01:01] [INFO] 04_models - finished adjusted imputation 2/20 in 16.3s 
+[2026-06-02 01:01:01] [INFO] 04_models - fitting glmer (adjusted) on imputation 3/20 
+[2026-06-02 01:01:17] [INFO] 04_models - finished adjusted imputation 3/20 in 16.2s 
+[2026-06-02 01:01:17] [INFO] 04_models - fitting glmer (adjusted) on imputation 4/20 
+[2026-06-02 01:01:51] [INFO] 04_models - finished adjusted imputation 4/20 in 33.4s 
+[2026-06-02 01:01:51] [INFO] 04_models - fitting glmer (adjusted) on imputation 5/20 
+[2026-06-02 01:02:06] [INFO] 04_models - finished adjusted imputation 5/20 in 15.0s 
+[2026-06-02 01:02:06] [INFO] 04_models - fitting glmer (adjusted) on imputation 6/20 
+[2026-06-02 01:02:22] [INFO] 04_models - finished adjusted imputation 6/20 in 16.5s 
+[2026-06-02 01:02:22] [INFO] 04_models - fitting glmer (adjusted) on imputation 7/20 
+[2026-06-02 01:02:39] [INFO] 04_models - finished adjusted imputation 7/20 in 16.8s 
+[2026-06-02 01:02:39] [INFO] 04_models - fitting glmer (adjusted) on imputation 8/20 
+[2026-06-02 01:02:57] [INFO] 04_models - finished adjusted imputation 8/20 in 18.5s 
+[2026-06-02 01:02:57] [INFO] 04_models - fitting glmer (adjusted) on imputation 9/20 
+[2026-06-02 01:03:15] [INFO] 04_models - finished adjusted imputation 9/20 in 17.8s 
+[2026-06-02 01:03:15] [INFO] 04_models - fitting glmer (adjusted) on imputation 10/20 
+[2026-06-02 01:03:32] [INFO] 04_models - finished adjusted imputation 10/20 in 16.8s 
+[2026-06-02 01:03:32] [INFO] 04_models - fitting glmer (adjusted) on imputation 11/20 
+[2026-06-02 01:03:49] [INFO] 04_models - finished adjusted imputation 11/20 in 17.1s 
+[2026-06-02 01:03:49] [INFO] 04_models - fitting glmer (adjusted) on imputation 12/20 
+[2026-06-02 01:04:05] [INFO] 04_models - finished adjusted imputation 12/20 in 16.2s 
+[2026-06-02 01:04:05] [INFO] 04_models - fitting glmer (adjusted) on imputation 13/20 
+[2026-06-02 01:04:23] [INFO] 04_models - finished adjusted imputation 13/20 in 18.3s 
+[2026-06-02 01:04:23] [INFO] 04_models - fitting glmer (adjusted) on imputation 14/20 
+[2026-06-02 01:04:41] [INFO] 04_models - finished adjusted imputation 14/20 in 18.0s 
+[2026-06-02 01:04:41] [INFO] 04_models - fitting glmer (adjusted) on imputation 15/20 
+[2026-06-02 01:04:58] [INFO] 04_models - finished adjusted imputation 15/20 in 16.7s 
+[2026-06-02 01:04:58] [INFO] 04_models - fitting glmer (adjusted) on imputation 16/20 
+[2026-06-02 01:05:15] [INFO] 04_models - finished adjusted imputation 16/20 in 16.7s 
+[2026-06-02 01:05:15] [INFO] 04_models - fitting glmer (adjusted) on imputation 17/20 
+[2026-06-02 01:05:32] [INFO] 04_models - finished adjusted imputation 17/20 in 17.1s 
+[2026-06-02 01:05:32] [INFO] 04_models - fitting glmer (adjusted) on imputation 18/20 
+[2026-06-02 01:05:50] [INFO] 04_models - finished adjusted imputation 18/20 in 17.8s 
+[2026-06-02 01:05:50] [INFO] 04_models - fitting glmer (adjusted) on imputation 19/20 
+[2026-06-02 01:06:16] [INFO] 04_models - finished adjusted imputation 19/20 in 25.9s 
+[2026-06-02 01:06:16] [INFO] 04_models - fitting glmer (adjusted) on imputation 20/20 
+[2026-06-02 01:06:37] [INFO] 04_models - finished adjusted imputation 20/20 in 20.8s 
+[2026-06-02 01:06:37] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-02 01:06:37] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:06:38] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:06:38] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/20 
+[2026-06-02 01:06:38] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-02 01:06:38] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 2/20 
+[2026-06-02 01:06:38] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.2s 
+[2026-06-02 01:06:38] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 3/20 
+[2026-06-02 01:06:38] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-02 01:06:38] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 4/20 
+[2026-06-02 01:06:38] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.2s 
+[2026-06-02 01:06:38] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 5/20 
+[2026-06-02 01:06:39] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-02 01:06:39] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 6/20 
+[2026-06-02 01:06:39] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-02 01:06:39] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 7/20 
+[2026-06-02 01:06:39] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.2s 
+[2026-06-02 01:06:39] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 8/20 
+[2026-06-02 01:06:39] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.2s 
+[2026-06-02 01:06:39] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 9/20 
+[2026-06-02 01:06:39] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.2s 
+[2026-06-02 01:06:39] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 10/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.2s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 11/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.2s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 12/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 13/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 14/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 15/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 16/20 
+[2026-06-02 01:06:40] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-02 01:06:40] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 17/20 
+[2026-06-02 01:06:41] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.2s 
+[2026-06-02 01:06:41] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 18/20 
+[2026-06-02 01:06:41] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-02 01:06:41] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 19/20 
+[2026-06-02 01:06:41] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.2s 
+[2026-06-02 01:06:41] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 20/20 
+[2026-06-02 01:06:41] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-02 01:06:41] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:06:41] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/20 
+[2026-06-02 01:06:41] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.2s 
+[2026-06-02 01:06:41] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 2/20 
+[2026-06-02 01:06:41] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.2s 
+[2026-06-02 01:06:41] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 3/20 
+[2026-06-02 01:06:42] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.2s 
+[2026-06-02 01:06:42] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 4/20 
+[2026-06-02 01:06:42] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.2s 
+[2026-06-02 01:06:42] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 5/20 
+[2026-06-02 01:06:42] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.2s 
+[2026-06-02 01:06:42] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 6/20 
+[2026-06-02 01:06:42] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.2s 
+[2026-06-02 01:06:42] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 7/20 
+[2026-06-02 01:06:42] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.2s 
+[2026-06-02 01:06:42] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 8/20 
+[2026-06-02 01:06:43] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.2s 
+[2026-06-02 01:06:43] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 9/20 
+[2026-06-02 01:06:43] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.2s 
+[2026-06-02 01:06:43] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 10/20 
+[2026-06-02 01:06:43] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.2s 
+[2026-06-02 01:06:43] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 11/20 
+[2026-06-02 01:06:43] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.2s 
+[2026-06-02 01:06:43] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 12/20 
+[2026-06-02 01:06:44] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.2s 
+[2026-06-02 01:06:44] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 13/20 
+[2026-06-02 01:06:44] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.2s 
+[2026-06-02 01:06:44] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 14/20 
+[2026-06-02 01:06:44] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.2s 
+[2026-06-02 01:06:44] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 15/20 
+[2026-06-02 01:06:44] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.2s 
+[2026-06-02 01:06:44] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 16/20 
+[2026-06-02 01:06:44] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.2s 
+[2026-06-02 01:06:44] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 17/20 
+[2026-06-02 01:06:45] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.2s 
+[2026-06-02 01:06:45] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 18/20 
+[2026-06-02 01:06:45] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.2s 
+[2026-06-02 01:06:45] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 19/20 
+[2026-06-02 01:06:45] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.1s 
+[2026-06-02 01:06:45] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 20/20 
+[2026-06-02 01:06:45] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.2s 
+[2026-06-02 01:06:45] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:06:45] [INFO] 08_sensitivity_analyses - running effectiveness variant 'simple' 
+[2026-06-02 01:06:45] [INFO] 04_models - using single completed dataset for variant 'simple' 
+[2026-06-02 01:06:45] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 01:06:45] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 01:06:45] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 01:06:50] [INFO] 04_models - finished unadjusted imputation 1/1 in 4.9s 
+[2026-06-02 01:06:50] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 01:07:10] [INFO] 04_models - finished adjusted imputation 1/1 in 19.5s 
+[2026-06-02 01:07:10] [INFO] 04b_gee - using single completed dataset for variant 'simple' 
+[2026-06-02 01:07:10] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:07:10] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:07:10] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 01:07:10] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-02 01:07:10] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:07:10] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 01:07:10] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.2s 
+[2026-06-02 01:07:10] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:07:10] [INFO] 08_sensitivity_analyses - running effectiveness variant 'complete_cases' 
+[2026-06-02 01:07:10] [INFO] 04_models - using single completed dataset for variant 'complete_cases' 
+[2026-06-02 01:07:10] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 01:07:10] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 01:07:10] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 01:07:14] [INFO] 04_models - finished unadjusted imputation 1/1 in 4.0s 
+[2026-06-02 01:07:14] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 01:07:32] [INFO] 04_models - finished adjusted imputation 1/1 in 17.5s 
+[2026-06-02 01:07:32] [INFO] 04b_gee - using single completed dataset for variant 'complete_cases' 
+[2026-06-02 01:07:32] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:07:32] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:07:32] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 01:07:32] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-02 01:07:32] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:07:32] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 01:07:32] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-02 01:07:32] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:07:32] [INFO] 08_sensitivity_analyses - running CEA sensitivity variants 
+[2026-06-02 01:07:32] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 01:07:41] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 01:07:51] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 01:07:59] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 01:08:07] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 01:08:15] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 01:08:24] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 01:08:33] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 01:08:42] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 01:08:50] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 01:08:59] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 01:09:00] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 01:09:09] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 01:09:18] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 01:09:25] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 01:09:33] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 01:09:40] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 01:09:48] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 01:09:55] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 01:10:03] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 01:10:11] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 01:10:20] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 01:10:20] [INFO] 05_cost_effectiveness - running basic_mice MI CEA branch from mids_imputation_basic.rds 
+[2026-06-02 01:11:23] [START] 08_sensitivity_analyses - running secondary effectiveness and CEA analyses 
+[2026-06-02 01:11:23] [INFO] 02_imputation - running the basic MICE sensitivity with legacy predictors 
+[2026-06-02 01:11:56] [INFO] 02_imputation - running the simple within-arm mean/mode sensitivity 
+[2026-06-02 01:11:56] [INFO] 08_sensitivity_analyses - running effectiveness sensitivity variants 
+[2026-06-02 01:11:56] [INFO] 08_sensitivity_analyses - running effectiveness variant 'full' 
+[2026-06-02 01:11:58] [INFO] 08_sensitivity_analyses - running effectiveness variant 'basic' 
+[2026-06-02 01:11:58] [INFO] 04_models - reconstructing 20 imputed long datasets 
+[2026-06-02 01:11:58] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 01:11:59] [INFO] 04_models - keeping reconstructed long datasets for audit only 
+[2026-06-02 01:11:59] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 01:11:59] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/20 
+[2026-06-02 01:12:03] [INFO] 04_models - finished unadjusted imputation 1/20 in 4.2s 
+[2026-06-02 01:12:03] [INFO] 04_models - fitting glmer (unadjusted) on imputation 2/20 
+[2026-06-02 01:12:08] [INFO] 04_models - finished unadjusted imputation 2/20 in 4.4s 
+[2026-06-02 01:12:08] [INFO] 04_models - fitting glmer (unadjusted) on imputation 3/20 
+[2026-06-02 01:12:13] [INFO] 04_models - finished unadjusted imputation 3/20 in 5.5s 
+[2026-06-02 01:12:13] [INFO] 04_models - fitting glmer (unadjusted) on imputation 4/20 
+[2026-06-02 01:12:18] [INFO] 04_models - finished unadjusted imputation 4/20 in 4.5s 
+[2026-06-02 01:12:18] [INFO] 04_models - fitting glmer (unadjusted) on imputation 5/20 
+[2026-06-02 01:12:22] [INFO] 04_models - finished unadjusted imputation 5/20 in 4.6s 
+[2026-06-02 01:12:22] [INFO] 04_models - fitting glmer (unadjusted) on imputation 6/20 
+[2026-06-02 01:12:27] [INFO] 04_models - finished unadjusted imputation 6/20 in 5.1s 
+[2026-06-02 01:12:27] [INFO] 04_models - fitting glmer (unadjusted) on imputation 7/20 
+[2026-06-02 01:12:32] [INFO] 04_models - finished unadjusted imputation 7/20 in 4.8s 
+[2026-06-02 01:12:32] [INFO] 04_models - fitting glmer (unadjusted) on imputation 8/20 
+[2026-06-02 01:12:37] [INFO] 04_models - finished unadjusted imputation 8/20 in 4.4s 
+[2026-06-02 01:12:37] [INFO] 04_models - fitting glmer (unadjusted) on imputation 9/20 
+[2026-06-02 01:12:41] [INFO] 04_models - finished unadjusted imputation 9/20 in 4.5s 
+[2026-06-02 01:12:41] [INFO] 04_models - fitting glmer (unadjusted) on imputation 10/20 
+[2026-06-02 01:12:45] [INFO] 04_models - finished unadjusted imputation 10/20 in 4.3s 
+[2026-06-02 01:12:45] [INFO] 04_models - fitting glmer (unadjusted) on imputation 11/20 
+[2026-06-02 01:12:50] [INFO] 04_models - finished unadjusted imputation 11/20 in 4.3s 
+[2026-06-02 01:12:50] [INFO] 04_models - fitting glmer (unadjusted) on imputation 12/20 
+[2026-06-02 01:12:54] [INFO] 04_models - finished unadjusted imputation 12/20 in 3.9s 
+[2026-06-02 01:12:54] [INFO] 04_models - fitting glmer (unadjusted) on imputation 13/20 
+[2026-06-02 01:12:58] [INFO] 04_models - finished unadjusted imputation 13/20 in 4.9s 
+[2026-06-02 01:12:59] [INFO] 04_models - fitting glmer (unadjusted) on imputation 14/20 
+[2026-06-02 01:13:03] [INFO] 04_models - finished unadjusted imputation 14/20 in 4.6s 
+[2026-06-02 01:13:03] [INFO] 04_models - fitting glmer (unadjusted) on imputation 15/20 
+[2026-06-02 01:13:08] [INFO] 04_models - finished unadjusted imputation 15/20 in 5.0s 
+[2026-06-02 01:13:08] [INFO] 04_models - fitting glmer (unadjusted) on imputation 16/20 
+[2026-06-02 01:13:13] [INFO] 04_models - finished unadjusted imputation 16/20 in 4.4s 
+[2026-06-02 01:13:13] [INFO] 04_models - fitting glmer (unadjusted) on imputation 17/20 
+[2026-06-02 01:13:18] [INFO] 04_models - finished unadjusted imputation 17/20 in 5.0s 
+[2026-06-02 01:13:18] [INFO] 04_models - fitting glmer (unadjusted) on imputation 18/20 
+[2026-06-02 01:13:22] [INFO] 04_models - finished unadjusted imputation 18/20 in 4.5s 
+[2026-06-02 01:13:22] [INFO] 04_models - fitting glmer (unadjusted) on imputation 19/20 
+[2026-06-02 01:13:28] [INFO] 04_models - finished unadjusted imputation 19/20 in 5.4s 
+[2026-06-02 01:13:28] [INFO] 04_models - fitting glmer (unadjusted) on imputation 20/20 
+[2026-06-02 01:13:32] [INFO] 04_models - finished unadjusted imputation 20/20 in 4.8s 
+[2026-06-02 01:13:33] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/20 
+[2026-06-02 01:13:55] [INFO] 04_models - finished adjusted imputation 1/20 in 21.9s 
+[2026-06-02 01:13:55] [INFO] 04_models - fitting glmer (adjusted) on imputation 2/20 
+[2026-06-02 01:14:15] [INFO] 04_models - finished adjusted imputation 2/20 in 20.3s 
+[2026-06-02 01:14:15] [INFO] 04_models - fitting glmer (adjusted) on imputation 3/20 
+[2026-06-02 01:14:37] [INFO] 04_models - finished adjusted imputation 3/20 in 21.7s 
+[2026-06-02 01:14:37] [INFO] 04_models - fitting glmer (adjusted) on imputation 4/20 
+[2026-06-02 01:15:19] [INFO] 04_models - finished adjusted imputation 4/20 in 41.8s 
+[2026-06-02 01:15:19] [INFO] 04_models - fitting glmer (adjusted) on imputation 5/20 
+[2026-06-02 01:15:37] [INFO] 04_models - finished adjusted imputation 5/20 in 18.2s 
+[2026-06-02 01:15:37] [INFO] 04_models - fitting glmer (adjusted) on imputation 6/20 
+[2026-06-02 01:15:57] [INFO] 04_models - finished adjusted imputation 6/20 in 19.8s 
+[2026-06-02 01:15:57] [INFO] 04_models - fitting glmer (adjusted) on imputation 7/20 
+[2026-06-02 01:16:20] [INFO] 04_models - finished adjusted imputation 7/20 in 23.2s 
+[2026-06-02 01:16:20] [INFO] 04_models - fitting glmer (adjusted) on imputation 8/20 
+[2026-06-02 01:16:42] [INFO] 04_models - finished adjusted imputation 8/20 in 22.0s 
+[2026-06-02 01:16:42] [INFO] 04_models - fitting glmer (adjusted) on imputation 9/20 
+[2026-06-02 01:17:01] [INFO] 04_models - finished adjusted imputation 9/20 in 19.1s 
+[2026-06-02 01:17:01] [INFO] 04_models - fitting glmer (adjusted) on imputation 10/20 
+[2026-06-02 01:17:19] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 01:17:19] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 01:17:20] [INFO] 04_models - finished adjusted imputation 10/20 in 18.5s 
+[2026-06-02 01:17:20] [INFO] 04_models - fitting glmer (adjusted) on imputation 11/20 
+[2026-06-02 01:17:21] [DONE] 01_cleaning - saved analysis-ready datasets (elapsed 1.6s) 
+[2026-06-02 01:17:23] [START] 02_imputation - building the main wide imputation frame 
+[2026-06-02 01:17:23] [INFO] 02_imputation - building the wide frame used by the main MICE branch 
+[2026-06-02 01:17:23] [INFO] 02_imputation - running the full chained MICE with all available predictors 
+[2026-06-02 01:17:38] [INFO] 04_models - finished adjusted imputation 11/20 in 18.5s 
+[2026-06-02 01:17:38] [INFO] 04_models - fitting glmer (adjusted) on imputation 12/20 
+[2026-06-02 01:17:58] [INFO] 04_models - finished adjusted imputation 12/20 in 19.7s 
+[2026-06-02 01:17:58] [INFO] 04_models - fitting glmer (adjusted) on imputation 13/20 
+[2026-06-02 01:18:18] [INFO] 04_models - finished adjusted imputation 13/20 in 20.6s 
+[2026-06-02 01:18:18] [INFO] 04_models - fitting glmer (adjusted) on imputation 14/20 
+[2026-06-02 01:18:39] [INFO] 04_models - finished adjusted imputation 14/20 in 20.9s 
+[2026-06-02 01:18:39] [INFO] 04_models - fitting glmer (adjusted) on imputation 15/20 
+[2026-06-02 01:18:59] [INFO] 04_models - finished adjusted imputation 15/20 in 19.6s 
+[2026-06-02 01:18:59] [INFO] 04_models - fitting glmer (adjusted) on imputation 16/20 
+[2026-06-02 01:19:18] [INFO] 04_models - finished adjusted imputation 16/20 in 19.2s 
+[2026-06-02 01:19:18] [INFO] 04_models - fitting glmer (adjusted) on imputation 17/20 
+[2026-06-02 01:19:40] [INFO] 04_models - finished adjusted imputation 17/20 in 22.1s 
+[2026-06-02 01:19:40] [INFO] 04_models - fitting glmer (adjusted) on imputation 18/20 
+[2026-06-02 01:20:01] [INFO] 04_models - finished adjusted imputation 18/20 in 21.0s 
+[2026-06-02 01:20:01] [INFO] 04_models - fitting glmer (adjusted) on imputation 19/20 
+[2026-06-02 01:20:22] [INFO] 04_models - finished adjusted imputation 19/20 in 21.2s 
+[2026-06-02 01:20:22] [INFO] 04_models - fitting glmer (adjusted) on imputation 20/20 
+[2026-06-02 01:20:42] [INFO] 04_models - finished adjusted imputation 20/20 in 19.8s 
+[2026-06-02 01:20:43] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-02 01:20:43] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:20:43] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:20:43] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 2/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 3/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 4/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 5/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 6/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 7/20 
+[2026-06-02 01:20:44] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-02 01:20:44] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 8/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 9/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 10/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 11/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 12/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 13/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 14/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 15/20 
+[2026-06-02 01:20:45] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-02 01:20:45] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 16/20 
+[2026-06-02 01:20:46] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-02 01:20:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 17/20 
+[2026-06-02 01:20:46] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-02 01:20:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 18/20 
+[2026-06-02 01:20:46] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-02 01:20:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 19/20 
+[2026-06-02 01:20:46] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.2s 
+[2026-06-02 01:20:46] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 20/20 
+[2026-06-02 01:20:46] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-02 01:20:46] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:20:46] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/20 
+[2026-06-02 01:20:46] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.2s 
+[2026-06-02 01:20:46] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 2/20 
+[2026-06-02 01:20:47] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.2s 
+[2026-06-02 01:20:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 3/20 
+[2026-06-02 01:20:47] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.2s 
+[2026-06-02 01:20:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 4/20 
+[2026-06-02 01:20:47] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.2s 
+[2026-06-02 01:20:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 5/20 
+[2026-06-02 01:20:47] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.2s 
+[2026-06-02 01:20:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 6/20 
+[2026-06-02 01:20:47] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.2s 
+[2026-06-02 01:20:47] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 7/20 
+[2026-06-02 01:20:48] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.2s 
+[2026-06-02 01:20:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 8/20 
+[2026-06-02 01:20:48] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.2s 
+[2026-06-02 01:20:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 9/20 
+[2026-06-02 01:20:48] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.2s 
+[2026-06-02 01:20:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 10/20 
+[2026-06-02 01:20:48] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.2s 
+[2026-06-02 01:20:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 11/20 
+[2026-06-02 01:20:48] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.2s 
+[2026-06-02 01:20:48] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 12/20 
+[2026-06-02 01:20:49] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-02 01:20:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 13/20 
+[2026-06-02 01:20:49] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.2s 
+[2026-06-02 01:20:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 14/20 
+[2026-06-02 01:20:49] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.2s 
+[2026-06-02 01:20:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 15/20 
+[2026-06-02 01:20:49] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.2s 
+[2026-06-02 01:20:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 16/20 
+[2026-06-02 01:20:49] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.2s 
+[2026-06-02 01:20:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 17/20 
+[2026-06-02 01:20:49] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.2s 
+[2026-06-02 01:20:49] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 18/20 
+[2026-06-02 01:20:50] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.2s 
+[2026-06-02 01:20:50] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 19/20 
+[2026-06-02 01:20:50] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.2s 
+[2026-06-02 01:20:50] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 20/20 
+[2026-06-02 01:20:51] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.8s 
+[2026-06-02 01:20:51] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:20:51] [INFO] 08_sensitivity_analyses - running effectiveness variant 'simple' 
+[2026-06-02 01:20:51] [INFO] 04_models - using single completed dataset for variant 'simple' 
+[2026-06-02 01:20:51] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 01:20:51] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 01:20:51] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 01:20:56] [INFO] 04_models - finished unadjusted imputation 1/1 in 4.9s 
+[2026-06-02 01:20:56] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 01:21:15] [INFO] 04_models - finished adjusted imputation 1/1 in 19.3s 
+[2026-06-02 01:21:15] [INFO] 04b_gee - using single completed dataset for variant 'simple' 
+[2026-06-02 01:21:15] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:21:15] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:21:15] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 01:21:15] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-02 01:21:15] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:21:15] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 01:21:15] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.2s 
+[2026-06-02 01:21:15] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:21:15] [INFO] 08_sensitivity_analyses - running effectiveness variant 'complete_cases' 
+[2026-06-02 01:21:15] [INFO] 04_models - using single completed dataset for variant 'complete_cases' 
+[2026-06-02 01:21:15] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 01:21:15] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 01:21:15] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 01:21:19] [INFO] 04_models - finished unadjusted imputation 1/1 in 4.1s 
+[2026-06-02 01:21:19] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 01:21:39] [INFO] 04_models - finished adjusted imputation 1/1 in 19.3s 
+[2026-06-02 01:21:39] [INFO] 04b_gee - using single completed dataset for variant 'complete_cases' 
+[2026-06-02 01:21:39] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:21:39] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:21:39] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 01:21:39] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.2s 
+[2026-06-02 01:21:39] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:21:39] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 01:21:39] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.2s 
+[2026-06-02 01:21:39] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:21:39] [INFO] 08_sensitivity_analyses - running CEA sensitivity variants 
+[2026-06-02 01:21:39] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 01:21:51] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 01:22:00] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 01:22:09] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 01:22:18] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 01:22:28] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 01:22:38] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 01:22:50] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 01:23:03] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 01:23:13] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 01:23:23] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 01:23:24] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 01:23:32] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 01:23:41] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 01:23:50] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 01:24:01] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 01:24:12] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 01:24:24] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 01:24:35] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 01:24:46] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 01:24:57] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 01:25:07] [DONE] 02_imputation - saved full imputation branch and diagnostics (elapsed 463.6s) 
+[2026-06-02 01:25:08] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 01:25:08] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 01:25:09] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 01:25:09] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 1.5s) 
+[2026-06-02 01:25:10] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 01:25:10] [INFO] 05_cost_effectiveness - running basic_mice MI CEA branch from mids_imputation_basic.rds 
+[2026-06-02 01:25:12] [INFO] 05_cost_effectiveness - running full_mice_cost_40 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:12] [START] 04b_gee - fitting the protocol-style GEE effectiveness model 
+[2026-06-02 01:25:12] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-02 01:25:12] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 01:25:14] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 01:25:14] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/20 
+[2026-06-02 01:25:14] [INFO] 05_cost_effectiveness - running full_mice_cost_60 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:14] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.2s 
+[2026-06-02 01:25:14] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 2/20 
+[2026-06-02 01:25:14] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.2s 
+[2026-06-02 01:25:14] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 3/20 
+[2026-06-02 01:25:14] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.2s 
+[2026-06-02 01:25:14] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 4/20 
+[2026-06-02 01:25:14] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.2s 
+[2026-06-02 01:25:14] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 5/20 
+[2026-06-02 01:25:15] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.2s 
+[2026-06-02 01:25:15] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 6/20 
+[2026-06-02 01:25:15] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.3s 
+[2026-06-02 01:25:15] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 7/20 
+[2026-06-02 01:25:15] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.2s 
+[2026-06-02 01:25:15] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 8/20 
+[2026-06-02 01:25:15] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.2s 
+[2026-06-02 01:25:15] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 9/20 
+[2026-06-02 01:25:15] [INFO] 05_cost_effectiveness - running full_mice_cost_80 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:15] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.2s 
+[2026-06-02 01:25:15] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 10/20 
+[2026-06-02 01:25:16] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.2s 
+[2026-06-02 01:25:16] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 11/20 
+[2026-06-02 01:25:16] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.2s 
+[2026-06-02 01:25:16] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 12/20 
+[2026-06-02 01:25:16] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.2s 
+[2026-06-02 01:25:16] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 13/20 
+[2026-06-02 01:25:16] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.2s 
+[2026-06-02 01:25:16] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 14/20 
+[2026-06-02 01:25:16] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.2s 
+[2026-06-02 01:25:16] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 15/20 
+[2026-06-02 01:25:17] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.3s 
+[2026-06-02 01:25:17] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 16/20 
+[2026-06-02 01:25:17] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.2s 
+[2026-06-02 01:25:17] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 17/20 
+[2026-06-02 01:25:17] [INFO] 05_cost_effectiveness - running full_mice_cost_100 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:17] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.2s 
+[2026-06-02 01:25:17] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 18/20 
+[2026-06-02 01:25:17] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.2s 
+[2026-06-02 01:25:17] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 19/20 
+[2026-06-02 01:25:17] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.2s 
+[2026-06-02 01:25:17] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 20/20 
+[2026-06-02 01:25:18] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.2s 
+[2026-06-02 01:25:18] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 01:25:18] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/20 
+[2026-06-02 01:25:18] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.3s 
+[2026-06-02 01:25:18] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 2/20 
+[2026-06-02 01:25:18] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.3s 
+[2026-06-02 01:25:18] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 3/20 
+[2026-06-02 01:25:19] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.2s 
+[2026-06-02 01:25:19] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 4/20 
+[2026-06-02 01:25:19] [INFO] 05_cost_effectiveness - running full_mice_cost_120 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:19] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.2s 
+[2026-06-02 01:25:19] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 5/20 
+[2026-06-02 01:25:19] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.3s 
+[2026-06-02 01:25:19] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 6/20 
+[2026-06-02 01:25:19] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.2s 
+[2026-06-02 01:25:19] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 7/20 
+[2026-06-02 01:25:20] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.2s 
+[2026-06-02 01:25:20] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 8/20 
+[2026-06-02 01:25:20] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.2s 
+[2026-06-02 01:25:20] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 9/20 
+[2026-06-02 01:25:20] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.2s 
+[2026-06-02 01:25:20] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 10/20 
+[2026-06-02 01:25:20] [INFO] 05_cost_effectiveness - running full_mice_cost_140 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:20] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.2s 
+[2026-06-02 01:25:20] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 11/20 
+[2026-06-02 01:25:21] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.2s 
+[2026-06-02 01:25:21] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 12/20 
+[2026-06-02 01:25:21] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.4s 
+[2026-06-02 01:25:21] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 13/20 
+[2026-06-02 01:25:21] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.2s 
+[2026-06-02 01:25:21] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 14/20 
+[2026-06-02 01:25:21] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.2s 
+[2026-06-02 01:25:21] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 15/20 
+[2026-06-02 01:25:22] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.2s 
+[2026-06-02 01:25:22] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 16/20 
+[2026-06-02 01:25:22] [INFO] 05_cost_effectiveness - running full_mice_cost_160 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:22] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.2s 
+[2026-06-02 01:25:22] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 17/20 
+[2026-06-02 01:25:22] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.2s 
+[2026-06-02 01:25:22] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 18/20 
+[2026-06-02 01:25:22] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.2s 
+[2026-06-02 01:25:22] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 19/20 
+[2026-06-02 01:25:23] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.2s 
+[2026-06-02 01:25:23] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 20/20 
+[2026-06-02 01:25:23] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.2s 
+[2026-06-02 01:25:23] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 01:25:23] [INFO] 05_cost_effectiveness - running full_mice_cost_180 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:25] [INFO] 05_cost_effectiveness - running full_mice_cost_200 MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:25:26] [INFO] 08_sensitivity_analyses - sensitivity analyses complete 
+[2026-06-02 01:25:26] [DONE] 08_sensitivity_analyses - saved secondary analysis tables (elapsed 843.2s) 
+[2026-06-02 01:25:35] [DONE] 04b_gee - saved GEE model summaries (elapsed 22.2s) 
+[2026-06-02 01:25:35] [START] 05_cost_effectiveness - running the main wide-imputed CEA branch 
+[2026-06-02 01:25:35] [INFO] 05_cost_effectiveness - running mi_main MI CEA branch from mids_imputation.rds 
+[2026-06-02 01:28:35] [START] 02_imputation - building the main wide imputation frame 
+[2026-06-02 01:28:35] [INFO] 02_imputation - building the wide frame used by the main MICE branch 
+[2026-06-02 01:28:35] [INFO] 02_imputation - running the full chained MICE with all available predictors 
+[2026-06-02 01:35:22] [DONE] 02_imputation - saved full imputation branch and diagnostics (elapsed 406.8s) 
+[2026-06-02 01:39:51] [START] 05_cost_effectiveness - running the main wide-imputed CEA branch 
+[2026-06-02 01:39:51] [INFO] 05_cost_effectiveness - running mi_main MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 01:40:05] [START] 05_cost_effectiveness - running the main wide-imputed CEA branch 
+[2026-06-02 01:40:05] [INFO] 05_cost_effectiveness - running mi_main MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 01:40:07] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 01:45:05] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 01:50:06] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 01:55:02] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 02:00:00] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 02:04:55] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 02:09:53] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 02:14:47] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 02:19:45] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 02:24:41] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 02:29:40] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 02:29:41] [INFO] 05_cost_effectiveness - main MI CEA cohort built: 835 patients, 5000 bootstrap estimates 
+[2026-06-02 02:29:42] [DONE] 05_cost_effectiveness - saved main wide-imputed CEA outputs (elapsed 2977.1s) 
+[2026-06-02 02:29:57] [START] 06_outputs - writing legacy-style CSV exports and manuscript summaries [2026-06-02 02:29:57] [START] 07_manuscript_report - assembling a readable manuscript results brief 
+[2026-06-02 02:30:00] [INFO] 06_outputs - loaded effectiveness and CEA model artefacts 
+[2026-06-02 02:30:00] [INFO] 06_outputs - assembling manuscript-ready comparison tables 
+[2026-06-02 02:30:01] [DONE] 06_outputs - saved manuscript outputs (elapsed 4.5s) 
+[2026-06-02 02:30:25] [START] 07_manuscript_report - assembling a readable manuscript results brief 
+[2026-06-02 02:30:28] [DONE] 07_manuscript_report - saved manuscript brief outputs (elapsed 2.5s) 
+[2026-06-02 02:32:58] [START] 05_cost_effectiveness - running the main wide-imputed CEA branch 
+[2026-06-02 02:32:58] [INFO] 05_cost_effectiveness - running mi_main MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 02:33:01] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 02:38:02] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 02:43:00] [INFO] 05_cost_effectiveness - bootstrap iteration 1000/5000 
+[2026-06-02 02:48:01] [INFO] 05_cost_effectiveness - bootstrap iteration 1500/5000 
+[2026-06-02 02:52:58] [INFO] 05_cost_effectiveness - bootstrap iteration 2000/5000 
+[2026-06-02 02:57:58] [INFO] 05_cost_effectiveness - bootstrap iteration 2500/5000 
+[2026-06-02 03:02:53] [INFO] 05_cost_effectiveness - bootstrap iteration 3000/5000 
+[2026-06-02 03:07:48] [INFO] 05_cost_effectiveness - bootstrap iteration 3500/5000 
+[2026-06-02 03:12:44] [INFO] 05_cost_effectiveness - bootstrap iteration 4000/5000 
+[2026-06-02 03:17:43] [INFO] 05_cost_effectiveness - bootstrap iteration 4500/5000 
+[2026-06-02 03:22:38] [INFO] 05_cost_effectiveness - bootstrap iteration 5000/5000 
+[2026-06-02 03:22:38] [INFO] 05_cost_effectiveness - main MI CEA cohort built: 835 patients, 5000 bootstrap estimates 
+[2026-06-02 03:22:38] [DONE] 05_cost_effectiveness - saved main wide-imputed CEA outputs (elapsed 2980.2s) 
+[2026-06-02 03:22:49] [START] 06_outputs - writing legacy-style CSV exports and manuscript summarie 
+[2026-06-02 03:22:52] [DONE] 07_manuscript_report - saved manuscript brief outputs (elapsed 3.0s) 
+[2026-06-02 03:22:53] [INFO] 06_outputs - loaded effectiveness and CEA model artefacts 
+[2026-06-02 03:22:53] [INFO] 06_outputs - assembling manuscript-ready comparison tables 
+[2026-06-02 03:22:54] [DONE] 06_outputs - saved manuscript outputs (elapsed 4.7s) 
+[2026-06-02 03:23:44] [INFO] 05_cost_effectiveness - running uk_eq5d_tariff MI CEA branch from mids_imputation.rds 
+[2026-06-02 03:23:59] [INFO] 05_cost_effectiveness - running uk_eq5d_tariff MI CEA branch from mids_imputation.rds 
+[2026-06-02 03:24:11] [INFO] 05_cost_effectiveness - running uk_eq5d_tariff MI CEA branch from mids_imputation.rds 
+[2026-06-02 03:24:21] [INFO] 05_cost_effectiveness - running uk_eq5d_tariff MI CEA branch from mids_imputation.rds 
+[2026-06-02 03:24:30] [INFO] 05_cost_effectiveness - running uk_eq5d_tariff MI CEA branch from mids_imputation.rds 
+[2026-06-02 03:28:25] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 03:28:25] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 03:28:26] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 03:28:26] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 1.5s) 
+[2026-06-02 03:28:52] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 03:28:52] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 03:28:53] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 03:28:53] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 1.4s) 
+[2026-06-02 03:29:55] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 03:29:55] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 03:29:56] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 03:29:56] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 1.4s) 
+[2026-06-02 15:01:14] [INFO] 05_cost_effectiveness - running mi_main_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:01:19] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:01:23] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:01:42] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:01:46] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:02:14] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:02:17] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:02:30] [INFO] 05_cost_effectiveness - running mi_main_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:02:33] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:02:37] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:04:33] [INFO] 05_cost_effectiveness - running mi_main_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:04:36] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:04:39] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:08:36] [INFO] 05_cost_effectiveness - running mi_main_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:08:38] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:08:41] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:08:50] [INFO] 05_cost_effectiveness - running mi_main_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:08:53] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5 
+[2026-06-02 15:09:00] [INFO] 05_cost_effectiveness - bootstrap iteration 5/5 
+[2026-06-02 15:40:43] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 15:40:43] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 15:40:44] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 15:40:44] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 15:40:44] [INFO] 05_cost_effectiveness - running mi_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:40:46] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 15:40:49] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 15:41:09] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 15:41:09] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 15:41:09] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 15:41:09] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 15:41:09] [INFO] 05_cost_effectiveness - running mi_test MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 15:41:10] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 15:41:12] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 15:41:28] [INFO] 04b_gee - using single completed dataset for variant 'simple' 
+[2026-06-02 15:41:28] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 15:41:28] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 15:41:28] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/1 
+[2026-06-02 15:41:28] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-02 15:41:28] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 15:41:28] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/1 
+[2026-06-02 15:41:29] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-02 15:41:29] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 15:41:43] [INFO] 04_models - using single completed dataset for variant 'simple' 
+[2026-06-02 15:41:43] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-02 15:41:43] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-02 15:41:43] [INFO] 04_models - fitting glmer (unadjusted) on imputation 1/1 
+[2026-06-02 15:42:03] [INFO] 04_models - finished unadjusted imputation 1/1 in 19.9s 
+[2026-06-02 15:42:03] [INFO] 04_models - fitting glmer (adjusted) on imputation 1/1 
+[2026-06-02 15:42:25] [INFO] 04_models - finished adjusted imputation 1/1 in 21.8s 
+[2026-06-02 15:52:25] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 15:52:25] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 15:52:26] [DONE] 01_cleaning - saved analysis-ready datasets (elapsed 1.3s) 
+[2026-06-02 15:52:28] [START] 02_imputation - building the main wide imputation frame 
+[2026-06-02 15:52:28] [INFO] 02_imputation - building the wide frame used by the main MICE branch 
+[2026-06-02 15:52:28] [INFO] 02_imputation - running the full chained MICE with all available predictors 
+[2026-06-02 16:00:46] [DONE] 02_imputation - saved full imputation branch and diagnostics (elapsed 498.5s) 
+[2026-06-02 16:00:47] [START] 03_descriptives - generating baseline tables and missingness summaries 
+[2026-06-02 16:00:47] [INFO] 03_descriptives - building baseline characteristics tables 
+[2026-06-02 16:00:48] [INFO] 03_descriptives - summarising outcome missingness across timepoints 
+[2026-06-02 16:00:49] [DONE] 03_descriptives - saved descriptive CSV exports (elapsed 1.6s) 
+[2026-06-02 16:00:51] [START] 04b_gee - fitting the protocol-style GEE effectiveness model 
+[2026-06-02 16:00:51] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-02 16:00:51] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-02 16:00:52] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-02 16:00:52] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 1/20 
+[2026-06-02 16:00:52] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.3s 
+[2026-06-02 16:00:52] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 2/20 
+[2026-06-02 16:00:52] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.2s 
+[2026-06-02 16:00:52] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 3/20 
+[2026-06-02 16:00:53] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.2s 
+[2026-06-02 16:00:53] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 4/20 
+[2026-06-02 16:00:53] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.2s 
+[2026-06-02 16:00:53] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 5/20 
+[2026-06-02 16:00:53] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.2s 
+[2026-06-02 16:00:53] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 6/20 
+[2026-06-02 16:00:53] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.2s 
+[2026-06-02 16:00:53] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 7/20 
+[2026-06-02 16:00:53] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.2s 
+[2026-06-02 16:00:53] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 8/20 
+[2026-06-02 16:00:54] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.2s 
+[2026-06-02 16:00:54] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 9/20 
+[2026-06-02 16:00:54] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.2s 
+[2026-06-02 16:00:54] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 10/20 
+[2026-06-02 16:00:54] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.3s 
+[2026-06-02 16:00:54] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 11/20 
+[2026-06-02 16:00:54] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.2s 
+[2026-06-02 16:00:54] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 12/20 
+[2026-06-02 16:00:54] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.2s 
+[2026-06-02 16:00:54] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 13/20 
+[2026-06-02 16:00:55] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.2s 
+[2026-06-02 16:00:55] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 14/20 
+[2026-06-02 16:00:55] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.2s 
+[2026-06-02 16:00:55] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 15/20 
+[2026-06-02 16:00:55] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.2s 
+[2026-06-02 16:00:55] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 16/20 
+[2026-06-02 16:00:55] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.2s 
+[2026-06-02 16:00:55] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 17/20 
+[2026-06-02 16:00:56] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.2s 
+[2026-06-02 16:00:56] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 18/20 
+[2026-06-02 16:00:56] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.2s 
+[2026-06-02 16:00:56] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 19/20 
+[2026-06-02 16:00:56] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.3s 
+[2026-06-02 16:00:56] [INFO] 04b_gee - fitting geeglm (unadjusted) on imputation 20/20 
+[2026-06-02 16:00:56] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.2s 
+[2026-06-02 16:00:56] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-02 16:00:56] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 1/20 
+[2026-06-02 16:00:57] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.2s 
+[2026-06-02 16:00:57] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 2/20 
+[2026-06-02 16:00:57] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.3s 
+[2026-06-02 16:00:57] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 3/20 
+[2026-06-02 16:00:57] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.2s 
+[2026-06-02 16:00:57] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 4/20 
+[2026-06-02 16:00:58] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.3s 
+[2026-06-02 16:00:58] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 5/20 
+[2026-06-02 16:00:58] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.3s 
+[2026-06-02 16:00:58] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 6/20 
+[2026-06-02 16:00:58] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.3s 
+[2026-06-02 16:00:58] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 7/20 
+[2026-06-02 16:00:58] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.2s 
+[2026-06-02 16:00:58] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 8/20 
+[2026-06-02 16:00:59] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.3s 
+[2026-06-02 16:00:59] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 9/20 
+[2026-06-02 16:00:59] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.4s 
+[2026-06-02 16:00:59] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 10/20 
+[2026-06-02 16:00:59] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.3s 
+[2026-06-02 16:00:59] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 11/20 
+[2026-06-02 16:01:00] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.2s 
+[2026-06-02 16:01:00] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 12/20 
+[2026-06-02 16:01:00] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.3s 
+[2026-06-02 16:01:00] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 13/20 
+[2026-06-02 16:01:00] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.2s 
+[2026-06-02 16:01:00] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 14/20 
+[2026-06-02 16:01:00] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.3s 
+[2026-06-02 16:01:00] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 15/20 
+[2026-06-02 16:01:01] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.2s 
+[2026-06-02 16:01:01] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 16/20 
+[2026-06-02 16:01:01] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.2s 
+[2026-06-02 16:01:01] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 17/20 
+[2026-06-02 16:01:01] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.2s 
+[2026-06-02 16:01:01] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 18/20 
+[2026-06-02 16:01:01] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.2s 
+[2026-06-02 16:01:01] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 19/20 
+[2026-06-02 16:01:02] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.2s 
+[2026-06-02 16:01:02] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 20/20 
+[2026-06-02 16:01:02] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.2s 
+[2026-06-02 16:01:02] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-02 16:01:18] [DONE] 04b_gee - saved GEE model summaries (elapsed 27.1s) 
+[2026-06-02 16:01:18] [START] 05_cost_effectiveness - running the main wide-imputed CEA branch 
+[2026-06-02 16:01:18] [INFO] 05_cost_effectiveness - running mi_main MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 16:01:20] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 16:07:30] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 
+[2026-06-02 16:11:18] [INFO] 05_cost_effectiveness - running smoke_nested_mi MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 16:11:20] [INFO] 05_cost_effectiveness - bootstrap iteration 1/3 
+[2026-06-02 16:11:21] [INFO] 05_cost_effectiveness - bootstrap iteration 3/3 
+[2026-06-02 16:14:08] [START] 05_cost_effectiveness - running the main wide-imputed CEA branch 
+[2026-06-02 16:14:08] [INFO] 05_cost_effectiveness - running mi_main MI bootstrap branch from mids_imputation.rds 
+[2026-06-02 16:14:10] [INFO] 05_cost_effectiveness - bootstrap iteration 1/5000 
+[2026-06-02 16:15:55] [INFO] 05_cost_effectiveness - bootstrap iteration 500/5000 

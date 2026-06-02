@@ -14,11 +14,14 @@
 clean_data/
 data_processed/
 raw_data/
+models/
+results/
 outputs/
 outputs-vm/
 
-# Context files
+# Context files and deprecated files
 context_source_files/
+deprecated/
 
 # Session Data files
 .RData
@@ -71,3 +74,4 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .positai
+.Rproj.user

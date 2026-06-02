@@ -18,7 +18,7 @@ pipeline_started <- pipeline_phase_start(
 raw_dir <- file.path("raw_data")
 pipeline_phase_info("01_cleaning", "loading baseline and follow-up questionnaires")
 
-# Read questionnaires
+# Read each timepoint separately so the legacy merge logic stays explicit.
 T0 <- read_sav(file.path(raw_dir, 'T0.sav'))
 T3 <- read_sav(file.path(raw_dir, 'T3.sav'))
 T6 <- read_sav(file.path(raw_dir, 'T6.sav'))
@@ -55,12 +55,12 @@ T6 <- rename_vars_legacy_merge(T6, 6)
 T9 <- rename_vars_legacy_merge(T9, 9)
 T12 <- rename_vars_legacy_merge(T12, 12)
 
-# Merge datasets (preserve all rows for survey_data; complete cases separately)
+# Merge the five visits into one long-wide analysis frame.
 survey_data <- Reduce(function(x,y) merge(x, y, by = c('D1.1','D1.2'), all = TRUE), list(T0, T3, T6, T9, T12))
 
 survey_data_complete <- Reduce(function(x,y) merge(x, y, by = c('D1.1','D1.2')), list(T0, T3, T6, T9, T12))
 
-# Data integrity corrections (from BOFE script_copy.R)
+# Apply the two manual corrections carried forward from the legacy scripts.
 # 1. Remove PR2B: patient only in T12, not in baseline (T0) - not ITT eligible
 cat("Before exclusions: survey_data N =", nrow(survey_data), ", survey_data_complete N =", nrow(survey_data_complete), "\n")
 survey_data <- survey_data[survey_data$D1.2 != "PR2B", ]
@@ -72,18 +72,17 @@ survey_data_complete$D1.3_6[survey_data_complete$D1.2 == "OH5A"] <- 2
 
 cat("After corrections: survey_data N =", nrow(survey_data), ", survey_data_complete N =", nrow(survey_data_complete), "\n")
 
-# Preserve baseline aliases used in the refactored helpers while keeping the
-# legacy time-specific disease/group columns available for validation.
+# Keep baseline aliases for the refactor, but preserve legacy columns too.
 survey_data$D1.3 <- survey_data$D1.3_0
 survey_data$D1.4 <- survey_data$D1.4_0
 survey_data_complete$D1.3 <- survey_data_complete$D1.3_0
 survey_data_complete$D1.4 <- survey_data_complete$D1.4_0
 
-# Derive primary outcome, EQ-5D index, baseline domains, and completeness flags.
+# Derive the analysis variables used downstream by models and tables.
 complete_cases <- add_analysis_derivations(survey_data_complete)
 all_cases <- add_analysis_derivations(survey_data)
 
-# Attach observed cost summaries. Cost data are not imputed downstream.
+# Attach observed cost summaries so the economic helpers can work from one file.
 economic_data <- build_economic_data(raw_dir)
 complete_cases <- attach_cost_summaries(complete_cases, economic_data)
 all_cases <- attach_cost_summaries(all_cases, economic_data)
@@ -91,7 +90,7 @@ all_cases <- attach_cost_summaries(all_cases, economic_data)
 complete_cases <- add_completeness_flags(complete_cases)
 all_cases <- add_completeness_flags(all_cases)
 
-# Save outputs for downstream modules
+# Save the cleaned analysis sets for later stages.
 dir.create('data_processed', showWarnings = FALSE)
 saveRDS(complete_cases, file = 'data_processed/complete_cases.rds')
 saveRDS(all_cases, file = 'data_processed/all_cases.rds')

@@ -2,11 +2,9 @@
 # R/03_descriptives.R
 # Purpose: Generate descriptive statistics and baseline characteristics tables
 # Input:   data_processed/all_cases.rds and complete_cases.rds
-# Output:  
-#   - outputs/table1_all_cases_characteristics.csv (ITT, N=835)
-#   - outputs/table1_complete_cases_characteristics.csv (analyzed, N=756)
-#   - outputs/missingness_summary.csv
-#   - outputs/summary_by_disease.csv
+# Output:
+#   - results/table1_complete_cases_characteristics.csv
+#   - results/missingness_summary.csv
 ###########################################################################
 
 library(dplyr)
@@ -20,8 +18,8 @@ pipeline_started <- pipeline_phase_start(
 )
 
 # Load data
-all_cases_raw <- readRDS('data_processed/all_cases.rds')
-complete_cases_raw <- readRDS('data_processed/complete_cases.rds')
+all_cases_raw <- readRDS("data_processed/all_cases.rds")
+complete_cases_raw <- readRDS("data_processed/complete_cases.rds")
 
 # Remove labels to avoid vctrs comparison issues.
 all_cases <- remove_labels(all_cases_raw)
@@ -30,14 +28,13 @@ complete_cases <- remove_labels(complete_cases_raw)
 cat("Loaded all_cases.rds: ", nrow(all_cases), " rows (ITT population)\n", sep = "")
 cat("Loaded complete_cases.rds: ", nrow(complete_cases), " rows (analyzed population)\n\n", sep = "")
 
-# Ensure output directory exists
-if (!dir.exists('outputs')) dir.create('outputs', showWarnings = FALSE)
+ensure_artifact_dirs()
 
 ###########################################################################
 # SECTION 1: Variable definitions
 ###########################################################################
 
-# Continuous variables (mean ± SD)
+# Continuous variables are reported as mean [95% CI] in the final tables.
 continuous_vars <- c(
   "D3.1_0", "D3.2_0", "D3.3_0",
   "D3.10_1_0", "D3.10_2_0", "D3.10_3_0", "D3.10_4_0", "D3.10_5_0", "D3.10_6_0", "D3.10_7_0",
@@ -64,7 +61,7 @@ continuous_var_names <- c(
   "D5.2_0" = "Number of Medications"
 )
 
-# Proportion variables (n, %)
+# Binary/categorical variables are reported as n/N (%).
 proportion_vars <- c(
   "D2.2_0", "D2.7_0",
   "D3.5_1_0", "D3.5_2_0", "D3.5_3_0",
@@ -86,15 +83,64 @@ proportion_var_names <- c(
   "D3.12_0" = "Employed"
 )
 
+# ACT is only applicable to asthma and CCQ only to COPD. Treat those rows as
+# non-applicable rather than missing so the percentages stay interpretable.
+get_applicable_subset <- function(data, var) {
+  condition_col <- if ("condition" %in% names(data)) {
+    "condition"
+  } else if ("D1.3_0" %in% names(data)) {
+    "D1.3_0"
+  } else if ("D1.3" %in% names(data)) {
+    "D1.3"
+  } else {
+    NA_character_
+  }
+
+  base_var <- sub("_[0-9]+$", "", var)
+  if (!is.na(condition_col) && base_var == "ACT.SCORE") {
+    return(data %>% filter(.data[[condition_col]] == 1))
+  }
+  if (!is.na(condition_col) && base_var == "CCQ.SCORE") {
+    return(data %>% filter(.data[[condition_col]] == 2))
+  }
+  data
+}
+
+calc_missingness_stats <- function(data, var) {
+  if (!(var %in% names(data))) {
+    return(list(n_missing = NA_integer_, n_total = NA_integer_))
+  }
+  list(
+    n_missing = sum(is.na(data[[var]])),
+    n_total = nrow(data)
+  )
+}
+
+format_missingness <- function(n_missing, n_total) {
+  if (is.na(n_missing) || is.na(n_total) || n_total <= 0) return("NA")
+  sprintf("%d/%d (%.1f%%)", n_missing, n_total, 100 * n_missing / n_total)
+}
+
 ###########################################################################
 # SECTION 2: Helper functions
 ###########################################################################
 
 calc_continuous_stats <- function(data, var) {
+  values <- data[[var]]
+  values <- values[!is.na(values)]
+  n <- length(values)
+  mean_val <- if (n > 0) mean(values) else NA_real_
+  sd_val <- if (n > 1) sd(values) else NA_real_
+  se_val <- if (!is.na(sd_val) && n > 0) sd_val / sqrt(n) else NA_real_
+  crit_val <- if (n > 1) qt(0.975, df = n - 1) else NA_real_
+  ci_half_width <- if (!is.na(se_val) && !is.na(crit_val)) crit_val * se_val else NA_real_
+
   list(
-    n = sum(!is.na(data[[var]])),
-    mean = mean(data[[var]], na.rm = TRUE),
-    sd = sd(data[[var]], na.rm = TRUE)
+    n = n,
+    mean = mean_val,
+    sd = sd_val,
+    lower_ci = if (!is.na(mean_val) && !is.na(ci_half_width)) mean_val - ci_half_width else NA_real_,
+    upper_ci = if (!is.na(mean_val) && !is.na(ci_half_width)) mean_val + ci_half_width else NA_real_
   )
 }
 
@@ -109,105 +155,181 @@ calc_proportion_stats <- function(data, var) {
 }
 
 test_continuous <- function(data, var, group_var) {
+  if (!(var %in% names(data)) || !(group_var %in% names(data))) return(NA_real_)
+  subset <- data[, c(var, group_var), drop = FALSE]
+  subset <- subset[complete.cases(subset), , drop = FALSE]
+  if (nrow(subset) < 2 || length(unique(subset[[group_var]])) < 2) return(NA_real_)
   tryCatch(
-    wilcox.test(data[[var]] ~ data[[group_var]], exact = FALSE)$p.value,
+    wilcox.test(subset[[var]] ~ subset[[group_var]], exact = FALSE)$p.value,
     error = function(e) NA
   )
 }
 
 test_proportion <- function(data, var, group_var) {
-  cont_table <- table(data[[var]], data[[group_var]], useNA = "no")
+  if (!(var %in% names(data)) || !(group_var %in% names(data))) return(NA_real_)
+  subset <- data[, c(var, group_var), drop = FALSE]
+  subset <- subset[complete.cases(subset), , drop = FALSE]
+  if (nrow(subset) < 2 || length(unique(subset[[group_var]])) < 2 || length(unique(subset[[var]])) < 2) {
+    return(NA_real_)
+  }
+  cont_table <- table(subset[[var]], subset[[group_var]], useNA = "no")
+  if (nrow(cont_table) < 2 || ncol(cont_table) < 2) return(NA_real_)
   tryCatch(
     chisq.test(cont_table)$p.value,
     error = function(e) NA
   )
 }
 
+format_mean_ci <- function(mean_val, lower_ci, upper_ci, digits = 2) {
+  if (any(is.na(c(mean_val, lower_ci, upper_ci)))) return("NA")
+  sprintf(
+    paste0("%.", digits, "f [%.", digits, "f, %.", digits, "f]"),
+    mean_val, lower_ci, upper_ci
+  )
+}
+
+format_p_value <- function(p_val, digits = 3) {
+  if (is.na(p_val)) return("NA")
+  threshold <- 10^(-digits)
+  if (p_val < threshold) {
+    return(paste0("<", formatC(threshold, format = "f", digits = digits)))
+  }
+  formatC(p_val, format = "f", digits = digits)
+}
+
+# Summarise one continuous variable set by arm and add missingness.
+generate_continuous_summary <- function(data, vars, var_names) {
+  group_var <- if ("group" %in% names(data)) "group" else "D1.4"
+  rows <- list()
+
+  for (var in vars) {
+    if (!(var %in% names(data))) next
+    label <- if (var %in% names(var_names)) unname(var_names[[var]]) else var
+
+    applicable_data <- get_applicable_subset(data, var)
+    ig_data <- applicable_data %>% filter(.data[[group_var]] == "ig (intervention group)")
+    cg_data <- applicable_data %>% filter(.data[[group_var]] == "cg (control group)")
+
+    overall_stats <- calc_continuous_stats(applicable_data, var)
+    ig_stats <- calc_continuous_stats(ig_data, var)
+    cg_stats <- calc_continuous_stats(cg_data, var)
+    p_val <- test_continuous(applicable_data, var, group_var)
+
+    rows[[length(rows) + 1]] <- data.frame(
+      Variable = label,
+      Overall = format_mean_ci(overall_stats$mean, overall_stats$lower_ci, overall_stats$upper_ci),
+      Intervention = format_mean_ci(ig_stats$mean, ig_stats$lower_ci, ig_stats$upper_ci),
+      Control = format_mean_ci(cg_stats$mean, cg_stats$lower_ci, cg_stats$upper_ci),
+      Missing_Overall = format_missingness(sum(is.na(applicable_data[[var]])), nrow(applicable_data)),
+      Missing_Intervention = format_missingness(sum(is.na(ig_data[[var]])), nrow(ig_data)),
+      Missing_Control = format_missingness(sum(is.na(cg_data[[var]])), nrow(cg_data)),
+      P_Value = format_p_value(p_val),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  do.call(rbind, rows)
+}
+
 ###########################################################################
 # SECTION 4: Generate baseline characteristics tables
 ###########################################################################
 
-generate_table1 <- function(data, dataset_name) {
-  cat("\n=== GENERATING TABLE 1 FOR", dataset_name, "===\n")
-  
+generate_table1 <- function(data, missingness_data, dataset_name) {
+  # Build one Table 1 row at a time so the output stays easy to audit.
+  cat("\n=== GENERATING TABLE 1 FOR ", dataset_name, " ===\n", sep = "")
+  group_var <- if ("group" %in% names(data)) "group" else "D1.4"
+  missingness_group_var <- if ("group" %in% names(missingness_data)) "group" else "D1.4"
+
   table1_data <- list()
-  
-  # Continuous variables
+
+  # Add the continuous summary rows first.
   for (var in continuous_vars) {
     var_name <- continuous_var_names[var]
     if (is.na(var_name)) var_name <- var
-    
+
     if (!(var %in% names(data))) next
-    
-    stats_overall <- calc_continuous_stats(data, var)
-    stats_ig <- calc_continuous_stats(
-      data %>% filter(D1.4 == "ig (intervention group)"),
-      var
-    )
-    stats_cg <- calc_continuous_stats(
-      data %>% filter(D1.4 == "cg (control group)"),
-      var
-    )
-    
-    p_val <- test_continuous(data, var, "D1.4")
-    
+
+    applicable_data <- get_applicable_subset(data, var)
+    applicable_missing <- get_applicable_subset(missingness_data, var)
+    ig_data <- applicable_data %>% filter(.data[[group_var]] == "ig (intervention group)")
+    cg_data <- applicable_data %>% filter(.data[[group_var]] == "cg (control group)")
+    ig_missing <- applicable_missing %>% filter(.data[[missingness_group_var]] == "ig (intervention group)")
+    cg_missing <- applicable_missing %>% filter(.data[[missingness_group_var]] == "cg (control group)")
+    missing_overall <- calc_missingness_stats(applicable_missing, var)
+    missing_ig <- calc_missingness_stats(ig_missing, var)
+    missing_cg <- calc_missingness_stats(cg_missing, var)
+
+    stats_overall <- calc_continuous_stats(applicable_data, var)
+    stats_ig <- calc_continuous_stats(ig_data, var)
+    stats_cg <- calc_continuous_stats(cg_data, var)
+
+    p_val <- test_continuous(applicable_data, var, group_var)
+
     table1_data[[length(table1_data) + 1]] <- data.frame(
       Variable = var_name,
-      Overall = sprintf("%.2f ± %.2f", stats_overall$mean, stats_overall$sd),
-      Intervention = sprintf("%.2f ± %.2f", stats_ig$mean, stats_ig$sd),
-      Control = sprintf("%.2f ± %.2f", stats_cg$mean, stats_cg$sd),
-      P_Value = p_val
+      Overall = format_mean_ci(stats_overall$mean, stats_overall$lower_ci, stats_overall$upper_ci),
+      Intervention = format_mean_ci(stats_ig$mean, stats_ig$lower_ci, stats_ig$upper_ci),
+      Control = format_mean_ci(stats_cg$mean, stats_cg$lower_ci, stats_cg$upper_ci),
+      Missing_Overall = format_missingness(missing_overall$n_missing, missing_overall$n_total),
+      Missing_Intervention = format_missingness(missing_ig$n_missing, missing_ig$n_total),
+      Missing_Control = format_missingness(missing_cg$n_missing, missing_cg$n_total),
+      P_Value = format_p_value(p_val),
+      stringsAsFactors = FALSE
     )
   }
-  
-  # Proportion variables
+
+  # Then add the binary and categorical rows.
   for (var in proportion_vars) {
     var_name <- proportion_var_names[var]
     if (is.na(var_name)) var_name <- var
-    
+
     if (!(var %in% names(data))) next
-    
-    stats_overall <- calc_proportion_stats(data, var)
-    stats_ig <- calc_proportion_stats(
-      data %>% filter(D1.4 == "ig (intervention group)"),
-      var
-    )
-    stats_cg <- calc_proportion_stats(
-      data %>% filter(D1.4 == "cg (control group)"),
-      var
-    )
-    
-    p_val <- test_proportion(data, var, "D1.4")
-    
+
+    applicable_data <- get_applicable_subset(data, var)
+    applicable_missing <- get_applicable_subset(missingness_data, var)
+    ig_data <- applicable_data %>% filter(.data[[group_var]] == "ig (intervention group)")
+    cg_data <- applicable_data %>% filter(.data[[group_var]] == "cg (control group)")
+    ig_missing <- applicable_missing %>% filter(.data[[missingness_group_var]] == "ig (intervention group)")
+    cg_missing <- applicable_missing %>% filter(.data[[missingness_group_var]] == "cg (control group)")
+    missing_overall <- calc_missingness_stats(applicable_missing, var)
+    missing_ig <- calc_missingness_stats(ig_missing, var)
+    missing_cg <- calc_missingness_stats(cg_missing, var)
+
+    stats_overall <- calc_proportion_stats(applicable_data, var)
+    stats_ig <- calc_proportion_stats(ig_data, var)
+    stats_cg <- calc_proportion_stats(cg_data, var)
+
+    p_val <- test_proportion(applicable_data, var, group_var)
+
     table1_data[[length(table1_data) + 1]] <- data.frame(
       Variable = var_name,
-      Overall = sprintf("%d/%d (%.1f%%)", 
+      Overall = sprintf("%d/%d (%.1f%%)",
                         stats_overall$n_yes, stats_overall$n_total, stats_overall$pct_yes),
       Intervention = sprintf("%d/%d (%.1f%%)",
                              stats_ig$n_yes, stats_ig$n_total, stats_ig$pct_yes),
       Control = sprintf("%d/%d (%.1f%%)",
                         stats_cg$n_yes, stats_cg$n_total, stats_cg$pct_yes),
-      P_Value = p_val
+      Missing_Overall = format_missingness(missing_overall$n_missing, missing_overall$n_total),
+      Missing_Intervention = format_missingness(missing_ig$n_missing, missing_ig$n_total),
+      Missing_Control = format_missingness(missing_cg$n_missing, missing_cg$n_total),
+      P_Value = format_p_value(p_val),
+      stringsAsFactors = FALSE
     )
   }
-  
-  return(do.call(rbind, table1_data))
+
+  do.call(rbind, table1_data)
 }
 
-# Generate for both populations
+# Write only the analyzed-population table for the main results set.
 pipeline_phase_info("03_descriptives", "building baseline characteristics tables")
-table1_itt <- generate_table1(all_cases, "ALL_CASES (ITT, N=835)")
-table1_analyzed <- generate_table1(complete_cases, "COMPLETE_CASES (ANALYZED, N=756)")
+table1_analyzed <- generate_table1(complete_cases, all_cases, "COMPLETE_CASES (ANALYZED, N=757)")
 
-write.csv(table1_itt, "outputs/table1_all_cases_characteristics.csv", row.names = FALSE)
-write.csv(table1_analyzed, "outputs/table1_complete_cases_characteristics.csv", row.names = FALSE)
+write.csv(table1_analyzed, result_path("table1_complete_cases_characteristics.csv"), row.names = FALSE)
 
-cat("\nSaved:\n  outputs/table1_all_cases_characteristics.csv (N=", nrow(all_cases), ")\n", sep = "")
-cat("  outputs/table1_complete_cases_characteristics.csv (N=", nrow(complete_cases), ")\n\n", sep = "")
+cat("  results/table1_complete_cases_characteristics.csv (N=", nrow(complete_cases), ")\n\n", sep = "")
 
-###########################################################################
-# SECTION 4: Missingness summary by timepoint
-###########################################################################
+# Missingness is summarized separately so the Table 1 outputs stay focused.
 
 cat("=== GENERATING MISSINGNESS SUMMARY ===\n")
 pipeline_phase_info("03_descriptives", "summarising outcome missingness across timepoints")
@@ -218,85 +340,88 @@ timepoints <- c(0, 3, 6, 9, 12)
 missingness_summary <- data.frame(
   Timepoint = integer(0),
   Variable = character(0),
+  Basis = character(0),
+  Applicable_N_ITT = integer(0),
   N_Missing_ITT = integer(0),
   Pct_Missing_ITT = numeric(0),
+  Applicable_N_Analyzed = integer(0),
   N_Missing_Analyzed = integer(0),
   Pct_Missing_Analyzed = numeric(0),
   stringsAsFactors = FALSE
 )
 
 for (tp in timepoints) {
+  # Walk timepoint by timepoint to keep the output aligned with the trial visits.
   for (outcome in outcome_vars) {
     var_name <- paste0(outcome, "_", tp)
     if (var_name %in% names(all_cases)) {
-      n_missing_itt <- sum(is.na(all_cases[[var_name]]))
-      n_missing_analyzed <- sum(is.na(complete_cases[[var_name]]))
-      
+      all_applicable <- get_applicable_subset(all_cases, var_name)
+      analyzed_applicable <- get_applicable_subset(complete_cases, var_name)
+      n_missing_itt <- sum(is.na(all_applicable[[var_name]]))
+      n_missing_analyzed <- sum(is.na(analyzed_applicable[[var_name]]))
+      basis_label <- if (grepl("^ACT\\.SCORE", outcome)) {
+        "asthma only"
+      } else if (grepl("^CCQ\\.SCORE", outcome)) {
+        "COPD only"
+      } else {
+        "all patients"
+      }
+
       missingness_summary <- missingness_summary %>% add_row(
         Timepoint = tp,
         Variable = outcome,
+        Basis = basis_label,
+        Applicable_N_ITT = nrow(all_applicable),
         N_Missing_ITT = n_missing_itt,
-        Pct_Missing_ITT = 100 * n_missing_itt / nrow(all_cases),
+        Pct_Missing_ITT = if (nrow(all_applicable) > 0) 100 * n_missing_itt / nrow(all_applicable) else NA_real_,
+        Applicable_N_Analyzed = nrow(analyzed_applicable),
         N_Missing_Analyzed = n_missing_analyzed,
-        Pct_Missing_Analyzed = 100 * n_missing_analyzed / nrow(complete_cases)
+        Pct_Missing_Analyzed = if (nrow(analyzed_applicable) > 0) 100 * n_missing_analyzed / nrow(analyzed_applicable) else NA_real_
       )
     }
   }
 }
 
-write.csv(missingness_summary, "outputs/missingness_summary.csv", row.names = FALSE)
-cat("Saved: outputs/missingness_summary.csv\n")
+write.csv(missingness_summary, result_path("missingness_summary.csv"), row.names = FALSE)
+cat("Saved: results/missingness_summary.csv\n")
 
-###########################################################################
-# SECTION 5: Summary by disease type
-###########################################################################
+# Add the two extra descriptive tables requested for the complete-case cohort.
+cost_summary_vars <- c(
+  "interv_cost", "outpatient_cost", "lab_cost", "med_cost",
+  "delivery_cost", "inpatient_cost", "total_cost"
+)
+cost_summary_names <- c(
+  "interv_cost" = "Intervention Cost",
+  "outpatient_cost" = "Outpatient Cost",
+  "lab_cost" = "Laboratory Cost",
+  "med_cost" = "Medication Cost",
+  "delivery_cost" = "Delivery Cost",
+  "inpatient_cost" = "Inpatient Cost",
+  "total_cost" = "Total Cost"
+)
+cost_summary <- generate_continuous_summary(complete_cases, cost_summary_vars, cost_summary_names)
+write.csv(cost_summary, result_path("cost_summary_complete_cases.csv"), row.names = FALSE)
 
-cat("\n=== GENERATING DISEASE-STRATIFIED SUMMARIES ===\n")
-
-summary_rows <- list()
-
-for (pop_name in c("ITT", "Analyzed")) {
-  data_to_use <- if (pop_name == "ITT") all_cases else complete_cases
-  
-  for (disease_code in c(1, 2)) {
-    disease_name <- if (disease_code == 1) "Asthma" else "COPD"
-    disease_data <- data_to_use %>% filter(D1.3 == disease_code)
-    
-    n_ig <- sum(disease_data$D1.4 == "ig (intervention group)", na.rm = TRUE)
-    n_cg <- sum(disease_data$D1.4 == "cg (control group)", na.rm = TRUE)
-    
-    summary_rows[[length(summary_rows) + 1]] <- data.frame(
-      Population = pop_name,
-      Disease = disease_name,
-      N = nrow(disease_data),
-      N_Intervention = n_ig,
-      N_Control = n_cg,
-      Mean_Age = mean(disease_data$D2.3_0, na.rm = TRUE),
-      Pct_Female = 100 * mean(disease_data$D2.2_0, na.rm = TRUE),
-      Mean_ACT = mean(disease_data$ACT.SCORE_0, na.rm = TRUE),
-      Mean_CCQ = mean(disease_data$CCQ.SCORE_0, na.rm = TRUE),
-      Mean_EQindex = mean(disease_data$EQindex_0, na.rm = TRUE)
-    )
-  }
-}
-
-summary_by_disease <- do.call(rbind, summary_rows)
-
-write.csv(summary_by_disease, "outputs/summary_by_disease.csv", row.names = FALSE)
-cat("Saved: outputs/summary_by_disease.csv\n")
-
-###########################################################################
-# SECTION 6: Print summaries to console
-###########################################################################
-
-cat("\n=== TABLE 1 PREVIEW (ITT, first 8 rows) ===\n")
-print(head(table1_itt, 8))
+resource_use_vars <- c(
+  "D3.10_1_0", "D3.10_2_0", "D3.10_3_0", "D3.10_4_0",
+  "D3.10_5_0", "D3.10_6_0", "D3.10_7_0", "D3.11_1_0", "D3.11_2_0"
+)
+resource_use_names <- c(
+  "D3.10_1_0" = "GP Visits",
+  "D3.10_2_0" = "Nurse Visits",
+  "D3.10_3_0" = "Therapist Visits",
+  "D3.10_4_0" = "Emergency Visits",
+  "D3.10_5_0" = "Outpatient Visits",
+  "D3.10_6_0" = "Inpatient Visits",
+  "D3.10_7_0" = "Inpatient Days",
+  "D3.11_1_0" = "Social Worker Visits",
+  "D3.11_2_0" = "Day Centre Attendance"
+)
+resource_use_summary <- generate_continuous_summary(complete_cases, resource_use_vars, resource_use_names)
+write.csv(resource_use_summary, result_path("resource_use_summary_complete_cases.csv"), row.names = FALSE)
 
 cat("\n=== MISSINGNESS PREVIEW ===\n")
 print(missingness_summary)
-
-cat("\n=== SUMMARY BY DISEASE ===\n")
-print(summary_by_disease)
 
 pipeline_phase_end(
   "03_descriptives",
@@ -304,4 +429,4 @@ pipeline_phase_end(
   "saved descriptive CSV exports"
 )
 
-cat("\n✓ R/03_descriptives.R completed successfully\n")
+cat("\nR/03_descriptives.R completed successfully\n")

@@ -17,9 +17,8 @@ $steps = @(
   "R/01_cleaning.R",
   "R/02_imputation.R",
   "R/03_descriptives.R",
-  "R/04_models.R",
   "R/04b_gee.R",
-  "R/05_cost_effectiveness_parallel.R",
+  "R/05_cost_effectiveness.R",
   "R/06_outputs.R",
   "R/07_manuscript_report.R"
 )

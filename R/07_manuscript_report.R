@@ -2,36 +2,29 @@
 # R/07_manuscript_report.R
 # Purpose: Produce a manuscript-facing results brief that is easy to scan.
 # Inputs:
-#   - outputs/models_mixed_imputed.rds
-#   - outputs/models_gee_imputed.rds
-#   - outputs/cea_models.rds
-#   - outputs/manuscript_results_effectiveness.csv
-#   - outputs/manuscript_results_cea_summary.csv
-#   - outputs/cea_model_summaries.csv
-#   - outputs/cea_bootstrap_results.csv
+#   - models/models_gee_imputed.rds
+#   - models/cea_models.rds
+#   - results/manuscript_results_summary.csv
+#   - results/cea_model_summaries.csv
+#   - results/cea_bootstrap_results.csv
 # Outputs:
-#   - outputs/manuscript_results_brief.md
-#   - outputs/manuscript_results_brief.txt
-#   - outputs/manuscript_results_overview.csv
+#   - results/manuscript_results_brief.md
 ###########################################################################
 
 source("R/utils.R")
 
 library(dplyr)
 
-if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
+ensure_artifact_dirs()
 
 pipeline_started <- pipeline_phase_start(
   "07_manuscript_report",
   "assembling a readable manuscript results brief"
 )
 
+# Read an artifact only if it exists.
 safe_read_rds <- function(path) {
   if (file.exists(path)) readRDS(path) else NULL
-}
-
-safe_read_csv <- function(path) {
-  if (file.exists(path)) read.csv(path, stringsAsFactors = FALSE) else NULL
 }
 
 fmt_num <- function(x, digits = 3) {
@@ -42,15 +35,32 @@ fmt_ci <- function(est, low, high, digits = 3) {
   paste0(fmt_num(est, digits), " [", fmt_num(low, digits), ", ", fmt_num(high, digits), "]")
 }
 
+# Pull the first matching row for the requested model family.
 pick_family_row <- function(df, family_values) {
   if (is.null(df) || nrow(df) == 0) return(NULL)
-  for (fam in family_values) {
-    row <- df[df$model %in% fam, , drop = FALSE]
-    if (nrow(row) > 0) return(row[1, , drop = FALSE])
+  adjustments <- if ("adjustment" %in% names(df)) c("adjusted", "unadjusted") else NA_character_
+  for (adj in adjustments) {
+    for (fam in family_values) {
+      row <- if ("model_family" %in% names(df)) {
+        if ("adjustment" %in% names(df)) {
+          df[df$model_family %in% fam & df$adjustment %in% adj, , drop = FALSE]
+        } else {
+          df[df$model_family %in% fam, , drop = FALSE]
+        }
+      } else {
+        if ("adjustment" %in% names(df)) {
+          df[grepl(fam, df$model) & df$adjustment %in% adj, , drop = FALSE]
+        } else {
+          df[grepl(fam, df$model), , drop = FALSE]
+        }
+      }
+      if (nrow(row) > 0) return(row[1, , drop = FALSE])
+    }
   }
   NULL
 }
 
+# Standardise the effectiveness summary columns before tabulation.
 normalize_effectiveness <- function(df, model_label) {
   if (is.null(df) || nrow(df) == 0) return(NULL)
   out <- df
@@ -62,57 +72,29 @@ normalize_effectiveness <- function(df, model_label) {
   out
 }
 
+# The brief reads directly from the current GEE artifact.
 load_effectiveness <- function() {
-  mixed_rds <- safe_read_rds("outputs/models_mixed_imputed.rds")
-  gee_rds <- safe_read_rds("outputs/models_gee_imputed.rds")
-  mixed_df <- normalize_effectiveness(
-    if (!is.null(mixed_rds)) mixed_rds$timepoint_effects else NULL,
-    "mixed_effects"
-  )
-  gee_df <- normalize_effectiveness(
-    if (!is.null(gee_rds)) gee_rds$gee_timepoint_effects else NULL,
-    "gee"
-  )
-
-  combined <- bind_rows(mixed_df, gee_df)
-  if (nrow(combined) == 0) {
-    combined <- safe_read_csv("outputs/manuscript_results_effectiveness.csv")
+  gee_rds <- safe_read_rds(model_path("models_gee_imputed.rds"))
+  if (is.null(gee_rds)) {
+    stop("Missing current GEE effectiveness artifact: ", model_path("models_gee_imputed.rds"))
   }
 
-  combined
+  gee_df <- normalize_effectiveness(gee_rds$gee_timepoint_effects, "gee")
+  gee_df
 }
 
+# The brief reads the main CEA artifact and its bundled tables.
 load_cea_summary <- function() {
-  cea_rds <- safe_read_rds("outputs/cea_models.rds")
-  summary_df <- NULL
-  comparison_df <- NULL
-  bootstrap_df <- NULL
-  accept_df <- NULL
-  model_terms_df <- NULL
-
-  if (!is.null(cea_rds)) {
-    summary_df <- cea_rds$summary
-    comparison_df <- cea_rds$cea_model_comparison
-    bootstrap_df <- cea_rds$bootstrap_results
-    accept_df <- cea_rds$acceptability_curve
-    model_terms_df <- cea_rds$model_summaries
+  cea_rds <- safe_read_rds(model_path("cea_models.rds"))
+  if (is.null(cea_rds)) {
+    stop("Missing current CEA artifact: ", model_path("cea_models.rds"))
   }
 
-  if (is.null(summary_df) || nrow(summary_df) == 0) {
-    summary_df <- safe_read_csv("outputs/cea_summary.csv")
-  }
-  if (is.null(comparison_df) || nrow(comparison_df) == 0) {
-    comparison_df <- safe_read_csv("outputs/cea_model_comparison.csv")
-  }
-  if (is.null(bootstrap_df) || nrow(bootstrap_df) == 0) {
-    bootstrap_df <- safe_read_csv("outputs/cea_bootstrap_results.csv")
-  }
-  if (is.null(accept_df) || nrow(accept_df) == 0) {
-    accept_df <- safe_read_csv("outputs/cea_acceptability_curve.csv")
-  }
-  if (is.null(model_terms_df) || nrow(model_terms_df) == 0) {
-    model_terms_df <- safe_read_csv("outputs/cea_model_summaries.csv")
-  }
+  summary_df <- cea_rds$summary
+  comparison_df <- cea_rds$cea_model_comparison
+  bootstrap_df <- cea_rds$bootstrap_results
+  accept_df <- cea_rds$acceptability_curve
+  model_terms_df <- cea_rds$model_summaries
 
   list(
     summary = summary_df,
@@ -127,7 +109,7 @@ effectiveness <- load_effectiveness()
 cea <- load_cea_summary()
 
 if (is.null(effectiveness) || nrow(effectiveness) == 0) {
-  stop("No effectiveness results were found in outputs/.")
+    stop("No effectiveness results were found in results/.")
 }
 
 effectiveness <- effectiveness %>%
@@ -136,88 +118,63 @@ effectiveness <- effectiveness %>%
     model = ifelse(model %in% c("gee", "GEE"), "gee", model)
   )
 
-timepoint_table <- effectiveness %>%
-  arrange(time, model) %>%
-  select(model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
-
-timepoint_12 <- timepoint_table %>% filter(time == 12)
-mixed_12 <- pick_family_row(timepoint_12, c("mixed_effects"))
-gee_12 <- pick_family_row(timepoint_12, c("gee"))
-
-effectiveness_overview <- data.frame(
-  section = c("effectiveness", "effectiveness", "effectiveness", "effectiveness"),
-  item = c("mixed_effects_12mo_or", "gee_12mo_or", "or_difference_mixed_minus_gee", "or_ratio_mixed_over_gee"),
-  estimate = c(
-    if (!is.null(mixed_12)) mixed_12$odds_ratio else NA_real_,
-    if (!is.null(gee_12)) gee_12$odds_ratio else NA_real_,
-    if (!is.null(mixed_12) && !is.null(gee_12)) mixed_12$odds_ratio - gee_12$odds_ratio else NA_real_,
-    if (!is.null(mixed_12) && !is.null(gee_12)) mixed_12$odds_ratio / gee_12$odds_ratio else NA_real_
-  ),
-  lower_95 = c(
-    if (!is.null(mixed_12)) mixed_12$ci_low else NA_real_,
-    if (!is.null(gee_12)) gee_12$ci_low else NA_real_,
-    NA_real_,
-    NA_real_
-  ),
-  upper_95 = c(
-    if (!is.null(mixed_12)) mixed_12$ci_high else NA_real_,
-    if (!is.null(gee_12)) gee_12$ci_high else NA_real_,
-    NA_real_,
-    NA_real_
-  ),
-  p_value = c(
-    if (!is.null(mixed_12) && "p_value" %in% names(mixed_12)) mixed_12$p_value else NA_real_,
-    if (!is.null(gee_12) && "p_value" %in% names(gee_12)) gee_12$p_value else NA_real_,
-    NA_real_,
-    NA_real_
-  ),
-  note = c(
-    "Primary mixed-effects 12-month estimate",
-    "Protocol-style GEE 12-month estimate",
-    "Difference in odds ratios",
-    "Ratio of odds ratios"
-  ),
-  stringsAsFactors = FALSE
-)
-
-add_cea_family_summary <- function(bootstrap_df, summary_df) {
-  if (!is.null(bootstrap_df) && nrow(bootstrap_df) > 0 && "model_family" %in% names(bootstrap_df)) {
-    out <- bootstrap_df %>%
-      group_by(model_family) %>%
-      summarise(
-        n_boot = n(),
-        incremental_cost = mean(incremental_cost, na.rm = TRUE),
-        cost_low = quantile(incremental_cost, 0.025, na.rm = TRUE),
-        cost_high = quantile(incremental_cost, 0.975, na.rm = TRUE),
-        incremental_qaly = mean(incremental_qaly, na.rm = TRUE),
-        qaly_low = quantile(incremental_qaly, 0.025, na.rm = TRUE),
-        qaly_high = quantile(incremental_qaly, 0.975, na.rm = TRUE),
-        icer = mean(icer, na.rm = TRUE),
-        icer_low = quantile(icer, 0.025, na.rm = TRUE),
-        icer_high = quantile(icer, 0.975, na.rm = TRUE),
-        probability_acceptable = mean((incremental_qaly * WTP_THRESHOLD_EUR_PER_QALY - incremental_cost) > 0, na.rm = TRUE),
-        .groups = "drop"
-      )
-    return(out)
-  }
-
-  if (!is.null(summary_df) && nrow(summary_df) > 0) {
-    out <- summary_df
-    if (!"model_family" %in% names(out)) out$model_family <- "overall"
-    out <- out %>%
-      filter(metric %in% c("incremental_cost", "incremental_qaly", "ICER", "probability_acceptable_at_25000")) %>%
-      rename(
-        estimate_mean = estimate,
-        lower = lower_95,
-        upper = upper_95
-      )
-    return(out)
-  }
-
-  data.frame()
+if (!"adjustment" %in% names(effectiveness)) {
+  effectiveness$adjustment <- "adjusted"
 }
 
-cea_family_summary <- add_cea_family_summary(cea$bootstrap, cea$summary)
+effectiveness$adjustment <- factor(effectiveness$adjustment, levels = c("unadjusted", "adjusted"))
+
+timepoint_table <- effectiveness %>%
+  arrange(adjustment, time, model) %>%
+  select(model_family, model, adjustment, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
+
+timepoint_12 <- timepoint_table %>% filter(time == 12)
+gee_12 <- pick_family_row(timepoint_12 %>% filter(adjustment == "adjusted"), c("gee"))
+
+effectiveness_overview <- timepoint_12 %>%
+  mutate(
+    section = "effectiveness",
+    item = paste0(model, "_", adjustment, "_12mo_or"),
+    estimate = odds_ratio,
+    lower_95 = ci_low,
+    upper_95 = ci_high,
+    note = ifelse(
+      adjustment == "adjusted",
+      "Adjusted for baseline control, age, and sex",
+      "Unadjusted model"
+    )
+  ) %>%
+  select(section, model, adjustment, item, estimate, lower_95, upper_95, any_of("p_value"), note)
+
+add_cea_family_summary <- function(summary_df) {
+  if (is.null(summary_df) || nrow(summary_df) == 0 || !"metric" %in% names(summary_df)) {
+    stop("Missing current CEA summary artifact in models/cea_models.rds.")
+  }
+
+  summary_df %>%
+    mutate(
+      model_family = if (!"model_family" %in% names(summary_df)) "mi_main" else model_family
+    ) %>%
+    select(
+      model_family,
+      metric,
+      estimate,
+      any_of(c(
+        "pooled_ci_lower",
+        "pooled_ci_upper",
+        "bootstrap_ci_lower",
+        "bootstrap_ci_upper",
+        "within_variance",
+        "between_variance",
+        "pooled_variance",
+        "pooled_std_error",
+        "n_boot",
+        "uncertainty_method"
+      ))
+    )
+}
+
+cea_family_summary <- add_cea_family_summary(cea$summary)
 cea_model_terms <- cea$model_terms
 if (!is.null(cea_model_terms) && nrow(cea_model_terms) > 0 && !("model_family" %in% names(cea_model_terms))) {
   cea_model_terms$model_family <- ifelse(grepl("^GEE", cea_model_terms$model), "gee",
@@ -225,6 +182,12 @@ if (!is.null(cea_model_terms) && nrow(cea_model_terms) > 0 && !("model_family" %
 }
 
 if (!is.null(cea_model_terms) && nrow(cea_model_terms) > 0) {
+  if (!"std_error" %in% names(cea_model_terms) && "std.error" %in% names(cea_model_terms)) {
+    cea_model_terms$std_error <- cea_model_terms$std.error
+  }
+  if (!"p_value" %in% names(cea_model_terms) && "p.value" %in% names(cea_model_terms)) {
+    cea_model_terms$p_value <- cea_model_terms$p.value
+  }
   group_terms <- cea_model_terms %>%
     filter(grepl("^group", term)) %>%
     mutate(outcome = ifelse(grepl("cost", model), "cost", "qaly"))
@@ -234,7 +197,7 @@ if (!is.null(cea_model_terms) && nrow(cea_model_terms) > 0) {
 
 if (nrow(group_terms) > 0) {
   group_terms_table <- group_terms %>%
-    select(model_family, model, outcome, term, estimate, estimate_exp, std_error, p_value)
+    select(model_family, model, outcome, term, estimate, any_of("estimate_exp"), any_of("std_error"), any_of("p_value"))
 } else {
   group_terms_table <- data.frame(
     note = "No family-split CEA term table was found in the current outputs.",
@@ -242,6 +205,7 @@ if (nrow(group_terms) > 0) {
   )
 }
 
+# Render small data frames as compact markdown tables.
 write_report_table <- function(df, digits = 3) {
   if (is.null(df) || nrow(df) == 0) return("_No results available._")
   out <- df
@@ -261,12 +225,10 @@ report_lines <- c(
   paste0("Generated: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
   "",
   "## Quick scan",
-  if (!is.null(mixed_12) && !is.null(gee_12)) {
+  if (!is.null(gee_12)) {
     paste0(
-      "- 12-month mixed-effects OR: ", fmt_ci(mixed_12$odds_ratio, mixed_12$ci_low, mixed_12$ci_high),
-      "\n- 12-month GEE OR: ", fmt_ci(gee_12$odds_ratio, gee_12$ci_low, gee_12$ci_high),
-      "\n- Mixed-effects is ", fmt_num(mixed_12$odds_ratio / gee_12$odds_ratio, 3),
-      " times the GEE OR at 12 months."
+      "\n- Adjusted 12-month GEE OR: ", fmt_ci(gee_12$odds_ratio, gee_12$ci_low, gee_12$ci_high),
+      "\n- This is the primary effectiveness analysis."
     )
   } else {
     "- Effectiveness comparison could not be fully constructed from the available model outputs."
@@ -285,13 +247,9 @@ report_lines <- c(
   write_report_table(group_terms_table)
 )
 
-md_path <- "outputs/manuscript_results_brief.md"
-txt_path <- "outputs/manuscript_results_brief.txt"
-csv_path <- "outputs/manuscript_results_overview.csv"
+md_path <- result_path("manuscript_results_brief.md")
 
 writeLines(report_lines, md_path)
-writeLines(report_lines, txt_path)
-write.csv(effectiveness_overview, csv_path, row.names = FALSE)
 
 cat(paste(report_lines, collapse = "\n"), "\n")
 

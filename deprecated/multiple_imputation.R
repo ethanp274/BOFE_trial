@@ -438,9 +438,9 @@ mira_glmm <- with(mids_data_long,
                         )
                   )
 
-mira_glmm <- as.mira(mira_glmm)
+mira_glmm <- mice::as.mira(mira_glmm)
 
-mipo_glmm <- pool(mira_glmm)
+mipo_glmm <- mice::pool(mira_glmm)
 
 summary(mipo_glmm)
 

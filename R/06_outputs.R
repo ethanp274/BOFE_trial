@@ -9,26 +9,21 @@
 #   - clean_data/all_cases_from_pipeline.csv
 #   - clean_data/complete_cases_from_pipeline.csv
 #   - clean_data/complete_cases_long_from_pipeline.csv
-#   - clean_data/complete_cases_CEA_from_pipeline.csv
-#   - outputs/manuscript_results_summary.csv
-#   - outputs/manuscript_results_effectiveness.csv
-#   - outputs/manuscript_results_cea.csv
-#   - outputs/manuscript_results_cea_summary.csv
-#   - outputs/pipeline_validation_summary.csv
+#   - results/manuscript_results_summary.csv
 ###########################################################################
 
 source("R/utils.R")
 
 library(dplyr)
 
-if (!dir.exists("clean_data")) dir.create("clean_data", showWarnings = FALSE)
-if (!dir.exists("outputs")) dir.create("outputs", showWarnings = FALSE)
+ensure_artifact_dirs()
 
 pipeline_started <- pipeline_phase_start(
   "06_outputs",
   "writing legacy-style CSV exports and manuscript summaries"
 )
 
+# Load the cleaned wide analysis sets used for validation exports.
 all_cases <- readRDS("data_processed/all_cases.rds")
 complete_cases <- readRDS("data_processed/complete_cases.rds")
 economic_data_path <- "data_processed/economic_data.rds"
@@ -50,56 +45,81 @@ if (!all(COST_SUMMARY_COLUMNS %in% names(all_cases))) {
 all_cases <- add_completeness_flags(all_cases)
 complete_cases <- add_completeness_flags(complete_cases)
 
-complete_long <- make_legacy_cea_longitudinal_data(complete_cases)
-complete_cea <- prepare_legacy_cea_patient_level(complete_cases, economic_data)
+# Rebuild the long panel only for the effectiveness export and validation checks.
+complete_long <- wide_to_analysis_long(complete_cases, analysis = "effectiveness")
+gee_results_path <- model_path("models_gee_imputed.rds")
+cea_results_path <- model_path("cea_models.rds")
 
-mixed_results_path <- "outputs/models_mixed_imputed.rds"
-gee_results_path <- "outputs/models_gee_imputed.rds"
-cea_results_path <- "outputs/cea_models.rds"
-
-if (!file.exists(mixed_results_path)) stop("Missing ", mixed_results_path, ". Run R/04_models.R first.")
 if (!file.exists(gee_results_path)) stop("Missing ", gee_results_path, ". Run R/04b_gee.R first.")
 if (!file.exists(cea_results_path)) stop("Missing ", cea_results_path, ". Run R/05_cost_effectiveness.R first.")
 
-mixed_results <- readRDS(mixed_results_path)
 gee_results <- readRDS(gee_results_path)
 cea_results <- readRDS(cea_results_path)
 pipeline_phase_info("06_outputs", "loaded effectiveness and CEA model artefacts")
 
-effectiveness_results <- bind_rows(
-  mixed_results$timepoint_effects %>% mutate(model = "mixed_effects"),
-  gee_results$gee_timepoint_effects %>% mutate(model = "gee")
-) %>%
-  select(model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
+# Keep the main summary focused on the primary GEE effectiveness result.
+effectiveness_results <- gee_results$gee_timepoint_effects %>%
+  filter(time == 12) %>%
+  select(model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
 
-effectiveness_12mo <- effectiveness_results %>%
-  filter(time == 12)
-
+# Standardise the CEA summary column names before export.
 cea_summary <- cea_results$summary
 if (!"model_family" %in% names(cea_summary)) {
   cea_summary$model_family <- NA_character_
 }
+if (!"pooled_ci_lower" %in% names(cea_summary) && "lower_95" %in% names(cea_summary)) {
+  cea_summary$pooled_ci_lower <- cea_summary$lower_95
+}
+if (!"pooled_ci_upper" %in% names(cea_summary) && "upper_95" %in% names(cea_summary)) {
+  cea_summary$pooled_ci_upper <- cea_summary$upper_95
+}
+if (!"bootstrap_ci_lower" %in% names(cea_summary) && "bootstrap_lower_95" %in% names(cea_summary)) {
+  cea_summary$bootstrap_ci_lower <- cea_summary$bootstrap_lower_95
+}
+if (!"bootstrap_ci_upper" %in% names(cea_summary) && "bootstrap_upper_95" %in% names(cea_summary)) {
+  cea_summary$bootstrap_ci_upper <- cea_summary$bootstrap_upper_95
+}
 cea_summary <- cea_summary %>%
   mutate(section = "cost_effectiveness") %>%
-  select(section, model_family, metric, estimate, lower_95, upper_95)
+  filter(metric %in% c("incremental_cost", "incremental_qaly", "ICER", "probability_acceptable_at_29000")) %>%
+  select(
+    section,
+    model_family,
+    metric,
+    estimate,
+    pooled_ci_lower,
+    pooled_ci_upper,
+    bootstrap_ci_lower,
+    bootstrap_ci_upper,
+    any_of(c(
+      "within_variance",
+      "between_variance",
+      "pooled_variance",
+      "pooled_std_error",
+      "n_boot",
+      "uncertainty_method"
+    ))
+  )
 
-cea_model_comparison <- if (!is.null(cea_results$cea_model_comparison)) {
-  cea_results$cea_model_comparison
-} else {
-  data.frame()
-}
-
+# Combine the primary effectiveness and CEA rows into one manuscript table.
 manuscript_results_summary <- bind_rows(
-  effectiveness_12mo %>%
+  effectiveness_results %>%
     transmute(
       section = "effectiveness",
-      model_family = model,
+      model_family = model_family,
+      adjustment = adjustment,
+      model = model,
+      time = time,
       metric = paste0(model, "_12mo_or"),
       estimate = odds_ratio,
-      lower_95 = ci_low,
-      upper_95 = ci_high,
-      p_value = p_value
-  ),
+      pooled_ci_lower = ci_low,
+      pooled_ci_upper = ci_high,
+      bootstrap_ci_lower = NA_real_,
+      bootstrap_ci_upper = NA_real_,
+      p_value = p_value,
+      n_imputations = n_imputations,
+      uncertainty_method = NA_character_
+    ),
   cea_summary
 )
 
@@ -108,59 +128,11 @@ pipeline_phase_info("06_outputs", "assembling manuscript-ready comparison tables
 write.csv(all_cases, "clean_data/all_cases_from_pipeline.csv", row.names = FALSE)
 write.csv(complete_cases, "clean_data/complete_cases_from_pipeline.csv", row.names = FALSE)
 write.csv(complete_long, "clean_data/complete_cases_long_from_pipeline.csv", row.names = FALSE)
-write.csv(complete_cea, "clean_data/complete_cases_CEA_from_pipeline.csv", row.names = FALSE)
-write.csv(effectiveness_results, "outputs/manuscript_results_effectiveness.csv", row.names = FALSE)
-write.csv(cea_model_comparison, "outputs/manuscript_results_cea.csv", row.names = FALSE)
-write.csv(cea_summary, "outputs/manuscript_results_cea_summary.csv", row.names = FALSE)
-write.csv(manuscript_results_summary, "outputs/manuscript_results_summary.csv", row.names = FALSE)
+write.csv(manuscript_results_summary, result_path("manuscript_results_summary.csv"), row.names = FALSE)
 
-expected_counts <- data.frame(
-  object = c("all_cases", "complete_cases", "complete_cases_long", "complete_cases_CEA"),
-  expected_n = c(835, 756, 756 * length(TIMEPOINTS), 745)
-)
-
-observed_counts <- data.frame(
-  object = c("all_cases", "complete_cases", "complete_cases_long", "complete_cases_CEA"),
-  observed_n = c(nrow(all_cases), nrow(complete_cases), nrow(complete_long), nrow(complete_cea))
-)
-
-validation_summary <- merge(expected_counts, observed_counts, by = "object", all = TRUE)
-validation_summary$matches_expected <- ifelse(
-  is.na(validation_summary$expected_n),
-  NA,
-  validation_summary$expected_n == validation_summary$observed_n
-)
-
-validation_summary <- bind_rows(
-  validation_summary,
-  data.frame(
-    object = c(
-      "all_cases_unique_patients",
-      "complete_cases_unique_patients",
-      "missing_controlled_12_all_cases",
-      "missing_EQindex_12_all_cases"
-    ),
-    expected_n = c(835, 756, NA_integer_, NA_integer_),
-    observed_n = c(
-      n_distinct(all_cases$D1.2),
-      n_distinct(complete_cases$D1.2),
-      sum(is.na(all_cases$controlled_12)),
-      sum(is.na(all_cases$EQindex_12))
-    ),
-    matches_expected = c(
-      n_distinct(all_cases$D1.2) == 835,
-      n_distinct(complete_cases$D1.2) == 756,
-      NA,
-      NA
-    )
-  )
-)
-
-write.csv(validation_summary, "outputs/pipeline_validation_summary.csv", row.names = FALSE)
-
-cat("06_outputs: saved legacy-style CSV exports and validation summary.\n")
+cat("06_outputs: saved manuscript outputs.\n")
 pipeline_phase_end(
   "06_outputs",
   pipeline_started,
-  "saved manuscript outputs and validation summary"
+  "saved manuscript outputs"
 )
