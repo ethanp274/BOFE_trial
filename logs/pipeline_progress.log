@@ -1103,3 +1103,11 @@
 [2026-06-02 17:06:00] [INFO] smoke_tests - building imputation frame without running MICE 
 [2026-06-02 17:06:00] [INFO] smoke_tests - checking optional canonical artifacts 
 [2026-06-02 17:06:00] [DONE] smoke_tests - smoke tests passed (elapsed 1.9s) 
+[2026-06-02 17:11:55] [START] smoke_tests - running fast validation checks 
+[2026-06-02 17:11:55] [INFO] smoke_tests - checking canonical cleaning stage 
+[2026-06-02 17:11:56] [START] 01_cleaning - reading raw questionnaire and cost files 
+[2026-06-02 17:11:56] [INFO] 01_cleaning - loading baseline and follow-up questionnaires 
+[2026-06-02 17:11:57] [DONE] 01_cleaning - saved canonical cleaning artifact (elapsed 1.3s) 
+[2026-06-02 17:11:57] [INFO] smoke_tests - building imputation frame without running MICE 
+[2026-06-02 17:11:57] [INFO] smoke_tests - checking optional canonical artifacts 
+[2026-06-02 17:11:57] [DONE] smoke_tests - smoke tests passed (elapsed 1.5s) 
