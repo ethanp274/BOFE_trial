@@ -27,15 +27,33 @@ main_imputation_artifact <- read_canonical_artifact("imputation")
 # Refresh the sensitivity imputation objects from the current clean wide frame.
 trial_df <- cleaning_artifact$all_cases
 df_impute <- build_imputation_wide_frame(trial_df)
-basic_mids <- run_basic_mice_imputation(df_impute)
-simple_branch <- run_simple_within_arm_imputation(df_impute)
+
+basic_source_cols <- if (all(c("effectiveness_df_impute", "cea_df_impute") %in% names(main_imputation_artifact))) {
+  unique(c(names(main_imputation_artifact$effectiveness_df_impute), names(main_imputation_artifact$cea_df_impute)))
+} else {
+  names(df_impute)
+}
+df_impute_basic <- df_impute[, intersect(basic_source_cols, names(df_impute)), drop = FALSE]
+basic_mids <- run_basic_mice_imputation(df_impute_basic)
+simple_branch <- run_simple_within_arm_imputation(df_impute_basic)
 simple_imputed <- simple_branch$data
-imputation_variant_summary <- write_imputation_variant_summary(df_impute, simple_imputed)
+imputation_variant_summary <- write_imputation_variant_summary(df_impute_basic, simple_imputed)
 
 # Keep the main effectiveness artefacts for the full variant, and compute the
 # alternative variants directly in-process so the runner stays filesystem-light.
+effectiveness_full_mids <- if ("effectiveness_mids" %in% names(main_imputation_artifact)) {
+  main_imputation_artifact$effectiveness_mids
+} else {
+  main_imputation_artifact$full_mids
+}
+cea_full_mids <- if ("cea_mids" %in% names(main_imputation_artifact)) {
+  main_imputation_artifact$cea_mids
+} else {
+  main_imputation_artifact$full_mids
+}
+
 variant_imputations <- list(
-  full = main_imputation_artifact$full_mids,
+  full = effectiveness_full_mids,
   basic = basic_mids$mids,
   simple = simple_imputed,
   complete_cases = cleaning_artifact$complete_cases
@@ -159,7 +177,7 @@ tariff_sensitivity <- method_config("economics", "tariff_sensitivity")
 tariff_sensitivity_label <- paste0(tariff_sensitivity, "_eq5d_tariff")
 uk_tariff_summary <- tryCatch({
   uk_cea <- run_nested_mi_cea_branch(
-    mids_obj = main_imputation_artifact$full_mids,
+    mids_obj = cea_full_mids,
     branch_label = tariff_sensitivity_label,
     tariff = tariff_sensitivity,
     economic_data = economic_data,

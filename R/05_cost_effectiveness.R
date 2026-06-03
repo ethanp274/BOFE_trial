@@ -31,7 +31,7 @@ if (!is.finite(bootstrap_iterations) || bootstrap_iterations < 1L) {
 
 # Fit the main MI CEA branch with a bootstrap that is nested inside the imputations.
 main_results <- run_nested_mi_cea_branch(
-  mids_obj = imputation_artifact$full_mids,
+  mids_obj = if ("cea_mids" %in% names(imputation_artifact)) imputation_artifact$cea_mids else imputation_artifact$full_mids,
   branch_label = "mi_main",
   intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
   tariff = method_config("economics", "main_eq5d_tariff"),

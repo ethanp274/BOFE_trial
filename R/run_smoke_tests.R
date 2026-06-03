@@ -75,8 +75,13 @@ if (file.exists(canonical_artifact_path("imputation"))) {
   if (!isTRUE(skip_cea)) {
     cea_smoke <- NULL
     add_checks(run_validation_check("smoke: tiny nested CEA bootstrap", {
+      cea_mids <- if ("cea_mids" %in% names(imputation_artifact)) {
+        imputation_artifact$cea_mids
+      } else {
+        imputation_artifact$full_mids
+      }
       cea_smoke <<- run_nested_mi_cea_branch(
-        mids_obj = imputation_artifact$full_mids,
+        mids_obj = cea_mids,
         branch_label = "smoke_cea",
         bootstrap_iterations = cea_bootstraps,
         cost_family = method_config("economics", "main_cost_family")

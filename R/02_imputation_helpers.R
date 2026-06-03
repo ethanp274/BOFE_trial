@@ -52,7 +52,7 @@ build_mice_methods <- function(df) {
     }
 
     x <- df[[nm]]
-    if (all(is.na(x))) {
+    if (all(is.na(x)) || all(!is.na(x))) {
       methods[[nm]] <- ""
     } else if (is.numeric(x)) {
       methods[[nm]] <- method_config("imputation", "numeric_method")
@@ -67,6 +67,39 @@ build_mice_methods <- function(df) {
     }
   }
   methods
+}
+
+build_branch_mice_inputs <- function(df_impute, branch = c("effectiveness", "cea")) {
+  branch <- match.arg(branch)
+  branch_df <- build_imputation_branch_frame(df_impute, branch = branch)
+  predictor_matrix <- build_analytic_mice_predictors(branch_df, branch = branch)
+  quickpred_matrix <- build_quickpred_matrix(branch_df)
+  methods <- build_mice_methods(branch_df)
+  predictor_audit <- summarise_mice_predictors(branch_df, predictor_matrix, methods) %>%
+    arrange(timepoint, variable)
+  quickpred_comparison <- compare_imputation_predictor_matrices(
+    analytic_matrix = predictor_matrix,
+    quickpred_matrix = quickpred_matrix,
+    df = branch_df,
+    branch = branch
+  )
+  quickpred_summary <- summarise_predictor_matrix_comparison(
+    quickpred_comparison,
+    predictor_matrix,
+    quickpred_matrix,
+    branch = branch
+  )
+
+  list(
+    branch = branch,
+    df = branch_df,
+    predictor_matrix = predictor_matrix,
+    quickpred_matrix = quickpred_matrix,
+    methods = methods,
+    predictor_audit = predictor_audit,
+    quickpred_comparison = quickpred_comparison,
+    quickpred_summary = quickpred_summary
+  )
 }
 
 run_arm_split_mice <- function(
@@ -121,20 +154,69 @@ run_arm_split_mice <- function(
   )
 }
 
-run_full_mice_imputation <- function(df_impute, out_dir = "data_processed") {
-  pipeline_phase_info("02_imputation", "running the full chained MICE with all available predictors")
-  pred_matrix_full <- build_time_aware_mice_predictors(df_impute, id_col = "patient", group_col = "group")
-  methods_full <- build_mice_methods(df_impute)
+run_analytic_mice_imputation <- function(
+    df_impute,
+    branch = c("effectiveness", "cea"),
+    out_dir = "data_processed",
+    write_first_completion = FALSE) {
+  branch <- match.arg(branch)
+  branch_inputs <- build_branch_mice_inputs(df_impute, branch = branch)
 
-  run_arm_split_mice(
+  pipeline_phase_info(
+    "02_imputation",
+    sprintf(
+      "running %s MICE: %d variables, %d imputed targets, %d predictor links",
+      branch,
+      ncol(branch_inputs$df),
+      sum(branch_inputs$methods != ""),
+      sum(branch_inputs$predictor_matrix != 0)
+    )
+  )
+
+  mids_branch <- run_arm_split_mice(
+    df_impute = branch_inputs$df,
+    predictor_matrix = branch_inputs$predictor_matrix,
+    methods = branch_inputs$methods,
+    seed = if (branch == "effectiveness") method_config("imputation", "full_seed") else method_config("imputation", "full_seed") + 1000L,
+    output_prefix = paste0("mids_imputation_", branch),
+    out_dir = out_dir,
+    write_first_completion = write_first_completion
+  )
+
+  c(
+    branch_inputs,
+    list(
+      mids = mids_branch$mids,
+      diagnostics = mids_branch$diagnostics,
+      first_completion = mids_branch$first_completion
+    )
+  )
+}
+
+run_effectiveness_mice_imputation <- function(df_impute, out_dir = "data_processed") {
+  run_analytic_mice_imputation(
     df_impute = df_impute,
-    predictor_matrix = pred_matrix_full,
-    methods = methods_full,
-    seed = method_config("imputation", "full_seed"),
-    output_prefix = "mids_imputation_full",
+    branch = "effectiveness",
     out_dir = out_dir,
     write_first_completion = TRUE
   )
+}
+
+run_cea_mice_imputation <- function(df_impute, out_dir = "data_processed") {
+  run_analytic_mice_imputation(
+    df_impute = df_impute,
+    branch = "cea",
+    out_dir = out_dir,
+    write_first_completion = TRUE
+  )
+}
+
+run_full_mice_imputation <- function(df_impute, out_dir = "data_processed") {
+  pipeline_phase_info(
+    "02_imputation",
+    "run_full_mice_imputation() is retained as a compatibility wrapper for the primary effectiveness branch"
+  )
+  run_effectiveness_mice_imputation(df_impute, out_dir = out_dir)
 }
 
 run_basic_mice_imputation <- function(df_impute, out_dir = "data_processed") {

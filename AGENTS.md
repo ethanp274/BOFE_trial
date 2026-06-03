@@ -28,14 +28,14 @@ Current pipeline status:
 - Trained model artefacts are stored in `models/`; tables, summaries, and audits are stored in `results/`; runtime logs are stored in `logs/`.
 - `R/01_cleaning.R` reads only raw questionnaire `.sav` files and raw cost `.csv` files, then writes `data_processed/cleaning_artifact.rds` as the canonical cleaning artifact.
 - `R/utils.R` is now a compatibility loader for focused helper modules rather than a monolithic utility file.
-- `R/00_contracts.R` defines explicit contracts for the canonical wide analysis data, economic cost summaries, MICE wide frames, effectiveness long frames, and CEA patient-level frames.
+- `R/00_contracts.R` defines explicit contracts for the canonical wide analysis data, economic cost summaries, canonical/branch-specific MICE wide frames, effectiveness long frames, and CEA patient-level frames.
 - `R/00_methods_config.R` is the central source of truth for method choices and rationale notes, including outcome thresholds, imputation rules, effectiveness model family/covariates, CEA cost family, EQ-5D tariffs, intervention cost, WTP threshold, bootstrap counts, and sensitivity settings.
 - `R/cost_helpers.R::build_economic_data()` collapses the raw monthly cost panels into half-year `cost_*` summary columns plus explicit cost-source flags. Patients present in any raw cost file are `cost_complete`; absent cost categories are set to zero for those patients, while invalid in-file period values such as F-file `9999` keep the affected half-year summary as `NA` for imputation.
-- `R/02_imputation.R` builds one wide MICE frame using the configured imputation settings and writes `data_processed/imputation_artifact.rds` as the canonical imputation artifact. Sensitivity imputation variants now live inside `results/sensitivity_analyses_artifact.rds` when `R/08_sensitivity_analyses.R` is run.
+- `R/02_imputation.R` builds one canonical wide imputation source, derives separate effectiveness and CEA MICE frames, runs 20 arm-split imputations per branch, and writes `data_processed/imputation_artifact.rds` as the canonical imputation artifact. It also writes readable predictor-selection and `mice::quickpred()` comparison audits in `audit/`. Sensitivity imputation variants live inside `results/sensitivity_analyses_artifact.rds` when `R/08_sensitivity_analyses.R` is run.
 - `R/04b_gee.R` reconstructs each imputation explicitly through the shared effectiveness helper and fits the configured primary effectiveness model.
 - `R/04_models.R` reconstructs each imputation explicitly through the same shared helper and fits the configured mixed-effects sensitivity model.
 - `R/03_descriptives.R` writes `results/descriptives_artifact.rds`, bundling the analyzed-population baseline table, disease-aware missingness summary, cost summary, and resource-use summary.
-- `R/05_cost_effectiveness.R` uses the complex-MICE imputed wide cohort for the configured main CEA branch, runs a nested bootstrap that resamples the same patients across all imputations within each draw, and writes `models/cea_artifact.rds`.
+- `R/05_cost_effectiveness.R` uses the CEA-specific MICE object from `data_processed/imputation_artifact.rds`, runs a nested bootstrap that resamples the same patients across all imputations within each draw, and writes `models/cea_artifact.rds`.
 - `R/08_sensitivity_analyses.R` contains the configured secondary effectiveness and CEA sensitivity analyses, including alternate imputation variants, intervention-cost sweeps, and EQ-5D tariff sensitivity.
 - `R/06_outputs.R` writes `results/manuscript_outputs_artifact.rds`, and `R/07_manuscript_report.R` writes `results/manuscript_report_artifact.rds`; both fail fast if the canonical upstream artifacts are missing.
 - `R/validation_helpers.R` contains reusable fast checks for canonical artifacts, and `R/run_smoke_tests.R` runs the lightweight debugging suite, writing `results/smoke_test_artifact.rds`.
@@ -44,7 +44,7 @@ Current pipeline status:
 - The manuscript summary labels uncertainty explicitly with `pooled_ci_lower` / `pooled_ci_upper` and `bootstrap_ci_lower` / `bootstrap_ci_upper`.
 - `R/05_cost_effectiveness.R` now keeps the complex-MICE wide-imputed CEA branch as the main path; secondary CEA scenarios live in `R/08_sensitivity_analyses.R` and there is no long-form CEA audit path.
 - `R/07_manuscript_report.R` writes a human-readable manuscript brief bundle from the current GEE effectiveness artifact and the main CEA artifact, without adding CSV duplicates.
-- `R/05_cost_effectiveness.R` now uses the complex-MICE imputed wide cohort for the main CEA branch and does not fit a CEA GEE branch.
+- `R/05_cost_effectiveness.R` now uses the CEA-specific MICE object for the main CEA branch and does not fit a CEA GEE branch.
 
 ---
 
@@ -143,7 +143,8 @@ Key manuscript description: :contentReference[oaicite:4]{index=4}
 
 ## Outcome data
 - Multiple imputation by chained equations (MICE), with exact settings declared in `R/00_methods_config.R`
-- Current configured main branch uses arm-split imputation, time-aware predictors to avoid later-to-earlier leakage, and PMM for numeric variables
+- Current configured primary effectiveness branch uses arm-split imputation, time-aware predictors to avoid later-to-earlier leakage, and PMM/logistic/polyreg methods as appropriate
+- The effectiveness MICE frame is deliberately parsimonious: selected baseline covariates, `controlled_*`, and `EQindex_*`; costs, raw EQ-5D items, adherence variables, and sparse resource-use auxiliaries are excluded
 
 Variables used:
 - sex
@@ -152,8 +153,9 @@ Variables used:
 - prior outcome values
 
 ## Cost data
-- Included in the main MICE stage as canonical half-year cost summaries
+- Imputed in a separate CEA branch using selected baseline covariates, `controlled_*`, raw `EQ5D5L.*` item columns, and canonical half-year cost summaries
 - Cost missingness follows the legacy regression CEA cohort definition: source-present patients are cost-complete even when some categories are absent; absent categories are zero-cost categories, while invalid in-file period values such as medication-file `9999` remain imputation targets
+- Sparse questionnaire resource-use auxiliaries are excluded from the primary CEA imputation because raw cost files are the canonical cost source
 - Secondary cost analyses are isolated in `R/08_sensitivity_analyses.R`
 
 Reason:
@@ -540,14 +542,13 @@ Use this space to create a running list of brief summaries of each action taken 
 - 2026-06-02: Added `R/00_methods_config.R` as the central method-configuration file and moved hard-coded method choices/rationale notes into it, including outcome thresholds, structural-zero/manual-cleaning rules, imputation methods/seeds, effectiveness model formulas/defaults, CEA cost family/tariffs/bootstrap settings, environment override names, and validation thresholds. Updated constants/scripts/helpers to derive those values from the config.
 - 2026-06-03: Restored and refined the legacy cost-completeness rule in `R/cost_helpers.R` and `R/00_methods_config.R`: patients present in any raw cost file are cost-complete, absent cost categories are zero-filled, patients absent from every raw cost file retain missing cost summaries, and invalid in-file period values such as medication-file `9999` remain missing for imputation. Re-ran `R/01_cleaning.R` and `R/02_imputation.R`; all_cases has 822 cost-complete patients, 13 no-source patients, 28 source-present period-summary cells still requiring imputation, and 158 cost-summary cells to impute overall. `R/run_smoke_tests.R` passed with 30 checks and 1 optional sensitivity skip.
 - 2026-06-03: Audited `data_processed/`, `models/`, and `results/` against the canonical artifact map. Removed 44 stale untracked sidecar artifacts plus 5 downstream canonical artifacts generated before the cost/imputation correction, then restored an explicit export layer so fresh stage reruns produce necessary CSV/Markdown deliverables for plots, tables, CEA planes, acceptability curves, and sensitivity comparisons. The rule is now: canonical RDS artifacts are the source of truth, while named CSV/Markdown exports generated from current artifacts are expected deliverables, not clutter.
+- 2026-06-03: Replaced the broad full-MICE predictor matrix with explicit branch-specific imputation policies. `R/02_imputation.R` now derives a parsimonious effectiveness MICE frame and a CEA-specific cost/EQ-5D frame from the same canonical source, writes variable-selection and `mice::quickpred()` comparison audits, and stores both `effectiveness_mids` and `cea_mids` in `data_processed/imputation_artifact.rds`. Re-ran `R/02_imputation.R`, `R/04b_gee.R`, `R/05_cost_effectiveness.R`, `R/06_outputs.R`, and `R/07_manuscript_report.R`; smoke tests passed with 38 checks and 1 optional sensitivity skip. Current adjusted 12-month GEE OR is 1.375 (95% CI 0.986 to 1.918), and current main CEA incremental cost is about -112 euros with 5000 bootstrap rows.
 
 Next steps:
-1. Re-run `source("R/02_imputation.R")` and confirm `data_processed/imputation_artifact.rds` contains the full MICE object, missingness report, predictor audit, diagnostics, and first completed dataset.
-2. Run `R/08_sensitivity_analyses.R` and confirm it creates `results/sensitivity_analyses_artifact.rds` with the basic/simple imputation sensitivity objects and the secondary CEA/effectiveness summaries.
-3. Re-run `R/05_cost_effectiveness.R` on its own first and confirm `models/cea_artifact.rds` contains the complex-MICE main CEA branch.
-4. If that succeeds, run the full pipeline in order via `.\run_full_pipeline.ps1`.
-5. Run `Rscript R/run_smoke_tests.R` before and after expensive stages to catch shape or artifact regressions quickly.
-6. Then compare `results/manuscript_outputs_artifact.rds` and `results/manuscript_report_artifact.rds` against the manuscript draft.
+1. Run `R/08_sensitivity_analyses.R` when ready to refresh the optional sensitivity artifact under the new imputation-source design; it is intentionally skipped by the latest smoke pass because it is expensive.
+2. Compare `results/model_gee_timepoint_effects.csv`, `results/cea_summary.csv`, `results/manuscript_results_summary.csv`, and `results/manuscript_results_brief.md` against the manuscript draft before changing reported text.
+3. Use `Rscript R/run_smoke_tests.R` before and after expensive stages to catch shape or artifact regressions quickly.
+4. If a full end-to-end rerun is needed, run `.\run_full_pipeline.ps1` from the project root.
 
 ## Handoff summary for next agent
 

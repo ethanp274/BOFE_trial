@@ -56,6 +56,34 @@ BOFE_DATA_CONTRACTS <- list(
       "Imputation and tariff-sensitivity method choices are declared in R/00_methods_config.R."
     )
   ),
+  effectiveness_imputation_wide = list(
+    description = "Primary effectiveness MICE frame derived from the canonical imputation source.",
+    row_grain = "One row per ITT patient.",
+    unique_key = "patient",
+    required_columns = c(
+      "patient", "condition", "group", "gender", "age",
+      contract_controlled_columns,
+      contract_eqindex_columns
+    ),
+    notes = c(
+      "Cost summaries, raw EQ-5D item columns, sparse resource-use auxiliaries, and adherence variables are excluded from the primary effectiveness imputation.",
+      "The branch-specific predictor matrix is analysis-specific and time-aware."
+    )
+  ),
+  cea_imputation_wide = list(
+    description = "CEA MICE frame derived from the canonical imputation source.",
+    row_grain = "One row per ITT patient.",
+    unique_key = "patient",
+    required_columns = c(
+      "patient", "condition", "group", "gender", "age", "controlled_0",
+      contract_eq5d_item_columns,
+      COST_SUMMARY_COLUMNS
+    ),
+    notes = c(
+      "Raw EQ-5D items are imputed so EQindex and QALYs can be recomputed under configured tariffs.",
+      "Canonical half-year cost summaries are imputed in this branch; sparse questionnaire resource-use auxiliaries are excluded."
+    )
+  ),
   effectiveness_long = list(
     description = "Long repeated-measures frame used by GEE and mixed-effects effectiveness models.",
     row_grain = "One row per patient-time observation.",

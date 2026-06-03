@@ -16,7 +16,11 @@ load_effectiveness_imputation <- function(imputation_variant) {
   }
 
   if (imputation_variant == "full") {
-    return(read_canonical_artifact("imputation")$full_mids)
+    imputation_artifact <- read_canonical_artifact("imputation")
+    if ("effectiveness_mids" %in% names(imputation_artifact)) {
+      return(imputation_artifact$effectiveness_mids)
+    }
+    return(imputation_artifact$full_mids)
   }
 
   if (imputation_variant == "complete_cases") {

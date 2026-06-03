@@ -173,28 +173,71 @@ validate_imputation_frame <- function(df_impute) {
   )
 }
 
+validate_imputation_branch_frame <- function(df, branch = c("effectiveness", "cea")) {
+  branch <- match.arg(branch)
+  combine_validation_reports(
+    run_validation_check(paste0("imputation ", branch, " frame: required columns"), {
+      assert_data_contract(df, paste0(branch, "_imputation_wide"))
+      paste(nrow(df), "rows and", ncol(df), "columns")
+    }),
+    run_validation_check(paste0("imputation ", branch, " frame: no resource-use auxiliaries"), {
+      resource_cols <- grep(imputation_resource_pattern(), names(df), value = TRUE)
+      if (length(resource_cols) > 0) {
+        stop("resource-use columns found: ", paste(head(resource_cols, 10), collapse = ", "))
+      }
+      "no resource-use columns"
+    }),
+    run_validation_check(paste0("imputation ", branch, " frame: branch-specific cost policy"), {
+      cost_cols <- intersect(COST_SUMMARY_COLUMNS, names(df))
+      if (branch == "effectiveness" && length(cost_cols) > 0) {
+        stop("effectiveness imputation contains cost columns: ", paste(cost_cols, collapse = ", "))
+      }
+      if (branch == "cea" && length(cost_cols) != length(COST_SUMMARY_COLUMNS)) {
+        stop("CEA imputation is missing cost columns: ", paste(setdiff(COST_SUMMARY_COLUMNS, cost_cols), collapse = ", "))
+      }
+      "cost-column policy satisfied"
+    })
+  )
+}
+
 validate_imputation_artifact <- function(artifact = read_canonical_artifact("imputation")) {
   combine_validation_reports(
     run_validation_check("imputation artifact: required bundle fields", {
       required <- c(
-        "df_impute", "full_mids", "full_predictor_matrix", "full_methods",
-        "full_predictor_audit", "full_diagnostics", "missingness_report"
+        "df_impute", "selection_profile",
+        "effectiveness_df_impute", "effectiveness_mids", "effectiveness_predictor_matrix",
+        "effectiveness_methods", "effectiveness_predictor_audit", "effectiveness_diagnostics",
+        "cea_df_impute", "cea_mids", "cea_predictor_matrix",
+        "cea_methods", "cea_predictor_audit", "cea_diagnostics",
+        "quickpred_summary", "quickpred_comparison", "missingness_report"
       )
       missing <- setdiff(required, names(artifact))
       if (length(missing) > 0) stop("missing fields: ", paste(missing, collapse = ", "))
       "required fields present"
     }),
     validate_imputation_frame(artifact$df_impute),
-    run_validation_check("imputation artifact: MICE object", {
-      if (!inherits(artifact$full_mids, "mids")) stop("full_mids is not a mice mids object.")
-      paste(artifact$full_mids$m, "imputations")
+    validate_imputation_branch_frame(artifact$effectiveness_df_impute, "effectiveness"),
+    validate_imputation_branch_frame(artifact$cea_df_impute, "cea"),
+    run_validation_check("imputation artifact: effectiveness MICE object", {
+      if (!inherits(artifact$effectiveness_mids, "mids")) stop("effectiveness_mids is not a mice mids object.")
+      paste(artifact$effectiveness_mids$m, "imputations")
     }),
-    run_validation_check("imputation artifact: cost predictor exclusion", {
-      validate_cost_predictor_exclusion(artifact$full_predictor_matrix)
-      "cost summaries do not predict non-cost targets"
+    run_validation_check("imputation artifact: CEA MICE object", {
+      if (!inherits(artifact$cea_mids, "mids")) stop("cea_mids is not a mice mids object.")
+      paste(artifact$cea_mids$m, "imputations")
     }),
-    run_validation_check("imputation artifact: no future predictors", {
-      validate_no_future_predictors(artifact$full_predictor_audit)
+    run_validation_check("imputation artifact: effectiveness has no cost predictors", {
+      if (any(COST_SUMMARY_COLUMNS %in% colnames(artifact$effectiveness_predictor_matrix))) {
+        stop("effectiveness predictor matrix contains cost columns.")
+      }
+      "cost summaries excluded from effectiveness imputation"
+    }),
+    run_validation_check("imputation artifact: effectiveness no future predictors", {
+      validate_no_future_predictors(artifact$effectiveness_predictor_audit)
+      "no future-timepoint predictors"
+    }),
+    run_validation_check("imputation artifact: CEA no future predictors", {
+      validate_no_future_predictors(artifact$cea_predictor_audit)
       "no future-timepoint predictors"
     })
   )
