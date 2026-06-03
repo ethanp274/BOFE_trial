@@ -89,6 +89,33 @@ all_cases <- add_analysis_derivations(survey_data)
 economic_data <- build_economic_data(raw_dir)
 complete_cases <- attach_cost_summaries(complete_cases, economic_data)
 all_cases <- attach_cost_summaries(all_cases, economic_data)
+cost_completeness_summary <- data.frame(
+  cohort = c("all_cases", "complete_cases", "economic_data"),
+  n_rows = c(nrow(all_cases), nrow(complete_cases), nrow(economic_data)),
+  cost_complete = c(sum(all_cases$cost_complete), sum(complete_cases$cost_complete), sum(economic_data$cost_complete)),
+  no_raw_cost_source = c(sum(!all_cases$cost_complete), sum(!complete_cases$cost_complete), sum(!economic_data$cost_complete)),
+  medication_file_present = c(
+    sum(all_cases$cost_medication_file_present),
+    sum(complete_cases$cost_medication_file_present),
+    sum(economic_data$cost_medication_file_present)
+  ),
+  source_present_missing_cost_summary_cells = c(
+    sum(is.na(all_cases[all_cases$cost_complete, COST_SUMMARY_COLUMNS, drop = FALSE])),
+    sum(is.na(complete_cases[complete_cases$cost_complete, COST_SUMMARY_COLUMNS, drop = FALSE])),
+    sum(is.na(economic_data[economic_data$cost_complete, COST_SUMMARY_COLUMNS, drop = FALSE]))
+  ),
+  no_source_missing_cost_summary_cells = c(
+    sum(is.na(all_cases[!all_cases$cost_complete, COST_SUMMARY_COLUMNS, drop = FALSE])),
+    sum(is.na(complete_cases[!complete_cases$cost_complete, COST_SUMMARY_COLUMNS, drop = FALSE])),
+    sum(is.na(economic_data[!economic_data$cost_complete, COST_SUMMARY_COLUMNS, drop = FALSE]))
+  ),
+  missing_cost_summary_cells = c(
+    sum(is.na(all_cases[, COST_SUMMARY_COLUMNS, drop = FALSE])),
+    sum(is.na(complete_cases[, COST_SUMMARY_COLUMNS, drop = FALSE])),
+    sum(is.na(economic_data[, COST_SUMMARY_COLUMNS, drop = FALSE]))
+  ),
+  stringsAsFactors = FALSE
+)
 
 complete_cases <- standardize_core_identifiers(complete_cases)
 all_cases <- standardize_core_identifiers(all_cases)
@@ -102,6 +129,7 @@ cleaning_artifact <- list(
   all_cases = all_cases,
   complete_cases = complete_cases,
   economic_data = economic_data,
+  cost_completeness_summary = cost_completeness_summary,
   contracts = c("analysis_wide", "economic_cost_summary")
 )
 write_canonical_artifact("cleaning", cleaning_artifact)

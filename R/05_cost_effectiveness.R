@@ -53,10 +53,15 @@ pipeline_phase_info(
 )
 
 write_canonical_artifact("cea", main_results)
+write_result_csv(main_results$bootstrap_results, "cea_bootstrap_results.csv")
+write_result_csv(main_results$acceptability_curve, "cea_acceptability_curve.csv")
+write_result_csv(main_results$summary, "cea_summary.csv")
+write_result_csv(main_results$model_summaries, "cea_model_summaries.csv")
+write_result_csv(main_results$cea_model_comparison, "cea_model_comparison.csv")
 
-cat("05_cost_effectiveness: saved canonical CEA artifact.\n")
+cat("05_cost_effectiveness: saved canonical CEA artifact and CEA CSV exports.\n")
 pipeline_phase_end(
   "05_cost_effectiveness",
   pipeline_started,
-  "saved canonical CEA artifact"
+  "saved canonical CEA artifact and CEA CSV exports"
 )

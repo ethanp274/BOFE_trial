@@ -240,10 +240,11 @@ write_canonical_artifact(
   )
 )
 
+write_result_text(report_lines, "manuscript_results_brief.md")
 cat(paste(report_lines, collapse = "\n"), "\n")
 
 pipeline_phase_end(
   "07_manuscript_report",
   pipeline_started,
-  "saved canonical manuscript report artifact"
+  "saved canonical manuscript report artifact and Markdown brief"
 )

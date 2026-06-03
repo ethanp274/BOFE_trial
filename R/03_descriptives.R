@@ -421,6 +421,10 @@ descriptives_artifact <- list(
   resource_use_summary = resource_use_summary
 )
 write_canonical_artifact("descriptives", descriptives_artifact)
+write_result_csv(table1_analyzed, "table1_complete_cases_characteristics.csv")
+write_result_csv(missingness_summary, "missingness_summary.csv")
+write_result_csv(cost_summary, "cost_summary_complete_cases.csv")
+write_result_csv(resource_use_summary, "resource_use_summary_complete_cases.csv")
 
 cat("\n=== MISSINGNESS PREVIEW ===\n")
 print(missingness_summary)

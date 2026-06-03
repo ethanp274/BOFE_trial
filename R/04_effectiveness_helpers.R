@@ -243,6 +243,8 @@ run_mixed_effectiveness_analysis <- function(
 
   if (isTRUE(write_outputs)) {
     write_canonical_artifact("effectiveness_mixed", result)
+    write_result_csv(result$pooled_summary, "model_mixed_summaries.csv")
+    write_result_csv(result$timepoint_effects, "model_mixed_timepoint_effects.csv")
   }
 
   result
@@ -452,6 +454,8 @@ run_gee_effectiveness_analysis <- function(
 
   if (isTRUE(write_outputs)) {
     write_canonical_artifact("effectiveness_gee", result)
+    write_result_csv(result$gee_pooled_summary, "model_gee_summaries.csv")
+    write_result_csv(result$gee_timepoint_effects, "model_gee_timepoint_effects.csv")
   }
 
   result

@@ -17,12 +17,14 @@ BOFE_DATA_CONTRACTS <- list(
     unique_key = "patient",
     required_columns = c(
       "patient", "pharmacy", "condition", "group", "gender", "age",
+      "cost_complete",
       contract_controlled_columns,
       contract_eqindex_columns,
       COST_SUMMARY_COLUMNS
     ),
     notes = c(
       "Cost columns are half-year summary totals, not monthly panel columns.",
+      "cost_complete records whether a patient appeared in at least one raw economic cost file.",
       "Disease-specific outcome columns may be structurally missing; endpoint definitions are declared in R/00_methods_config.R."
     )
   ),
@@ -30,9 +32,12 @@ BOFE_DATA_CONTRACTS <- list(
     description = "Canonical cost-summary frame created from raw monthly cost CSVs.",
     row_grain = "One row per patient with half-year cost summaries.",
     unique_key = "patient",
-    required_columns = c("patient", COST_SUMMARY_COLUMNS),
+    required_columns = c("patient", "cost_complete", "cost_medication_file_present", COST_SUMMARY_COLUMNS),
     notes = c(
-      "Only half-year cost summaries should leave build_economic_data().",
+      "Only patient-level cost-completeness metadata and half-year cost summaries should leave build_economic_data().",
+      "Patients present in any raw cost file are cost_complete; absent cost categories for those patients are structural zero-cost categories.",
+      "Invalid in-file period values such as 9999 remain NA so the affected half-year summary can be imputed.",
+      "Patients absent from every raw cost file retain missing cost summaries after attachment to the analysis cohort.",
       "Raw monthly cost panels should not be carried downstream."
     )
   ),

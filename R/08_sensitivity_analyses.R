@@ -209,10 +209,14 @@ sensitivity_artifact <- list(
   uk_tariff_summary = uk_tariff_summary
 )
 write_canonical_artifact("sensitivity", sensitivity_artifact)
+write_result_csv(effectiveness_sensitivity, "effectiveness_sensitivity_summary.csv")
+write_result_csv(cea_sensitivity_summary, "cea_sensitivity_summary.csv")
+write_result_csv(cea_cost_sensitivity, "cea_cost_sensitivity_summary.csv")
+write_result_csv(uk_tariff_summary, "cea_tariff_sensitivity_summary.csv")
 
 pipeline_phase_info("08_sensitivity_analyses", "sensitivity analyses complete")
 pipeline_phase_end(
   "08_sensitivity_analyses",
   pipeline_started,
-  "saved canonical sensitivity artifact"
+  "saved canonical sensitivity artifact and sensitivity CSV exports"
 )

@@ -57,6 +57,20 @@ write_canonical_artifact <- function(name, artifact) {
   invisible(path)
 }
 
+write_result_csv <- function(x, filename) {
+  ensure_artifact_dirs()
+  path <- result_path(filename)
+  write.csv(x, path, row.names = FALSE)
+  invisible(path)
+}
+
+write_result_text <- function(lines, filename) {
+  ensure_artifact_dirs()
+  path <- result_path(filename)
+  writeLines(lines, path, useBytes = TRUE)
+  invisible(path)
+}
+
 read_canonical_artifact <- function(name) {
   path <- canonical_artifact_path(name)
   if (!file.exists(path)) {

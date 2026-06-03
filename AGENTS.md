@@ -30,7 +30,7 @@ Current pipeline status:
 - `R/utils.R` is now a compatibility loader for focused helper modules rather than a monolithic utility file.
 - `R/00_contracts.R` defines explicit contracts for the canonical wide analysis data, economic cost summaries, MICE wide frames, effectiveness long frames, and CEA patient-level frames.
 - `R/00_methods_config.R` is the central source of truth for method choices and rationale notes, including outcome thresholds, imputation rules, effectiveness model family/covariates, CEA cost family, EQ-5D tariffs, intervention cost, WTP threshold, bootstrap counts, and sensitivity settings.
-- `R/cost_helpers.R::build_economic_data()` collapses the raw monthly cost panels into half-year `cost_*` summary columns and returns only the patient identifier plus those summaries, so downstream code works from one canonical cost frame instead of carrying the raw monthly columns forward.
+- `R/cost_helpers.R::build_economic_data()` collapses the raw monthly cost panels into half-year `cost_*` summary columns plus explicit cost-source flags. Patients present in any raw cost file are `cost_complete`; absent cost categories are set to zero for those patients, while invalid in-file period values such as F-file `9999` keep the affected half-year summary as `NA` for imputation.
 - `R/02_imputation.R` builds one wide MICE frame using the configured imputation settings and writes `data_processed/imputation_artifact.rds` as the canonical imputation artifact. Sensitivity imputation variants now live inside `results/sensitivity_analyses_artifact.rds` when `R/08_sensitivity_analyses.R` is run.
 - `R/04b_gee.R` reconstructs each imputation explicitly through the shared effectiveness helper and fits the configured primary effectiveness model.
 - `R/04_models.R` reconstructs each imputation explicitly through the same shared helper and fits the configured mixed-effects sensitivity model.
@@ -152,7 +152,8 @@ Variables used:
 - prior outcome values
 
 ## Cost data
-- Included in the main MICE stage as cost components plus resource-utilisation auxiliaries
+- Included in the main MICE stage as canonical half-year cost summaries
+- Cost missingness follows the legacy regression CEA cohort definition: source-present patients are cost-complete even when some categories are absent; absent categories are zero-cost categories, while invalid in-file period values such as medication-file `9999` remain imputation targets
 - Secondary cost analyses are isolated in `R/08_sensitivity_analyses.R`
 
 Reason:
@@ -344,7 +345,7 @@ See:
 ## Missing cost data
 Economic datasets are incomplete for some patients.
 
-The main cost analysis imputes the canonical half-year cost summaries in the full MICE frame. Complete-case CEA is retained as a sensitivity analysis and now requires all canonical half-year cost summaries to be present, rather than treating partially missing cost components as zero.
+The main cost analysis imputes canonical half-year cost summaries for patients with no raw economic cost-source row and for source-present patients with invalid in-file period values such as medication-file `9999`. Patients present in any raw cost file are treated as cost-complete; absent cost categories are assigned zero before imputation, mirroring the legacy regression CEA cohort and avoiding structural category absence being misclassified as missing data.
 
 ---
 
@@ -537,6 +538,8 @@ Use this space to create a running list of brief summaries of each action taken 
 - 2026-06-02: Refactored active stages so each script writes one canonical RDS artifact: cleaning, imputation, descriptives, GEE effectiveness, mixed-effectiveness sensitivity, main CEA, manuscript outputs, manuscript report, and sensitivity analyses. Removed direct script writes to legacy per-table CSV/RDS sidecars and updated downstream reads to use canonical artifacts.
 - 2026-06-02: Added fast validation helpers plus `R/run_smoke_tests.R`; the smoke runner refreshes cleaning, validates canonical contracts, builds the imputation frame without running MICE, validates existing downstream artifacts, and writes `results/smoke_test_artifact.rds`. The current smoke pass completed with 10 passed checks and 6 skipped downstream checks because the expensive imputation/model artifacts have not yet been regenerated.
 - 2026-06-02: Added `R/00_methods_config.R` as the central method-configuration file and moved hard-coded method choices/rationale notes into it, including outcome thresholds, structural-zero/manual-cleaning rules, imputation methods/seeds, effectiveness model formulas/defaults, CEA cost family/tariffs/bootstrap settings, environment override names, and validation thresholds. Updated constants/scripts/helpers to derive those values from the config.
+- 2026-06-03: Restored and refined the legacy cost-completeness rule in `R/cost_helpers.R` and `R/00_methods_config.R`: patients present in any raw cost file are cost-complete, absent cost categories are zero-filled, patients absent from every raw cost file retain missing cost summaries, and invalid in-file period values such as medication-file `9999` remain missing for imputation. Re-ran `R/01_cleaning.R` and `R/02_imputation.R`; all_cases has 822 cost-complete patients, 13 no-source patients, 28 source-present period-summary cells still requiring imputation, and 158 cost-summary cells to impute overall. `R/run_smoke_tests.R` passed with 30 checks and 1 optional sensitivity skip.
+- 2026-06-03: Audited `data_processed/`, `models/`, and `results/` against the canonical artifact map. Removed 44 stale untracked sidecar artifacts plus 5 downstream canonical artifacts generated before the cost/imputation correction, then restored an explicit export layer so fresh stage reruns produce necessary CSV/Markdown deliverables for plots, tables, CEA planes, acceptability curves, and sensitivity comparisons. The rule is now: canonical RDS artifacts are the source of truth, while named CSV/Markdown exports generated from current artifacts are expected deliverables, not clutter.
 
 Next steps:
 1. Re-run `source("R/02_imputation.R")` and confirm `data_processed/imputation_artifact.rds` contains the full MICE object, missingness report, predictor audit, diagnostics, and first completed dataset.
@@ -556,7 +559,7 @@ Important manual fixes applied in R/01_cleaning.R:
 - Removed duplicate rows (kept first occurrence)
 
 Immediate next tasks (priority order):
-1. Run `Rscript R/run_smoke_tests.R` for a quick local validation pass, then re-run the full main pipeline via `.\run_full_pipeline.ps1` or source the main scripts in order.
+1. Re-run the downstream main pipeline from the fresh cleaning/imputation artifacts: `source("R/03_descriptives.R")`, `source("R/04b_gee.R")`, `source("R/05_cost_effectiveness.R")`, `source("R/06_outputs.R")`, and `source("R/07_manuscript_report.R")`; or run `.\run_full_pipeline.ps1` if you want to refresh everything.
 2. Inspect `readRDS("data_processed/imputation_artifact.rds")$full_predictor_audit` to confirm cost summaries are imputed but do not predict non-cost targets.
 3. Inspect `models/cea_artifact.rds` and `results/manuscript_outputs_artifact.rds` to confirm the regenerated main CEA artifacts show `GLM_Gaussian_identity_cost` and `cost_group_effect`.
 4. Run `source("R/08_sensitivity_analyses.R")` after the main artifacts are fresh, then inspect `results/sensitivity_analyses_artifact.rds`.

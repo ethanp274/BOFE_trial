@@ -121,10 +121,11 @@ manuscript_outputs_artifact <- list(
   complete_cases_long = complete_long
 )
 write_canonical_artifact("manuscript_outputs", manuscript_outputs_artifact)
+write_result_csv(manuscript_results_summary, "manuscript_results_summary.csv")
 
-cat("06_outputs: saved canonical manuscript outputs artifact.\n")
+cat("06_outputs: saved canonical manuscript outputs artifact and manuscript summary CSV.\n")
 pipeline_phase_end(
   "06_outputs",
   pipeline_started,
-  "saved canonical manuscript outputs artifact"
+  "saved canonical manuscript outputs artifact and manuscript summary CSV"
 )

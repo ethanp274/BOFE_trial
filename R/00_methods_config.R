@@ -76,6 +76,15 @@ BOFE_METHODS_CONFIG <- list(
       "cost_H6", "cost_H12",
       "cost_O6", "cost_O12"
     ),
+    cost_completeness_rule = list(
+      source = "legacy regression_script.R CEA cohort",
+      complete_if_any_raw_cost_file_present = TRUE,
+      zero_fill_absent_cost_categories_for_complete_patients = TRUE,
+      keep_all_cost_summaries_missing_for_no_source_patients = TRUE,
+      medication_file_used_as_audit_anchor = TRUE,
+      preserve_invalid_period_values_for_imputation = TRUE,
+      rationale = "Legacy CEA defined cost_complete_pts from patients with any non-empty economic-data row, then summed absent cost components with na.rm=TRUE. The active pipeline mirrors that by treating absent cost categories as zero for patients present in any raw cost file, while preserving NA for patients absent from all economic cost files and for invalid in-file period values such as 9999 in the 2023 medication months."
+    ),
     intervention_cost_per_consultation = 40,
     intervention_consultations = 2L,
     wtp_threshold_eur_per_qaly = 29000,

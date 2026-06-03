@@ -68,12 +68,30 @@ validation_summary <- function(report) {
 }
 
 validate_no_extra_economic_columns <- function(economic_data) {
-  allowed <- c("D1.2", "patient", COST_SUMMARY_COLUMNS)
+  allowed <- c("D1.2", "patient", "cost_complete", "cost_medication_file_present", COST_SUMMARY_COLUMNS)
   extra <- setdiff(names(economic_data), allowed)
   if (length(extra) > 0) {
     stop("economic_data contains noncanonical columns: ", paste(extra, collapse = ", "))
   }
   invisible(TRUE)
+}
+
+validate_cost_completeness_policy <- function(all_cases) {
+  assert_required_columns(all_cases, c("cost_complete", COST_SUMMARY_COLUMNS), "all_cases")
+  complete_rows <- as.logical(all_cases[["cost_complete"]])
+  complete_rows[is.na(complete_rows)] <- FALSE
+  no_source_rows <- !complete_rows
+  if (any(no_source_rows)) {
+    missing_counts <- rowSums(is.na(all_cases[no_source_rows, COST_SUMMARY_COLUMNS, drop = FALSE]))
+    if (any(missing_counts != length(COST_SUMMARY_COLUMNS))) {
+      stop("patients without raw cost-source rows should retain all cost summaries as missing.")
+    }
+  }
+  paste(
+    sum(complete_rows), "patients with raw cost-source rows;",
+    sum(no_source_rows), "patients without raw cost-source rows;",
+    sum(is.na(all_cases[complete_rows, COST_SUMMARY_COLUMNS, drop = FALSE])), "source-present period summaries still require imputation"
+  )
 }
 
 validate_cost_predictor_exclusion <- function(predictor_matrix) {
@@ -134,6 +152,9 @@ validate_cleaning_artifact <- function(artifact = read_canonical_artifact("clean
       assert_data_contract(artifact$economic_data, "economic_cost_summary")
       validate_no_extra_economic_columns(artifact$economic_data)
       paste(nrow(artifact$economic_data), "rows")
+    }),
+    run_validation_check("cleaning: cost completeness policy", {
+      validate_cost_completeness_policy(artifact$all_cases)
     })
   )
 }
