@@ -2897,3 +2897,568 @@
 [2026-06-03 19:19:04] [INFO] 04b_gee - fitting geeglm (adjusted) on imputation 20/20 
 [2026-06-03 19:19:05] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.1s 
 [2026-06-03 19:19:05] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:41:48] [INFO] 04b_gee - using single completed dataset for variant 'full' 
+[2026-06-03 19:41:48] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-03 19:41:48] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-03 19:41:48] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 1/1 
+[2026-06-03 19:41:49] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-03 19:41:49] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 1/1 
+[2026-06-03 19:41:49] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-03 19:41:49] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting secondary GEE outcome 'medication_adherence' 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 1/1 
+[2026-06-03 19:41:49] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-03 19:41:49] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 1/1 
+[2026-06-03 19:41:49] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-03 19:41:49] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting secondary GEE outcome 'non_recent_missed_dose' 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 1/1 
+[2026-06-03 19:41:49] [INFO] 04b_gee - finished unadjusted imputation 1/1 in 0.1s 
+[2026-06-03 19:41:49] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:41:49] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 1/1 
+[2026-06-03 19:41:49] [INFO] 04b_gee - finished adjusted imputation 1/1 in 0.1s 
+[2026-06-03 19:41:49] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:42:03] [INFO] 04_models - using single completed dataset for variant 'full' 
+[2026-06-03 19:42:03] [INFO] 04_models - reconstructing completed long data for each imputation 
+[2026-06-03 19:42:03] [INFO] 04_models - fitting unadjusted and adjusted mixed-effects models 
+[2026-06-03 19:42:03] [INFO] 04_models - fitting glmer (disease_control, unadjusted) on imputation 1/1 
+[2026-06-03 19:42:15] [INFO] 04_models - finished unadjusted imputation 1/1 in 11.8s 
+[2026-06-03 19:42:15] [INFO] 04_models - fitting glmer (disease_control, adjusted) on imputation 1/1 
+[2026-06-03 19:42:27] [INFO] 04_models - finished adjusted imputation 1/1 in 11.8s 
+[2026-06-03 19:42:27] [INFO] 04_models - fitting secondary GLMM outcome 'medication_adherence' 
+[2026-06-03 19:42:27] [INFO] 04_models - fitting glmer (medication_adherence, unadjusted) on imputation 1/1 
+[2026-06-03 19:42:30] [INFO] 04_models - finished unadjusted imputation 1/1 in 3.1s 
+[2026-06-03 19:42:30] [INFO] 04_models - fitting glmer (medication_adherence, adjusted) on imputation 1/1 
+[2026-06-03 19:42:40] [INFO] 04_models - finished adjusted imputation 1/1 in 10.7s 
+[2026-06-03 19:42:41] [INFO] 04_models - fitting secondary GLMM outcome 'non_recent_missed_dose' 
+[2026-06-03 19:42:41] [INFO] 04_models - fitting glmer (non_recent_missed_dose, unadjusted) on imputation 1/1 
+[2026-06-03 19:42:44] [INFO] 04_models - finished unadjusted imputation 1/1 in 3.8s 
+[2026-06-03 19:42:44] [INFO] 04_models - fitting glmer (non_recent_missed_dose, adjusted) on imputation 1/1 
+[2026-06-03 19:42:55] [INFO] 04_models - finished adjusted imputation 1/1 in 11.1s 
+[2026-06-03 19:43:16] [START] 02_imputation - building the main wide imputation frame 
+[2026-06-03 19:43:16] [INFO] 02_imputation - building the effectiveness-specific MICE branch 
+[2026-06-03 19:43:17] [INFO] 02_imputation - running effectiveness MICE: 28 variables, 18 imputed targets, 272 predictor links 
+[2026-06-03 19:43:59] [INFO] 02_imputation - building the CEA-specific MICE branch 
+[2026-06-03 19:43:59] [INFO] 02_imputation - running cea MICE: 48 variables, 34 imputed targets, 1221 predictor links 
+[2026-06-03 19:44:55] [DONE] 02_imputation - saved canonical imputation artifact (elapsed 98.8s) 
+[2026-06-03 19:45:36] [START] 04b_gee - fitting the configured GEE effectiveness model 
+[2026-06-03 19:45:36] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-03 19:45:36] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 1/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 2/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 3/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 4/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 5/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 6/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 7/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 8/20 
+[2026-06-03 19:45:37] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:45:37] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 9/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 10/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 11/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 12/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 13/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 14/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 15/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 16/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 17/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 18/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 19/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 20/20 
+[2026-06-03 19:45:38] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:45:38] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:45:38] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 1/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 2/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 3/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.2s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 4/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 5/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 6/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 7/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 8/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 9/20 
+[2026-06-03 19:45:39] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:45:39] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 10/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 11/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 12/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 13/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.2s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 14/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 15/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 16/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 17/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 18/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 19/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 20/20 
+[2026-06-03 19:45:40] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:45:40] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting secondary GEE outcome 'medication_adherence' 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 1/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 2/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.0s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 3/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 4/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 5/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 6/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 7/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 8/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 9/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 10/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.0s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 11/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 12/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 13/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 14/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 15/20 
+[2026-06-03 19:45:41] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:45:41] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 16/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.2s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 17/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 18/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 19/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 20/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 1/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 2/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 3/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 4/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 5/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 6/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 7/20 
+[2026-06-03 19:45:42] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:45:42] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 8/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 9/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 10/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 11/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 12/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 13/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 14/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 15/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 16/20 
+[2026-06-03 19:45:43] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.2s 
+[2026-06-03 19:45:43] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 17/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 18/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 19/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 20/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting secondary GEE outcome 'non_recent_missed_dose' 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 1/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 2/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 3/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 4/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 5/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 6/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 7/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 8/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 9/20 
+[2026-06-03 19:45:44] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:45:44] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 10/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 11/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 12/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 13/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 14/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 15/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.0s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 16/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.2s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 17/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 18/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 19/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 20/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 1/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 2/20 
+[2026-06-03 19:45:45] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:45:45] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 3/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 4/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 5/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 6/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 7/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 8/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 9/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 10/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 11/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 12/20 
+[2026-06-03 19:45:46] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:45:46] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 13/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 14/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 15/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 16/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 17/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 18/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 19/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 20/20 
+[2026-06-03 19:45:47] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:45:47] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:46:06] [DONE] 04b_gee - saved canonical GEE effectiveness artifact (elapsed 30.0s) 
+[2026-06-03 19:46:26] [START] 06_outputs - assembling manuscript output artifact 
+[2026-06-03 19:46:31] [INFO] 06_outputs - loaded effectiveness and CEA model artefacts 
+[2026-06-03 19:46:31] [INFO] 06_outputs - assembling manuscript-ready comparison tables 
+[2026-06-03 19:46:31] [DONE] 06_outputs - saved canonical manuscript outputs artifact and manuscript summary CSV (elapsed 4.9s) 
+[2026-06-03 19:50:02] [START] 02_imputation - building the main wide imputation frame 
+[2026-06-03 19:50:02] [INFO] 02_imputation - building the effectiveness-specific MICE branch 
+[2026-06-03 19:50:02] [INFO] 02_imputation - running effectiveness MICE: 18 variables, 8 imputed targets, 152 predictor links 
+[2026-06-03 19:50:12] [INFO] 02_imputation - building the secondary-effectiveness MICE branch 
+[2026-06-03 19:50:12] [INFO] 02_imputation - running secondary_effectiveness MICE: 28 variables, 18 imputed targets, 272 predictor links 
+[2026-06-03 19:50:54] [INFO] 02_imputation - building the CEA-specific MICE branch 
+[2026-06-03 19:50:54] [INFO] 02_imputation - running cea MICE: 48 variables, 34 imputed targets, 1221 predictor links 
+[2026-06-03 19:51:46] [DONE] 02_imputation - saved canonical imputation artifact (elapsed 104.6s) 
+[2026-06-03 19:52:05] [START] 04b_gee - fitting the configured GEE effectiveness model 
+[2026-06-03 19:52:05] [INFO] 04b_gee - reconstructing 20 imputed long datasets 
+[2026-06-03 19:52:05] [INFO] 04b_gee - building per-imputation long datasets 
+[2026-06-03 19:52:06] [INFO] 04b_gee - building secondary-outcome long datasets 
+[2026-06-03 19:52:08] [INFO] 04b_gee - fitting unadjusted and adjusted GEE models 
+[2026-06-03 19:52:08] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 1/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 2/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 3/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.2s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 4/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 5/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 6/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 7/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 8/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.2s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 9/20 
+[2026-06-03 19:52:09] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:52:09] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 10/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 11/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 12/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 13/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 14/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 15/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 16/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 17/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 18/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 19/20 
+[2026-06-03 19:52:10] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:52:10] [INFO] 04b_gee - fitting geeglm (disease_control, unadjusted) on imputation 20/20 
+[2026-06-03 19:52:11] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:52:11] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:52:11] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 1/20 
+[2026-06-03 19:52:11] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:52:11] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 2/20 
+[2026-06-03 19:52:11] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:52:11] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 3/20 
+[2026-06-03 19:52:11] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:52:11] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 4/20 
+[2026-06-03 19:52:11] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:52:11] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 5/20 
+[2026-06-03 19:52:11] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:52:11] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 6/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.3s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 7/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.2s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 8/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 9/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 10/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 11/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 12/20 
+[2026-06-03 19:52:12] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:52:12] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 13/20 
+[2026-06-03 19:52:13] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:52:13] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 14/20 
+[2026-06-03 19:52:13] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:52:13] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 15/20 
+[2026-06-03 19:52:13] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:52:13] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 16/20 
+[2026-06-03 19:52:13] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:52:13] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 17/20 
+[2026-06-03 19:52:13] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:52:13] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 18/20 
+[2026-06-03 19:52:13] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:52:13] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 19/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.4s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (disease_control, adjusted) on imputation 20/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting secondary GEE outcome 'medication_adherence' 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 1/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 2/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 3/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 4/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 5/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 6/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 7/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 8/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 9/20 
+[2026-06-03 19:52:14] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:52:14] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 10/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 11/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 12/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 13/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 14/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 15/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 16/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 17/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 18/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 19/20 
+[2026-06-03 19:52:15] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:52:15] [INFO] 04b_gee - fitting geeglm (medication_adherence, unadjusted) on imputation 20/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 1/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 2/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 3/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 4/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 5/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 6/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.2s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 7/20 
+[2026-06-03 19:52:16] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:52:16] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 8/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.2s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 9/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 10/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 11/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 12/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 13/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 14/20 
+[2026-06-03 19:52:17] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:52:17] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 15/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.2s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 16/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 17/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 18/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 19/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (medication_adherence, adjusted) on imputation 20/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting secondary GEE outcome 'non_recent_missed_dose' 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 1/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished unadjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 2/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished unadjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 3/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished unadjusted imputation 3/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 4/20 
+[2026-06-03 19:52:18] [INFO] 04b_gee - finished unadjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:52:18] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 5/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 6/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 7/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 8/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 9/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 10/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 11/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 12/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 12/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 13/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 13/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 14/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 14/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 15/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 15/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 16/20 
+[2026-06-03 19:52:19] [INFO] 04b_gee - finished unadjusted imputation 16/20 in 0.1s 
+[2026-06-03 19:52:19] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 17/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished unadjusted imputation 17/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 18/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished unadjusted imputation 18/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 19/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished unadjusted imputation 19/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, unadjusted) on imputation 20/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished unadjusted imputation 20/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - pooling unadjusted GEE contrasts across imputations 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 1/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished adjusted imputation 1/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 2/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished adjusted imputation 2/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 3/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished adjusted imputation 3/20 in 0.2s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 4/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished adjusted imputation 4/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 5/20 
+[2026-06-03 19:52:20] [INFO] 04b_gee - finished adjusted imputation 5/20 in 0.1s 
+[2026-06-03 19:52:20] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 6/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 6/20 in 0.1s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 7/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 7/20 in 0.1s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 8/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 8/20 in 0.1s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 9/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 9/20 in 0.1s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 10/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 10/20 in 0.1s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 11/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 11/20 in 0.1s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 12/20 
+[2026-06-03 19:52:21] [INFO] 04b_gee - finished adjusted imputation 12/20 in 0.2s 
+[2026-06-03 19:52:21] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 13/20 
+[2026-06-03 19:52:22] [INFO] 04b_gee - finished adjusted imputation 13/20 in 0.2s 
+[2026-06-03 19:52:22] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 14/20 
+[2026-06-03 19:52:22] [INFO] 04b_gee - finished adjusted imputation 14/20 in 0.2s 
+[2026-06-03 19:52:22] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 15/20 
+[2026-06-03 19:52:22] [INFO] 04b_gee - finished adjusted imputation 15/20 in 0.3s 
+[2026-06-03 19:52:22] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 16/20 
+[2026-06-03 19:52:22] [INFO] 04b_gee - finished adjusted imputation 16/20 in 0.3s 
+[2026-06-03 19:52:22] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 17/20 
+[2026-06-03 19:52:22] [INFO] 04b_gee - finished adjusted imputation 17/20 in 0.2s 
+[2026-06-03 19:52:23] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 18/20 
+[2026-06-03 19:52:23] [INFO] 04b_gee - finished adjusted imputation 18/20 in 0.3s 
+[2026-06-03 19:52:23] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 19/20 
+[2026-06-03 19:52:23] [INFO] 04b_gee - finished adjusted imputation 19/20 in 0.3s 
+[2026-06-03 19:52:23] [INFO] 04b_gee - fitting geeglm (non_recent_missed_dose, adjusted) on imputation 20/20 
+[2026-06-03 19:52:23] [INFO] 04b_gee - finished adjusted imputation 20/20 in 0.3s 
+[2026-06-03 19:52:23] [INFO] 04b_gee - pooling adjusted GEE contrasts across imputations 
+[2026-06-03 19:52:44] [DONE] 04b_gee - saved canonical GEE effectiveness artifact (elapsed 39.3s) 

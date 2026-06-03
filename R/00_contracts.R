@@ -3,6 +3,10 @@
 
 contract_eqindex_columns <- paste0("EQindex_", TIMEPOINTS)
 contract_controlled_columns <- paste0("controlled_", TIMEPOINTS)
+contract_adherence_columns <- c(
+  paste0("med_adherence_", TIMEPOINTS),
+  paste0("last_missed_dose_", TIMEPOINTS)
+)
 contract_eq5d_item_columns <- unlist(
   lapply(TIMEPOINTS, function(tp) {
     paste0(c("EQ5D5L.1", "EQ5D5L.2", "EQ5D5L.3", "EQ5D5L.4", "EQ5D5L.5"), "_", tp)
@@ -66,7 +70,24 @@ BOFE_DATA_CONTRACTS <- list(
       contract_eqindex_columns
     ),
     notes = c(
-      "Cost summaries, raw EQ-5D item columns, sparse resource-use auxiliaries, and adherence variables are excluded from the primary effectiveness imputation.",
+      "Cost summaries, raw EQ-5D item columns, and sparse resource-use auxiliaries are excluded from the effectiveness imputation.",
+      "Medication-adherence and last-missed-dose variables are excluded so secondary analyses cannot perturb the primary disease-control imputation.",
+      "The branch-specific predictor matrix is analysis-specific and time-aware."
+    )
+  ),
+  secondary_effectiveness_imputation_wide = list(
+    description = "Secondary effectiveness MICE frame for medication-adherence outcomes.",
+    row_grain = "One row per ITT patient.",
+    unique_key = "patient",
+    required_columns = c(
+      "patient", "condition", "group", "gender", "age",
+      contract_controlled_columns,
+      contract_eqindex_columns,
+      contract_adherence_columns
+    ),
+    notes = c(
+      "Secondary adherence outcomes are imputed separately from the primary disease-control branch.",
+      "Medication-adherence and last-missed-dose uncertainty categories are recoded to missing before imputation.",
       "The branch-specific predictor matrix is analysis-specific and time-aware."
     )
   ),
@@ -90,11 +111,14 @@ BOFE_DATA_CONTRACTS <- list(
     unique_key = NULL,
     required_columns = c(
       "patient", "group", "time", "age", "gender",
-      "controlled_0", "controlled_t"
+      "controlled_0", "controlled_t",
+      "medication_adherence_0", "medication_adherence_t",
+      "non_recent_missed_dose_0", "non_recent_missed_dose_t"
     ),
     notes = c(
       "Effectiveness model choices are declared in R/00_methods_config.R.",
-      "Rows should be sorted by patient and time before clustered model fitting."
+      "Rows should be sorted by patient and time before clustered model fitting.",
+      "Secondary adherence outcomes are coded so odds ratios above 1 indicate more favourable adherence."
     )
   ),
   cea_patient_level = list(

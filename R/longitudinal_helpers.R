@@ -2,6 +2,21 @@
 # Wide-to-long reconstruction helpers for effectiveness analyses.
 
 make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
+  derive_medication_adherence_event <- function(values) {
+    values <- as_numeric_safe(values)
+    ifelse(values == 2, 1, ifelse(values == 1, 0, NA_real_))
+  }
+
+  derive_non_recent_missed_dose_event <- function(values) {
+    values <- as_numeric_safe(values)
+    ifelse(values %in% c(3, 4), 1, ifelse(values %in% c(1, 2), 0, NA_real_))
+  }
+
+  get_timepoint_values <- function(frame, stem, tp) {
+    col <- paste0(stem, "_", tp)
+    if (col %in% names(frame)) as_numeric_safe(frame[[col]]) else rep(NA_real_, nrow(frame))
+  }
+
   patient_vec <- if ("patient" %in% names(df)) {
     df[["patient"]]
   } else {
@@ -36,9 +51,17 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
   } else {
     as_numeric_safe(df[["controlled_0"]])
   }
+  medication_adherence_0_vec <- derive_medication_adherence_event(
+    get_timepoint_values(df, "med_adherence", 0)
+  )
+  non_recent_missed_dose_0_vec <- derive_non_recent_missed_dose_event(
+    get_timepoint_values(df, "last_missed_dose", 0)
+  )
   rows <- lapply(timepoints, function(tp) {
     controlled_col <- paste0("controlled_", tp)
     eq_col <- paste0("EQindex_", tp)
+    med_adherence_raw <- get_timepoint_values(df, "med_adherence", tp)
+    last_missed_raw <- get_timepoint_values(df, "last_missed_dose", tp)
     data.frame(
       patient = patient_vec,
       pharmacy = if ("pharmacy" %in% names(df)) {
@@ -64,6 +87,12 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
       controlled_0 = controlled_0_vec,
       controlled_t = if (controlled_col %in% names(df)) as_numeric_safe(df[[controlled_col]]) else NA_real_,
       EQindex_t = if (eq_col %in% names(df)) as_numeric_safe(df[[eq_col]]) else NA_real_,
+      med_adherence_t = med_adherence_raw,
+      last_missed_dose_t = last_missed_raw,
+      medication_adherence_0 = medication_adherence_0_vec,
+      medication_adherence_t = derive_medication_adherence_event(med_adherence_raw),
+      non_recent_missed_dose_0 = non_recent_missed_dose_0_vec,
+      non_recent_missed_dose_t = derive_non_recent_missed_dose_event(last_missed_raw),
       stringsAsFactors = FALSE
     )
   })
@@ -139,6 +168,10 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
   long_df$age <- factor(long_df$age)
   long_df$controlled_0 <- factor(long_df$controlled_0, levels = c(0, 1))
   long_df$controlled_t <- as.numeric(long_df$controlled_t)
+  long_df$medication_adherence_0 <- factor(long_df$medication_adherence_0, levels = c(0, 1))
+  long_df$medication_adherence_t <- as.numeric(long_df$medication_adherence_t)
+  long_df$non_recent_missed_dose_0 <- factor(long_df$non_recent_missed_dose_0, levels = c(0, 1))
+  long_df$non_recent_missed_dose_t <- as.numeric(long_df$non_recent_missed_dose_t)
 
   long_df
 }

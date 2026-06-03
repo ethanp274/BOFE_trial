@@ -71,6 +71,31 @@ load_effectiveness <- function() {
   gee_df
 }
 
+load_secondary_effectiveness <- function() {
+  if (!isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+    return(data.frame())
+  }
+  gee_rds <- read_canonical_artifact("effectiveness_gee")
+  secondary_gee <- if ("gee_secondary_timepoint_effects" %in% names(gee_rds)) {
+    gee_rds$gee_secondary_timepoint_effects
+  } else {
+    data.frame()
+  }
+
+  secondary_mixed <- if (file.exists(canonical_artifact_path("effectiveness_mixed"))) {
+    mixed_rds <- read_canonical_artifact("effectiveness_mixed")
+    if ("secondary_timepoint_effects" %in% names(mixed_rds)) {
+      mixed_rds$secondary_timepoint_effects
+    } else {
+      data.frame()
+    }
+  } else {
+    data.frame()
+  }
+
+  bind_rows(secondary_gee, secondary_mixed)
+}
+
 # The brief reads the main CEA artifact and its bundled tables.
 load_cea_summary <- function() {
   cea_rds <- read_canonical_artifact("cea")
@@ -90,6 +115,7 @@ load_cea_summary <- function() {
 }
 
 effectiveness <- load_effectiveness()
+secondary_effectiveness <- load_secondary_effectiveness()
 cea <- load_cea_summary()
 
 if (is.null(effectiveness) || nrow(effectiveness) == 0) {
@@ -129,6 +155,24 @@ effectiveness_overview <- timepoint_12 %>%
     )
   ) %>%
   select(section, model, adjustment, item, estimate, lower_95, upper_95, any_of("p_value"), note)
+
+secondary_12mo <- if (nrow(secondary_effectiveness) > 0) {
+  secondary_effectiveness %>%
+    filter(time == 12) %>%
+    arrange(outcome, model_family, adjustment) %>%
+    transmute(
+      outcome = outcome_label,
+      model_family = model_family,
+      adjustment = adjustment,
+      estimate = odds_ratio,
+      lower_95 = ci_low,
+      upper_95 = ci_high,
+      p_value = p_value,
+      note = "Secondary outcome; OR above 1 favours intervention"
+    )
+} else {
+  data.frame()
+}
 
 add_cea_family_summary <- function(summary_df) {
   if (is.null(summary_df) || nrow(summary_df) == 0 || !"metric" %in% names(summary_df)) {
@@ -227,6 +271,13 @@ report_lines <- c(
   "## Cost-effectiveness summary",
   write_report_table(cea_family_summary),
   "",
+  "## Secondary effectiveness outcomes",
+  if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+    write_report_table(secondary_12mo)
+  } else {
+    "_Secondary adherence outcome models are disabled pending methods revision._"
+  },
+  "",
   "## CEA model-term comparison",
   write_report_table(group_terms_table)
 )
@@ -236,6 +287,7 @@ write_canonical_artifact(
   list(
     stage = "07_manuscript_report",
     report_lines = report_lines,
+    secondary_effectiveness_12mo = secondary_12mo,
     markdown = paste(report_lines, collapse = "\n")
   )
 )

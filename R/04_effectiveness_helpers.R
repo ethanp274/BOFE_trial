@@ -35,6 +35,23 @@ load_effectiveness_imputation <- function(imputation_variant) {
   stop("Unsupported imputation variant '", imputation_variant, "'.")
 }
 
+load_secondary_effectiveness_imputation <- function(imputation_variant) {
+  if (!isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+    return(load_effectiveness_imputation(imputation_variant))
+  }
+  imputation_variant <- tolower(imputation_variant)
+  if (imputation_variant != "full") {
+    return(load_effectiveness_imputation(imputation_variant))
+  }
+
+  imputation_artifact <- read_canonical_artifact("imputation")
+  if ("secondary_effectiveness_mids" %in% names(imputation_artifact)) {
+    return(imputation_artifact$secondary_effectiveness_mids)
+  }
+
+  load_effectiveness_imputation(imputation_variant)
+}
+
 followup_effectiveness_sets <- function(long_sets, timepoints = FOLLOWUP_TIMEPOINTS) {
   time_levels <- paste0(timepoints, "mo")
   lapply(long_sets, function(long_data) {
@@ -43,6 +60,60 @@ followup_effectiveness_sets <- function(long_sets, timepoints = FOLLOWUP_TIMEPOI
     out$time <- factor(out$time, levels = time_levels)
     out
   })
+}
+
+secondary_effectiveness_outcome_specs <- function(model_family = c("gee", "mixed_effects")) {
+  model_family <- match.arg(model_family)
+  cfg <- method_config("effectiveness", "secondary_outcomes")
+  if (!isTRUE(cfg$enabled)) {
+    return(list())
+  }
+  cfg <- cfg[vapply(cfg, is.list, logical(1))]
+  suffix <- if (model_family == "mixed_effects") {
+    paste0(" ", method_config("effectiveness", "mixed_effects_formula_suffix"))
+  } else {
+    ""
+  }
+
+  lapply(names(cfg), function(outcome) {
+    spec <- cfg[[outcome]]
+    list(
+      outcome = outcome,
+      label = spec$label,
+      interpretation = spec$interpretation,
+      unadjusted = as.formula(paste0(spec$unadjusted_formula, suffix)),
+      adjusted = as.formula(paste0(spec$adjusted_formula, suffix))
+    )
+  }) |>
+    setNames(names(cfg))
+}
+
+outcome_has_model_data <- function(long_sets, outcome_col) {
+  if (length(long_sets) == 0) return(FALSE)
+  all(vapply(long_sets, function(long_data) {
+    outcome_col %in% names(long_data) &&
+      length(unique(long_data[[outcome_col]][!is.na(long_data[[outcome_col]])])) >= 2
+  }, logical(1)))
+}
+
+effectiveness_model_name <- function(model_family, adjustment_label, outcome = "disease_control", pooled = FALSE) {
+  if (identical(outcome, "disease_control")) {
+    if (isTRUE(pooled) && model_family == "mixed_effects") {
+      return(paste0("Pooled_mixed_effects_imputed_", adjustment_label))
+    }
+    if (isTRUE(pooled) && model_family == "gee") {
+      return(paste0("GEE_exchangeable_imputed_", adjustment_label))
+    }
+    return(paste0(model_family, "_", adjustment_label))
+  }
+
+  if (isTRUE(pooled) && model_family == "mixed_effects") {
+    return(paste0("Pooled_mixed_effects_imputed_", outcome, "_", adjustment_label))
+  }
+  if (isTRUE(pooled) && model_family == "gee") {
+    return(paste0("GEE_exchangeable_imputed_", outcome, "_", adjustment_label))
+  }
+  paste0(model_family, "_", outcome, "_", adjustment_label)
 }
 
 extract_mixed_timepoint_contrast <- function(fit, time_value, reference_time = FOLLOWUP_TIMEPOINTS[1]) {
@@ -72,13 +143,20 @@ extract_mixed_timepoint_contrast <- function(fit, time_value, reference_time = F
   c(log_or = beta, var = variance)
 }
 
-fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label, n_imputations, timepoints = FOLLOWUP_TIMEPOINTS) {
+fit_mixed_effects_models <- function(
+    long_sets,
+    model_formula,
+    adjustment_label,
+    n_imputations,
+    timepoints = FOLLOWUP_TIMEPOINTS,
+    outcome = "disease_control",
+    outcome_label = "Disease control") {
   fit_list <- vector("list", n_imputations)
   for (i in seq_len(n_imputations)) {
     fit_started <- proc.time()[["elapsed"]]
     pipeline_phase_info(
       "04_models",
-      sprintf("fitting glmer (%s) on imputation %d/%d", adjustment_label, i, n_imputations)
+      sprintf("fitting glmer (%s, %s) on imputation %d/%d", outcome, adjustment_label, i, n_imputations)
     )
 
     fit_list[[i]] <- glmer(
@@ -137,7 +215,9 @@ fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label,
   pooled_summary$ci_high <- exp(pooled_summary$estimate + qt(0.975, pooled_summary$df) * pooled_summary$std.error)
   pooled_summary$model_family <- "mixed_effects"
   pooled_summary$adjustment <- adjustment_label
-  pooled_summary$model <- paste0("Pooled_mixed_effects_imputed_", adjustment_label)
+  pooled_summary$outcome <- outcome
+  pooled_summary$outcome_label <- outcome_label
+  pooled_summary$model <- effectiveness_model_name("mixed_effects", adjustment_label, outcome, pooled = TRUE)
 
   contrast_table <- lapply(timepoints, function(tp) {
     contrasts <- t(vapply(
@@ -155,8 +235,10 @@ fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label,
     z <- qbar / se
     data.frame(
       model_family = "mixed_effects",
+      outcome = outcome,
+      outcome_label = outcome_label,
       adjustment = adjustment_label,
-      model = paste0("mixed_effects_", adjustment_label),
+      model = effectiveness_model_name("mixed_effects", adjustment_label, outcome),
       time = tp,
       log_or = qbar,
       odds_ratio = exp(qbar),
@@ -177,6 +259,44 @@ fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label,
   )
 }
 
+fit_secondary_mixed_effects_outcomes <- function(long_sets, n_imputations, timepoints = FOLLOWUP_TIMEPOINTS) {
+  specs <- secondary_effectiveness_outcome_specs("mixed_effects")
+  if (length(specs) == 0) {
+    return(list(results = list(), pooled_summary = data.frame(), timepoint_effects = data.frame()))
+  }
+
+  results <- list()
+  for (outcome in names(specs)) {
+    spec <- specs[[outcome]]
+    outcome_col <- all.vars(spec$unadjusted)[1]
+    if (!outcome_has_model_data(long_sets, outcome_col)) {
+      pipeline_phase_info("04_models", sprintf("skipping secondary GLMM outcome '%s': insufficient non-missing variation", outcome))
+      next
+    }
+
+    pipeline_phase_info("04_models", sprintf("fitting secondary GLMM outcome '%s'", outcome))
+    outcome_results <- lapply(c("unadjusted", "adjusted"), function(adj) {
+      fit_mixed_effects_models(
+        long_sets,
+        spec[[adj]],
+        adj,
+        n_imputations,
+        timepoints = timepoints,
+        outcome = outcome,
+        outcome_label = spec$label
+      )
+    })
+    names(outcome_results) <- c("unadjusted", "adjusted")
+    results[[outcome]] <- outcome_results
+  }
+
+  list(
+    results = results,
+    pooled_summary = bind_rows(lapply(results, function(x) bind_rows(lapply(x, `[[`, "pooled_summary")))),
+    timepoint_effects = bind_rows(lapply(results, function(x) bind_rows(lapply(x, `[[`, "timepoint_effects"))))
+  )
+}
+
 run_mixed_effectiveness_analysis <- function(
     imputation_variant = c("full", "simple", "complete_cases"),
     write_outputs = TRUE,
@@ -184,6 +304,11 @@ run_mixed_effectiveness_analysis <- function(
   imputation_variant <- match.arg(tolower(imputation_variant), c("full", "simple", "complete_cases"))
   imputation <- if (is.null(imputation_override)) {
     load_effectiveness_imputation(imputation_variant)
+  } else {
+    imputation_override
+  }
+  secondary_imputation <- if (is.null(imputation_override)) {
+    load_secondary_effectiveness_imputation(imputation_variant)
   } else {
     imputation_override
   }
@@ -199,6 +324,14 @@ run_mixed_effectiveness_analysis <- function(
   effectiveness_sets <- prepare_effectiveness_long_sets(imputation)
   long_sets <- followup_effectiveness_sets(effectiveness_sets$long_sets)
   n_imputations <- effectiveness_sets$n_imputations
+  secondary_sets <- if (identical(secondary_imputation, imputation)) {
+    effectiveness_sets
+  } else {
+    pipeline_phase_info("04_models", "reconstructing secondary-outcome long datasets")
+    prepare_effectiveness_long_sets(secondary_imputation)
+  }
+  secondary_long_sets <- followup_effectiveness_sets(secondary_sets$long_sets)
+  secondary_n_imputations <- secondary_sets$n_imputations
 
   if (effectiveness_sets$imputation_is_mids) {
     pipeline_phase_info("04_models", "keeping reconstructed long datasets for audit only")
@@ -226,6 +359,7 @@ run_mixed_effectiveness_analysis <- function(
 
   pooled_summary <- bind_rows(lapply(mixed_results, `[[`, "pooled_summary"))
   contrast_table <- bind_rows(lapply(mixed_results, `[[`, "timepoint_effects"))
+  secondary_results <- fit_secondary_mixed_effects_outcomes(secondary_long_sets, secondary_n_imputations)
 
   result <- list(
     imputation = imputation,
@@ -237,6 +371,9 @@ run_mixed_effectiveness_analysis <- function(
     pooled_fit_adjusted = mixed_results$adjusted$pooled_fit,
     pooled_summary = pooled_summary,
     timepoint_effects = contrast_table,
+    secondary_results = secondary_results$results,
+    secondary_pooled_summary = secondary_results$pooled_summary,
+    secondary_timepoint_effects = secondary_results$timepoint_effects,
     timepoint_effects_unadjusted = subset(contrast_table, adjustment == "unadjusted"),
     timepoint_effects_adjusted = subset(contrast_table, adjustment == "adjusted"),
     manuscript_style_12mo = subset(contrast_table, time == 12 & adjustment == "adjusted")
@@ -246,6 +383,10 @@ run_mixed_effectiveness_analysis <- function(
     write_canonical_artifact("effectiveness_mixed", result)
     write_result_csv(result$pooled_summary, "model_mixed_summaries.csv")
     write_result_csv(result$timepoint_effects, "model_mixed_timepoint_effects.csv")
+    if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled")) && nrow(result$secondary_timepoint_effects) > 0) {
+      write_result_csv(result$secondary_pooled_summary, "model_mixed_secondary_summaries.csv")
+      write_result_csv(result$secondary_timepoint_effects, "model_mixed_secondary_timepoint_effects.csv")
+    }
   }
 
   result
@@ -280,7 +421,11 @@ extract_gee_timepoint_contrast <- function(fit, time_value, reference_time = FOL
   c(log_or = beta, var = variance)
 }
 
-pool_gee_models <- function(gee_list, adjustment_label) {
+pool_gee_models <- function(
+    gee_list,
+    adjustment_label,
+    outcome = "disease_control",
+    outcome_label = "Disease control") {
   coefs_list <- lapply(gee_list, coef)
   vars_list <- lapply(gee_list, vcov)
   qmat <- do.call(rbind, coefs_list)
@@ -293,6 +438,8 @@ pool_gee_models <- function(gee_list, adjustment_label) {
   p_values <- 2 * (1 - pnorm(abs(z)))
 
   data.frame(
+    outcome = outcome,
+    outcome_label = outcome_label,
     term = names(qbar),
     estimate = unname(qbar),
     std.error = unname(se),
@@ -305,7 +452,12 @@ pool_gee_models <- function(gee_list, adjustment_label) {
   )
 }
 
-pool_gee_timepoints <- function(gee_list, adjustment_label, timepoints = FOLLOWUP_TIMEPOINTS) {
+pool_gee_timepoints <- function(
+    gee_list,
+    adjustment_label,
+    timepoints = FOLLOWUP_TIMEPOINTS,
+    outcome = "disease_control",
+    outcome_label = "Disease control") {
   lapply(timepoints, function(tp) {
     contrasts <- t(vapply(
       gee_list,
@@ -329,8 +481,10 @@ pool_gee_timepoints <- function(gee_list, adjustment_label, timepoints = FOLLOWU
 
     data.frame(
       model_family = "gee",
+      outcome = outcome,
+      outcome_label = outcome_label,
       adjustment = adjustment_label,
-      model = paste0("gee_", adjustment_label),
+      model = effectiveness_model_name("gee", adjustment_label, outcome),
       time = tp,
       log_or = qbar,
       odds_ratio = exp(qbar),
@@ -344,13 +498,20 @@ pool_gee_timepoints <- function(gee_list, adjustment_label, timepoints = FOLLOWU
     bind_rows()
 }
 
-fit_and_pool_gee_models <- function(long_sets, model_formula, adjustment_label, n_imputations, timepoints = FOLLOWUP_TIMEPOINTS) {
+fit_and_pool_gee_models <- function(
+    long_sets,
+    model_formula,
+    adjustment_label,
+    n_imputations,
+    timepoints = FOLLOWUP_TIMEPOINTS,
+    outcome = "disease_control",
+    outcome_label = "Disease control") {
   fit_gee_list <- vector("list", n_imputations)
   for (i in seq_len(n_imputations)) {
     fit_started <- proc.time()[["elapsed"]]
     pipeline_phase_info(
       "04b_gee",
-      sprintf("fitting geeglm (%s) on imputation %d/%d", adjustment_label, i, n_imputations)
+      sprintf("fitting geeglm (%s, %s) on imputation %d/%d", outcome, adjustment_label, i, n_imputations)
     )
 
     fit_gee_list[[i]] <- tryCatch(
@@ -390,17 +551,66 @@ fit_and_pool_gee_models <- function(long_sets, model_formula, adjustment_label, 
   }
 
   pipeline_phase_info("04b_gee", sprintf("pooling %s GEE contrasts across imputations", adjustment_label))
-  gee_pooled_summary <- pool_gee_models(fit_gee_list, adjustment_label)
-  gee_pooled_summary$model <- paste0("GEE_exchangeable_imputed_", adjustment_label)
+  gee_pooled_summary <- pool_gee_models(
+    fit_gee_list,
+    adjustment_label,
+    outcome = outcome,
+    outcome_label = outcome_label
+  )
+  gee_pooled_summary$model <- effectiveness_model_name("gee", adjustment_label, outcome, pooled = TRUE)
   gee_pooled_summary$model_family <- "gee"
   gee_pooled_summary$adjustment <- adjustment_label
 
-  gee_contrast_table <- pool_gee_timepoints(fit_gee_list, adjustment_label, timepoints = timepoints)
+  gee_contrast_table <- pool_gee_timepoints(
+    fit_gee_list,
+    adjustment_label,
+    timepoints = timepoints,
+    outcome = outcome,
+    outcome_label = outcome_label
+  )
 
   list(
     fits = fit_gee_list,
     gee_pooled_summary = gee_pooled_summary,
     gee_timepoint_effects = gee_contrast_table
+  )
+}
+
+fit_secondary_gee_outcomes <- function(long_sets, n_imputations, timepoints = FOLLOWUP_TIMEPOINTS) {
+  specs <- secondary_effectiveness_outcome_specs("gee")
+  if (length(specs) == 0) {
+    return(list(results = list(), pooled_summary = data.frame(), timepoint_effects = data.frame()))
+  }
+
+  results <- list()
+  for (outcome in names(specs)) {
+    spec <- specs[[outcome]]
+    outcome_col <- all.vars(spec$unadjusted)[1]
+    if (!outcome_has_model_data(long_sets, outcome_col)) {
+      pipeline_phase_info("04b_gee", sprintf("skipping secondary GEE outcome '%s': insufficient non-missing variation", outcome))
+      next
+    }
+
+    pipeline_phase_info("04b_gee", sprintf("fitting secondary GEE outcome '%s'", outcome))
+    outcome_results <- lapply(c("unadjusted", "adjusted"), function(adj) {
+      fit_and_pool_gee_models(
+        long_sets,
+        spec[[adj]],
+        adj,
+        n_imputations,
+        timepoints = timepoints,
+        outcome = outcome,
+        outcome_label = spec$label
+      )
+    })
+    names(outcome_results) <- c("unadjusted", "adjusted")
+    results[[outcome]] <- outcome_results
+  }
+
+  list(
+    results = results,
+    pooled_summary = bind_rows(lapply(results, function(x) bind_rows(lapply(x, `[[`, "gee_pooled_summary")))),
+    timepoint_effects = bind_rows(lapply(results, function(x) bind_rows(lapply(x, `[[`, "gee_timepoint_effects"))))
   )
 }
 
@@ -411,6 +621,11 @@ run_gee_effectiveness_analysis <- function(
   imputation_variant <- match.arg(tolower(imputation_variant), c("full", "simple", "complete_cases"))
   imputation <- if (is.null(imputation_override)) {
     load_effectiveness_imputation(imputation_variant)
+  } else {
+    imputation_override
+  }
+  secondary_imputation <- if (is.null(imputation_override)) {
+    load_secondary_effectiveness_imputation(imputation_variant)
   } else {
     imputation_override
   }
@@ -426,6 +641,14 @@ run_gee_effectiveness_analysis <- function(
   effectiveness_sets <- prepare_effectiveness_long_sets(imputation)
   long_sets <- followup_effectiveness_sets(effectiveness_sets$long_sets)
   n_imputations <- effectiveness_sets$n_imputations
+  secondary_sets <- if (identical(secondary_imputation, imputation)) {
+    effectiveness_sets
+  } else {
+    pipeline_phase_info("04b_gee", "building secondary-outcome long datasets")
+    prepare_effectiveness_long_sets(secondary_imputation)
+  }
+  secondary_long_sets <- followup_effectiveness_sets(secondary_sets$long_sets)
+  secondary_n_imputations <- secondary_sets$n_imputations
 
   pipeline_phase_info("04b_gee", "fitting unadjusted and adjusted GEE models")
   gee_model_specs <- list(
@@ -440,6 +663,7 @@ run_gee_effectiveness_analysis <- function(
 
   gee_pooled_summary <- bind_rows(lapply(gee_results, `[[`, "gee_pooled_summary"))
   gee_contrast_table <- bind_rows(lapply(gee_results, `[[`, "gee_timepoint_effects"))
+  secondary_results <- fit_secondary_gee_outcomes(secondary_long_sets, secondary_n_imputations)
 
   result <- list(
     imputation = imputation,
@@ -448,6 +672,9 @@ run_gee_effectiveness_analysis <- function(
     gee_fits_adjusted = gee_results$adjusted$fits,
     gee_pooled_summary = gee_pooled_summary,
     gee_timepoint_effects = gee_contrast_table,
+    gee_secondary_results = secondary_results$results,
+    gee_secondary_pooled_summary = secondary_results$pooled_summary,
+    gee_secondary_timepoint_effects = secondary_results$timepoint_effects,
     gee_timepoint_effects_unadjusted = subset(gee_contrast_table, adjustment == "unadjusted"),
     gee_timepoint_effects_adjusted = subset(gee_contrast_table, adjustment == "adjusted"),
     gee_manuscript_style_12mo = subset(gee_contrast_table, time == 12 & adjustment == "adjusted")
@@ -457,6 +684,10 @@ run_gee_effectiveness_analysis <- function(
     write_canonical_artifact("effectiveness_gee", result)
     write_result_csv(result$gee_pooled_summary, "model_gee_summaries.csv")
     write_result_csv(result$gee_timepoint_effects, "model_gee_timepoint_effects.csv")
+    if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled")) && nrow(result$gee_secondary_timepoint_effects) > 0) {
+      write_result_csv(result$gee_secondary_pooled_summary, "model_gee_secondary_summaries.csv")
+      write_result_csv(result$gee_secondary_timepoint_effects, "model_gee_secondary_timepoint_effects.csv")
+    }
   }
 
   result

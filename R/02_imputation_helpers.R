@@ -14,9 +14,14 @@ build_imputation_wide_frame <- function(trial_df) {
     select(-any_of(names(alias_map)))
   trial_df <- rename_by_aliases(trial_df, alias_map)
 
+  selected_aliases <- names(alias_map)
+  if (!isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+    selected_aliases <- setdiff(selected_aliases, adherence_imputation_columns())
+  }
+
   df_impute <- trial_df %>%
     select(any_of(c(
-      names(alias_map),
+      selected_aliases,
       paste0("controlled_", TIMEPOINTS),
       paste0("EQindex_", TIMEPOINTS),
       unlist(
@@ -28,11 +33,15 @@ build_imputation_wide_frame <- function(trial_df) {
       COST_SUMMARY_COLUMNS
     )))
 
+  df_impute <- recode_adherence_unknowns_for_imputation(df_impute)
+
   factor_cols <- c(
     "group", "patient", "condition", "gender", "ethnicity", "education",
     "selection", "live_alone", "age", "BMI_range", "smoking", "diabetes",
     "ihd", "employed", "controlled_0", "controlled_3", "controlled_6",
-    "controlled_9", "controlled_12"
+    "controlled_9", "controlled_12",
+    paste0("med_adherence_", TIMEPOINTS),
+    paste0("last_missed_dose_", TIMEPOINTS)
   )
 
   for (nm in intersect(factor_cols, names(df_impute))) {
@@ -69,7 +78,7 @@ build_mice_methods <- function(df) {
   methods
 }
 
-build_branch_mice_inputs <- function(df_impute, branch = c("effectiveness", "cea")) {
+build_branch_mice_inputs <- function(df_impute, branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
   branch_df <- build_imputation_branch_frame(df_impute, branch = branch)
   predictor_matrix <- build_analytic_mice_predictors(branch_df, branch = branch)
@@ -156,7 +165,7 @@ run_arm_split_mice <- function(
 
 run_analytic_mice_imputation <- function(
     df_impute,
-    branch = c("effectiveness", "cea"),
+    branch = c("effectiveness", "secondary_effectiveness", "cea"),
     out_dir = "data_processed",
     write_first_completion = FALSE) {
   branch <- match.arg(branch)
@@ -177,7 +186,13 @@ run_analytic_mice_imputation <- function(
     df_impute = branch_inputs$df,
     predictor_matrix = branch_inputs$predictor_matrix,
     methods = branch_inputs$methods,
-    seed = if (branch == "effectiveness") method_config("imputation", "full_seed") else method_config("imputation", "full_seed") + 1000L,
+    seed = if (branch == "effectiveness") {
+      method_config("imputation", "full_seed")
+    } else if (branch == "secondary_effectiveness") {
+      method_config("imputation", "full_seed") + 500L
+    } else {
+      method_config("imputation", "full_seed") + 1000L
+    },
     output_prefix = paste0("mids_imputation_", branch),
     out_dir = out_dir,
     write_first_completion = write_first_completion
@@ -197,6 +212,15 @@ run_effectiveness_mice_imputation <- function(df_impute, out_dir = "data_process
   run_analytic_mice_imputation(
     df_impute = df_impute,
     branch = "effectiveness",
+    out_dir = out_dir,
+    write_first_completion = TRUE
+  )
+}
+
+run_secondary_effectiveness_mice_imputation <- function(df_impute, out_dir = "data_processed") {
+  run_analytic_mice_imputation(
+    df_impute = df_impute,
+    branch = "secondary_effectiveness",
     out_dir = out_dir,
     write_first_completion = TRUE
   )

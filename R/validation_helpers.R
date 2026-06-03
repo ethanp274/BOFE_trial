@@ -158,6 +158,33 @@ validate_eq5d_item_levels <- function(df) {
   invisible(TRUE)
 }
 
+validate_adherence_unknowns_recoded <- function(df) {
+  med_cols <- intersect(paste0("med_adherence_", TIMEPOINTS), names(df))
+  missed_cols <- intersect(paste0("last_missed_dose_", TIMEPOINTS), names(df))
+
+  bad <- list()
+  for (col in med_cols) {
+    values <- as_numeric_safe(df[[col]])
+    if (any(values == method_config("outcomes", "adherence_unknown_codes", "med_adherence"), na.rm = TRUE)) {
+      bad[[col]] <- "contains med_adherence 'doesn't know' code"
+    }
+  }
+  for (col in missed_cols) {
+    values <- as_numeric_safe(df[[col]])
+    if (any(values == method_config("outcomes", "adherence_unknown_codes", "last_missed_dose"), na.rm = TRUE)) {
+      bad[[col]] <- "contains last_missed_dose 'can't remember' code"
+    }
+  }
+
+  if (length(bad) > 0) {
+    stop(
+      "adherence uncertainty codes were not recoded to missing: ",
+      paste(paste(names(bad), unlist(bad), sep = "="), collapse = "; ")
+    )
+  }
+  invisible(TRUE)
+}
+
 validate_cleaning_artifact <- function(artifact = read_canonical_artifact("cleaning")) {
   combine_validation_reports(
     run_validation_check("cleaning: required bundle fields", {
@@ -203,11 +230,15 @@ validate_imputation_frame <- function(df_impute) {
     run_validation_check("imputation frame: EQ-5D item levels", {
       validate_eq5d_item_levels(df_impute)
       "all raw EQ-5D item values are 1-5 or missing"
+    }),
+    run_validation_check("imputation frame: adherence uncertainty recoded", {
+      validate_adherence_unknowns_recoded(df_impute)
+      "D5.9 don't-know and D5.10 can't-remember are missing"
     })
   )
 }
 
-validate_imputation_branch_frame <- function(df, branch = c("effectiveness", "cea")) {
+validate_imputation_branch_frame <- function(df, branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
   combine_validation_reports(
     run_validation_check(paste0("imputation ", branch, " frame: required columns"), {
@@ -230,6 +261,21 @@ validate_imputation_branch_frame <- function(df, branch = c("effectiveness", "ce
         stop("CEA imputation is missing cost columns: ", paste(setdiff(COST_SUMMARY_COLUMNS, cost_cols), collapse = ", "))
       }
       "cost-column policy satisfied"
+    }),
+    run_validation_check(paste0("imputation ", branch, " frame: adherence policy"), {
+      adherence_cols <- adherence_imputation_columns(df)
+      if (branch == "effectiveness" && length(adherence_cols) > 0) {
+        stop("primary effectiveness imputation contains adherence columns: ", paste(adherence_cols, collapse = ", "))
+      }
+      if (branch == "secondary_effectiveness") {
+        expected <- adherence_imputation_columns()
+        missing <- setdiff(expected, names(df))
+        if (length(missing) > 0) {
+          stop("secondary effectiveness imputation is missing adherence columns: ", paste(missing, collapse = ", "))
+        }
+        validate_adherence_unknowns_recoded(df)
+      }
+      "adherence-column policy satisfied"
     })
   )
 }
@@ -245,12 +291,24 @@ validate_imputation_artifact <- function(artifact = read_canonical_artifact("imp
         "cea_methods", "cea_predictor_audit", "cea_diagnostics",
         "quickpred_summary", "quickpred_comparison", "missingness_report"
       )
+      if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+        required <- c(
+          required,
+          "secondary_effectiveness_df_impute", "secondary_effectiveness_mids", "secondary_effectiveness_predictor_matrix",
+          "secondary_effectiveness_methods", "secondary_effectiveness_predictor_audit", "secondary_effectiveness_diagnostics"
+        )
+      }
       missing <- setdiff(required, names(artifact))
       if (length(missing) > 0) stop("missing fields: ", paste(missing, collapse = ", "))
       "required fields present"
     }),
     validate_imputation_frame(artifact$df_impute),
     validate_imputation_branch_frame(artifact$effectiveness_df_impute, "effectiveness"),
+    if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+      validate_imputation_branch_frame(artifact$secondary_effectiveness_df_impute, "secondary_effectiveness")
+    } else {
+      skip_validation_check("imputation secondary-effectiveness frame", "disabled by methods config")
+    },
     validate_imputation_branch_frame(artifact$cea_df_impute, "cea"),
     run_validation_check("imputation artifact: effectiveness MICE object", {
       if (!inherits(artifact$effectiveness_mids, "mids")) stop("effectiveness_mids is not a mice mids object.")
@@ -260,6 +318,14 @@ validate_imputation_artifact <- function(artifact = read_canonical_artifact("imp
       if (!inherits(artifact$cea_mids, "mids")) stop("cea_mids is not a mice mids object.")
       paste(artifact$cea_mids$m, "imputations")
     }),
+    if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+      run_validation_check("imputation artifact: secondary effectiveness MICE object", {
+        if (!inherits(artifact$secondary_effectiveness_mids, "mids")) stop("secondary_effectiveness_mids is not a mice mids object.")
+        paste(artifact$secondary_effectiveness_mids$m, "imputations")
+      })
+    } else {
+      skip_validation_check("imputation artifact: secondary effectiveness MICE object", "disabled by methods config")
+    },
     run_validation_check("imputation artifact: effectiveness has no cost predictors", {
       if (any(COST_SUMMARY_COLUMNS %in% colnames(artifact$effectiveness_predictor_matrix))) {
         stop("effectiveness predictor matrix contains cost columns.")
@@ -270,6 +336,14 @@ validate_imputation_artifact <- function(artifact = read_canonical_artifact("imp
       validate_no_future_predictors(artifact$effectiveness_predictor_audit)
       "no future-timepoint predictors"
     }),
+    if (isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))) {
+      run_validation_check("imputation artifact: secondary effectiveness no future predictors", {
+        validate_no_future_predictors(artifact$secondary_effectiveness_predictor_audit)
+        "no future-timepoint predictors"
+      })
+    } else {
+      skip_validation_check("imputation artifact: secondary effectiveness no future predictors", "disabled by methods config")
+    },
     run_validation_check("imputation artifact: CEA no future predictors", {
       validate_no_future_predictors(artifact$cea_predictor_audit)
       "no future-timepoint predictors"

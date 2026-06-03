@@ -47,6 +47,46 @@ effectiveness_results <- gee_results$gee_timepoint_effects %>%
   filter(time == 12) %>%
   select(model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, any_of("p_value"), n_imputations)
 
+secondary_enabled <- isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))
+
+secondary_gee <- if (isTRUE(secondary_enabled) && "gee_secondary_timepoint_effects" %in% names(gee_results)) {
+  gee_results$gee_secondary_timepoint_effects
+} else {
+  data.frame()
+}
+
+secondary_mixed <- if (isTRUE(secondary_enabled) && file.exists(canonical_artifact_path("effectiveness_mixed"))) {
+  mixed_results <- read_canonical_artifact("effectiveness_mixed")
+  if ("secondary_timepoint_effects" %in% names(mixed_results)) {
+    mixed_results$secondary_timepoint_effects
+  } else {
+    data.frame()
+  }
+} else {
+  data.frame()
+}
+
+secondary_effectiveness_timepoints <- bind_rows(secondary_gee, secondary_mixed)
+secondary_effectiveness_summary <- if (nrow(secondary_effectiveness_timepoints) > 0) {
+  secondary_effectiveness_timepoints %>%
+    filter(time == 12) %>%
+    select(
+      model_family,
+      outcome,
+      outcome_label,
+      adjustment,
+      model,
+      time,
+      odds_ratio,
+      ci_low,
+      ci_high,
+      any_of("p_value"),
+      n_imputations
+    )
+} else {
+  data.frame()
+}
+
 # Standardise the CEA summary column names before export.
 cea_summary <- cea_results$summary
 if (!"model_family" %in% names(cea_summary)) {
@@ -91,6 +131,28 @@ cea_summary <- cea_summary %>%
     ))
   )
 
+secondary_summary_rows <- if (nrow(secondary_effectiveness_summary) > 0) {
+  secondary_effectiveness_summary %>%
+    transmute(
+      section = "secondary_effectiveness",
+      model_family = model_family,
+      adjustment = adjustment,
+      model = model,
+      time = time,
+      metric = paste0(outcome, "_", model_family, "_", adjustment, "_12mo_or"),
+      estimate = odds_ratio,
+      pooled_ci_lower = ci_low,
+      pooled_ci_upper = ci_high,
+      bootstrap_ci_lower = NA_real_,
+      bootstrap_ci_upper = NA_real_,
+      p_value = p_value,
+      n_imputations = n_imputations,
+      uncertainty_method = outcome_label
+    )
+} else {
+  data.frame()
+}
+
 # Combine the primary effectiveness and CEA rows into one manuscript table.
 manuscript_results_summary <- bind_rows(
   effectiveness_results %>%
@@ -110,7 +172,8 @@ manuscript_results_summary <- bind_rows(
       n_imputations = n_imputations,
       uncertainty_method = NA_character_
     ),
-  cea_summary
+  cea_summary,
+  secondary_summary_rows
 )
 
 pipeline_phase_info("06_outputs", "assembling manuscript-ready comparison tables")
@@ -118,10 +181,16 @@ pipeline_phase_info("06_outputs", "assembling manuscript-ready comparison tables
 manuscript_outputs_artifact <- list(
   stage = "06_outputs",
   manuscript_results_summary = manuscript_results_summary,
+  secondary_effectiveness_timepoints = secondary_effectiveness_timepoints,
+  secondary_effectiveness_summary = secondary_effectiveness_summary,
   complete_cases_long = complete_long
 )
 write_canonical_artifact("manuscript_outputs", manuscript_outputs_artifact)
 write_result_csv(manuscript_results_summary, "manuscript_results_summary.csv")
+if (isTRUE(secondary_enabled) && nrow(secondary_effectiveness_timepoints) > 0) {
+  write_result_csv(secondary_effectiveness_timepoints, "secondary_effectiveness_timepoint_effects.csv")
+  write_result_csv(secondary_effectiveness_summary, "secondary_effectiveness_summary.csv")
+}
 
 cat("06_outputs: saved canonical manuscript outputs artifact and manuscript summary CSV.\n")
 pipeline_phase_end(

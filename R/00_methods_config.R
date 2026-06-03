@@ -29,7 +29,15 @@ BOFE_METHODS_CONFIG <- list(
     asthma_act_control_threshold = 20,
     copd_ccq_control_threshold = 2,
     controlled_definition = "Asthma is controlled when ACT >= 20; COPD is controlled when CCQ < 2.",
-    rationale = "Disease-specific control thresholds are harmonised into controlled_* for combined asthma/COPD effectiveness models."
+    adherence_unknown_codes = list(
+      med_adherence = 3,
+      last_missed_dose = 5
+    ),
+    secondary_adherence_definitions = list(
+      medication_adherence = "D5.9 is recoded so 1 means no missed/changed doses and 0 means the patient missed or changed doses; 'doesn't know' is missing before imputation.",
+      non_recent_missed_dose = "D5.10 is recoded so 1 means last missed dose was last week/month and 0 means yesterday/this week; 'can't remember' is missing before imputation."
+    ),
+    rationale = "Disease-specific control thresholds are harmonised into controlled_* for combined asthma/COPD effectiveness models. Medication-adherence uncertainty categories are treated as missing data rather than substantive response levels."
   ),
   imputation = list(
     main_variant = "analytic",
@@ -60,7 +68,16 @@ BOFE_METHODS_CONFIG <- list(
         exclude_roles = c("cost", "resource_use", "utility_item", "adherence"),
         allow_cost_predictors = FALSE,
         allow_qol_item_predictors = FALSE,
-        rationale = "The primary effectiveness model only needs controlled outcomes plus categorical age, sex, and baseline control. Condition, categorical age, BMI, smoking, IHD, and EQindex summaries are retained as parsimonious clinically relevant auxiliary measures; vague, weak, redundant, or non-informative baseline auxiliaries such as selection, num_meds, and constant diabetes are excluded to avoid auxiliary-variable sprawl and unnecessary conditioning."
+        rationale = "The primary effectiveness model only needs controlled outcomes plus categorical age, sex, and baseline control. Condition, categorical age, BMI, smoking, IHD, and EQindex summaries are retained as parsimonious clinically relevant auxiliary measures. Adherence outcomes are kept out of the primary branch so secondary-outcome imputation cannot perturb the primary disease-control estimates."
+      ),
+      secondary_effectiveness = list(
+        frame_note = "Secondary effectiveness imputation keeps the primary effectiveness variables plus medication-adherence and last-missed-dose outcomes.",
+        include_patterns = c("^controlled_[0-9]+$", "^EQindex_[0-9]+$", "^(med_adherence|last_missed_dose)_[0-9]+$"),
+        include_roles = c("id_design", "baseline_covariate", "effectiveness_outcome", "utility_index", "adherence"),
+        exclude_roles = c("cost", "resource_use", "utility_item"),
+        allow_cost_predictors = FALSE,
+        allow_qol_item_predictors = FALSE,
+        rationale = "Secondary adherence outcomes are imputed in their own branch using the same time-aware predictor classes as controlled_* targets: core baseline covariates, controlled outcomes, and EQindex summaries up to the target timepoint. Adherence variables are imputation targets, not predictors of the primary disease-control endpoint."
       ),
       cea = list(
         frame_note = "CEA imputation keeps patient ID, arm, core baseline covariates, controlled outcomes, raw EQ-5D item columns, and canonical half-year cost summaries.",
@@ -85,10 +102,31 @@ BOFE_METHODS_CONFIG <- list(
     unadjusted_formula = "controlled_t ~ group * time",
     adjusted_formula = "controlled_t ~ controlled_0 + age + gender + group * time",
     adjusted_covariates = c("controlled_0", "age", "gender"),
+    secondary_outcomes = list(
+      enabled = FALSE,
+      status = "deprecated_pending_methods_revision",
+      rationale = "Medication-adherence and last-missed-dose models are not run in the clean main pipeline because current coding/skip-logic interpretation is not methodologically stable enough for manuscript-facing secondary analyses.",
+      medication_adherence = list(
+        label = "Medication adherence: no missed or changed doses",
+        outcome = "medication_adherence_t",
+        baseline = "medication_adherence_0",
+        unadjusted_formula = "medication_adherence_t ~ group * time",
+        adjusted_formula = "medication_adherence_t ~ medication_adherence_0 + age + gender + group * time",
+        interpretation = "Odds ratio above 1 favours intervention for reporting no missed/changed doses."
+      ),
+      non_recent_missed_dose = list(
+        label = "Last missed dose: last week/month rather than yesterday/this week",
+        outcome = "non_recent_missed_dose_t",
+        baseline = "non_recent_missed_dose_0",
+        unadjusted_formula = "non_recent_missed_dose_t ~ group * time",
+        adjusted_formula = "non_recent_missed_dose_t ~ non_recent_missed_dose_0 + age + gender + group * time",
+        interpretation = "Odds ratio above 1 favours intervention for less recent missed dosing."
+      )
+    ),
     default_imputation_variant = "full",
     mixed_effects_optimizer = "bobyqa",
     mixed_effects_formula_suffix = "+ (1 | patient)",
-    rationale = "The primary effectiveness analysis is a marginal GEE on follow-up visits, adjusted for baseline control, age, and sex; mixed-effects logistic regression is retained as sensitivity."
+    rationale = "The primary effectiveness analysis is a marginal GEE on follow-up visits, adjusted for baseline control, age, and sex; mixed-effects logistic regression is retained as sensitivity. Medication adherence and last-missed-dose are reported as secondary longitudinal binary outcomes using the same GEE primary / GLMM sensitivity structure."
   ),
   economics = list(
     perspective = "Italian health system / Sicilian Regional Health Service",

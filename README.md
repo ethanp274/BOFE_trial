@@ -61,7 +61,7 @@ Disease control at 12 months:
 
 Current refactor entry points:
 - `R/01_cleaning.R`: reads raw questionnaire/cost files, applies manual corrections, derives `controlled_*`, `EQindex_*`, cost summaries, and completeness flags, then writes `data_processed/cleaning_artifact.rds`.
-- `R/02_imputation.R`: creates one canonical wide imputation source, derives separate effectiveness and CEA MICE frames from it, runs 20 arm-split imputations per branch, and writes `data_processed/imputation_artifact.rds`.
+- `R/02_imputation.R`: creates one canonical wide imputation source, derives separate primary-effectiveness and CEA MICE frames from it, runs 20 arm-split imputations per branch, and writes `data_processed/imputation_artifact.rds`. A secondary-effectiveness adherence branch exists behind a disabled config flag but is not part of the clean main pipeline.
 - `R/03_descriptives.R`: builds the analyzed-population Table 1, disease-aware missingness summary, cost summary, and resource-use summary, then writes `results/descriptives_artifact.rds`.
 - `R/04b_gee.R`: fits the protocol-style GEE effectiveness model and writes `models/effectiveness_gee_artifact.rds`. This is the default effectiveness analysis.
 - `R/04_models.R`: fits the mixed-effects sensitivity model and writes `models/effectiveness_mixed_artifact.rds`.
@@ -104,6 +104,7 @@ Progress tracking:
 - The latest rerun after fixing the legacy long-data helper shows nonzero bootstrap variation in incremental cost again.
 - `run_full_pipeline.ps1` stops on the first failed phase and reports the failed step.
 - The final manuscript brief is written to `results/manuscript_results_brief.md`; the concise CSV summary is `results/manuscript_results_summary.csv`.
+- Secondary adherence model exports are `results/model_gee_secondary_summaries.csv`, `results/model_gee_secondary_timepoint_effects.csv`, and, after running `R/06_outputs.R`, `results/secondary_effectiveness_summary.csv` plus `results/secondary_effectiveness_timepoint_effects.csv`. Matching GLMM sensitivity exports are produced by `R/04_models.R`.
 
 ### `deprecated/new_data_cleaning_pipe.R`
 Legacy data-cleaning and reconstruction pipeline.
@@ -227,6 +228,7 @@ Example:
 Outcome data:
 - Multiple imputation settings are declared in `R/00_methods_config.R`
 - The configured primary effectiveness branch uses arm-split MICE, PMM/logistic/polyreg methods as appropriate, and a parsimonious time-aware predictor matrix containing core baseline covariates (`condition`, `gender`, categorical `age`, `BMI`, `smoking`, `ihd`), `controlled_*`, and `EQindex_*`
+- Medication-adherence secondary outcome models are disabled pending methods revision. A dormant secondary-effectiveness branch can be re-enabled from `R/00_methods_config.R`, but the clean main pipeline does not impute or model `D5.9` / `D5.10`.
 
 Cost data:
 - Imputed in a separate CEA branch using core baseline covariates (`condition`, `gender`, categorical `age`, `BMI`, `smoking`, `ihd`), `controlled_*`, raw `EQ5D5L.*` items, and canonical half-year cost summaries
@@ -246,7 +248,7 @@ Main effectiveness analysis in `R/04b_gee.R`:
 
 Manuscript-aligned refactor:
 - `R/01_cleaning.R` reads only raw questionnaire and cost files, then derives a single wide analysis dataset for downstream stages
-- `R/02_imputation.R` builds one canonical wide imputation source, derives branch-specific effectiveness and CEA imputation frames, and stores predictor-selection, analytic predictor-matrix, and `mice::quickpred()` comparison audits inside the canonical imputation artifact and `audit/`
+- `R/02_imputation.R` builds one canonical wide imputation source, derives branch-specific primary-effectiveness and CEA imputation frames, and stores predictor-selection, analytic predictor-matrix, and `mice::quickpred()` comparison audits inside the canonical imputation artifact and `audit/`
 - Key imputation audit exports are `audit/imputation_variable_selection.csv`, `audit/imputation_predictor_audit_effectiveness.csv`, `audit/imputation_predictor_audit_cea.csv`, `audit/imputation_quickpred_comparison_summary.csv`, and `audit/imputation_quickpred_pair_comparison.csv`.
 - `R/04b_gee.R` reconstructs the follow-up repeated-measures analysis set, keeps patient clusters contiguous, and pools the configured primary GEE analyses fit to the selected imputation variant through a shared helper
 - `R/04_models.R` keeps the mixed-effects logistic regression as a sensitivity analysis only and also delegates to the shared effectiveness helper

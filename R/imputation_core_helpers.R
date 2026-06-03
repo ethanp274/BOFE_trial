@@ -30,6 +30,36 @@ classify_imputation_variable <- function(name) {
   "baseline_covariate"
 }
 
+adherence_imputation_columns <- function(df = NULL) {
+  cols <- c(
+    paste0("med_adherence_", TIMEPOINTS),
+    paste0("last_missed_dose_", TIMEPOINTS)
+  )
+  if (is.null(df)) return(cols)
+  intersect(cols, names(df))
+}
+
+recode_adherence_unknowns_for_imputation <- function(df) {
+  med_cols <- intersect(paste0("med_adherence_", TIMEPOINTS), names(df))
+  missed_cols <- intersect(paste0("last_missed_dose_", TIMEPOINTS), names(df))
+
+  for (col in med_cols) {
+    values <- as_numeric_safe(df[[col]])
+    values[values == method_config("outcomes", "adherence_unknown_codes", "med_adherence")] <- NA_real_
+    values[!is.na(values) & !values %in% c(1, 2)] <- NA_real_
+    df[[col]] <- values
+  }
+
+  for (col in missed_cols) {
+    values <- as_numeric_safe(df[[col]])
+    values[values == method_config("outcomes", "adherence_unknown_codes", "last_missed_dose")] <- NA_real_
+    values[!is.na(values) & !values %in% 1:4] <- NA_real_
+    df[[col]] <- values
+  }
+
+  df
+}
+
 build_imputation_variable_profile <- function(df) {
   n <- nrow(df)
   data.frame(
@@ -48,7 +78,7 @@ build_imputation_variable_profile <- function(df) {
   )
 }
 
-imputation_predictor_selection_config <- function(branch = c("effectiveness", "cea")) {
+imputation_predictor_selection_config <- function(branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
   selection <- method_config("imputation", "predictor_selection")
   branch_config <- selection[[branch]]
@@ -58,7 +88,7 @@ imputation_predictor_selection_config <- function(branch = c("effectiveness", "c
   list(global = selection, branch = branch_config)
 }
 
-branch_requested_imputation_variables <- function(df, branch = c("effectiveness", "cea")) {
+branch_requested_imputation_variables <- function(df, branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
   cfg <- imputation_predictor_selection_config(branch)
   baseline_predictors <- cfg$global$baseline_predictors
@@ -72,13 +102,23 @@ branch_requested_imputation_variables <- function(df, branch = c("effectiveness"
   unique(requested[requested %in% names(df)])
 }
 
-imputation_branch_required_columns <- function(branch = c("effectiveness", "cea")) {
+imputation_branch_required_columns <- function(branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
   if (branch == "effectiveness") {
     return(c(
       "patient", "group", "condition", "gender", "age",
       paste0("controlled_", TIMEPOINTS),
       paste0("EQindex_", TIMEPOINTS)
+    ))
+  }
+
+  if (branch == "secondary_effectiveness") {
+    return(c(
+      "patient", "group", "condition", "gender", "age",
+      paste0("controlled_", TIMEPOINTS),
+      paste0("EQindex_", TIMEPOINTS),
+      paste0("med_adherence_", TIMEPOINTS),
+      paste0("last_missed_dose_", TIMEPOINTS)
     ))
   }
 
@@ -99,7 +139,7 @@ build_imputation_selection_profile <- function(df) {
   cfg <- method_config("imputation", "predictor_selection")
   excluded_baseline <- cfg$excluded_baseline_predictors
 
-  for (branch in c("effectiveness", "cea")) {
+  for (branch in c("effectiveness", "secondary_effectiveness", "cea")) {
     branch_cfg <- cfg[[branch]]
     requested <- branch_requested_imputation_variables(df, branch)
     selected_col <- paste0("selected_", branch)
@@ -126,7 +166,7 @@ build_imputation_selection_profile <- function(df) {
   profile
 }
 
-build_imputation_branch_frame <- function(df, branch = c("effectiveness", "cea")) {
+build_imputation_branch_frame <- function(df, branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
   profile <- build_imputation_selection_profile(df)
   selected_col <- paste0("selected_", branch)
@@ -145,10 +185,17 @@ build_imputation_branch_frame <- function(df, branch = c("effectiveness", "cea")
   out
 }
 
-predictor_role_allowed_for_target <- function(target_role, predictor_roles, branch = c("effectiveness", "cea")) {
+predictor_role_allowed_for_target <- function(target_role, predictor_roles, branch = c("effectiveness", "secondary_effectiveness", "cea")) {
   branch <- match.arg(branch)
 
   if (branch == "effectiveness") {
+    return(predictor_roles %in% c("baseline_covariate", "effectiveness_outcome", "utility_index"))
+  }
+
+  if (branch == "secondary_effectiveness") {
+    if (target_role %in% c("effectiveness_outcome", "adherence")) {
+      return(predictor_roles %in% c("baseline_covariate", "effectiveness_outcome", "utility_index"))
+    }
     return(predictor_roles %in% c("baseline_covariate", "effectiveness_outcome", "utility_index"))
   }
 
@@ -162,7 +209,7 @@ predictor_role_allowed_for_target <- function(target_role, predictor_roles, bran
   predictor_roles %in% c("baseline_covariate", "effectiveness_outcome", "utility_item")
 }
 
-build_analytic_mice_predictors <- function(df, branch = c("effectiveness", "cea"), id_col = "patient", group_col = "group") {
+build_analytic_mice_predictors <- function(df, branch = c("effectiveness", "secondary_effectiveness", "cea"), id_col = "patient", group_col = "group") {
   branch <- match.arg(branch)
   pred <- mice::make.predictorMatrix(df)
   pred[,] <- 0
