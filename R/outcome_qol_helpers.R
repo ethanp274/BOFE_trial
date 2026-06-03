@@ -129,6 +129,8 @@ derive_eqindex <- function(df, timepoints = TIMEPOINTS, tariff = method_config("
       source_col <- paste0(dimensions[[dimension]], "_", tp)
       scored_col <- paste0("disut_", dimension, "_", tp)
       df[[source_col]] <- as_numeric_safe(df[[source_col]])
+      invalid_response <- !is.na(df[[source_col]]) & !df[[source_col]] %in% 1:5
+      df[[source_col]][invalid_response] <- NA_real_
       df[[scored_col]] <- score_eq5d_dimension(df[[source_col]], dimension, tariff = tariff)
       disutility_cols <- c(disutility_cols, scored_col)
     }
@@ -138,9 +140,9 @@ derive_eqindex <- function(df, timepoints = TIMEPOINTS, tariff = method_config("
     df[[total_col]] <- row_sums_strict(df, disutility_cols)
     df[[eqindex_col]] <- round(1 - df[[total_col]], 3)
 
-    all_zero_profile <- Reduce(`&`, lapply(all_dimension_cols, function(col) df[[col]] == 0))
-    all_zero_profile[is.na(all_zero_profile)] <- FALSE
-    df[[eqindex_col]][all_zero_profile] <- NA
+    impossible_profile <- Reduce(`|`, lapply(all_dimension_cols, function(col) !is.na(df[[col]]) & !df[[col]] %in% 1:5))
+    impossible_profile[is.na(impossible_profile)] <- FALSE
+    df[[eqindex_col]][impossible_profile] <- NA
   }
 
   df

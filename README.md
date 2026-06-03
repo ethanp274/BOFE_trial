@@ -65,8 +65,8 @@ Current refactor entry points:
 - `R/03_descriptives.R`: builds the analyzed-population Table 1, disease-aware missingness summary, cost summary, and resource-use summary, then writes `results/descriptives_artifact.rds`.
 - `R/04b_gee.R`: fits the protocol-style GEE effectiveness model and writes `models/effectiveness_gee_artifact.rds`. This is the default effectiveness analysis.
 - `R/04_models.R`: fits the mixed-effects sensitivity model and writes `models/effectiveness_mixed_artifact.rds`.
-- `R/05_cost_effectiveness.R`: fits the main wide-imputed CEA branch using the complex MICE dataset and writes `models/cea_artifact.rds`.
-- `R/08_sensitivity_analyses.R`: runs the secondary effectiveness and CEA sensitivity analyses, including alternate imputation variants, intervention-cost sweeps, and the UK EQ-5D tariff sensitivity branch, then writes `results/sensitivity_analyses_artifact.rds`.
+- `R/05_cost_effectiveness.R`: fits the main wide-imputed CEA branch using the CEA-specific MICE object and writes `models/cea_artifact.rds`.
+- `R/08_sensitivity_analyses.R`: runs the secondary effectiveness and CEA sensitivity analyses, including simple/naive imputation and complete-case comparisons, intervention-cost sweeps, and the UK EQ-5D tariff sensitivity branch, then writes `results/sensitivity_analyses_artifact.rds`.
 - `R/06_outputs.R`: assembles manuscript-facing summary data from canonical stage artifacts and writes `results/manuscript_outputs_artifact.rds`.
 - `R/07_manuscript_report.R`: compiles a readable manuscript brief from canonical GEE and CEA artifacts and writes `results/manuscript_report_artifact.rds`.
 - `R/utils.R`: compatibility loader for focused helper modules; active code should edit the specific helper file rather than rebuilding a monolithic utility script.
@@ -76,6 +76,7 @@ Current refactor entry points:
 - `R/validation_helpers.R`: fast artifact and data-shape validation checks used by the smoke-test runner.
 - `R/run_smoke_tests.R`: tiny debugging runner that refreshes cleaning, validates canonical data contracts, builds the imputation frame without running MICE, validates any existing downstream artifacts, and writes `results/smoke_test_artifact.rds`.
 - `R/cost_helpers.R::build_economic_data()` collapses the raw monthly cost panels into canonical half-year `cost_*` summaries plus explicit source-completeness flags. Patients present in any raw cost file are treated as cost-complete; absent categories are set to zero, while invalid in-file period values such as F-file `9999` remain `NA` for imputation.
+- EQ-5D-5L item responses are restricted to valid levels 1-5; invalid raw item values such as `0` are converted to `NA` before EQindex scoring and before the CEA imputation branch sees the raw item columns.
 - If downstream artifacts are deleted because they are stale, regenerate them through the stage scripts rather than resurrecting old sidecar CSVs. The export CSVs/Markdown files are generated from the canonical artifacts and are expected deliverables, not clutter.
 
 Recommended run order from the project root:
@@ -225,10 +226,10 @@ Example:
 ## Missing Data
 Outcome data:
 - Multiple imputation settings are declared in `R/00_methods_config.R`
-- The configured primary effectiveness branch uses arm-split MICE, PMM/logistic/polyreg methods as appropriate, and a parsimonious time-aware predictor matrix containing selected baseline covariates, `controlled_*`, and `EQindex_*`
+- The configured primary effectiveness branch uses arm-split MICE, PMM/logistic/polyreg methods as appropriate, and a parsimonious time-aware predictor matrix containing core baseline covariates (`condition`, `gender`, categorical `age`, `BMI`, `smoking`, `ihd`), `controlled_*`, and `EQindex_*`
 
 Cost data:
-- Imputed in a separate CEA branch using selected baseline covariates, `controlled_*`, raw `EQ5D5L.*` items, and canonical half-year cost summaries
+- Imputed in a separate CEA branch using core baseline covariates (`condition`, `gender`, categorical `age`, `BMI`, `smoking`, `ihd`), `controlled_*`, raw `EQ5D5L.*` items, and canonical half-year cost summaries
 - Sparse questionnaire resource-use auxiliaries are excluded from both primary imputation branches; the raw cost files remain the canonical cost source
 - Secondary CEA scenarios are handled in `R/08_sensitivity_analyses.R`
 

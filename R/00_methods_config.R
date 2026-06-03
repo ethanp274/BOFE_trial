@@ -46,42 +46,35 @@ BOFE_METHODS_CONFIG <- list(
       quickpred_min_correlation = 0.10,
       quickpred_min_usable_cases = 0.25,
       baseline_predictors = c(
-        "condition", "gender", "age", "education", "selection", "live_alone",
-        "BMI", "smoking", "diabetes", "ihd", "employed", "num_meds"
+        "condition", "gender", "age", "BMI", "smoking", "ihd"
       ),
       excluded_baseline_predictors = c(
-        "ethnicity", "location", "FVC_0", "FEV1_0", "height", "weight", "BMI_range"
+        "ethnicity", "location", "education", "selection", "live_alone",
+        "FVC_0", "FEV1_0", "height", "weight", "BMI_range",
+        "diabetes", "employed", "num_meds"
       ),
       effectiveness = list(
-        frame_note = "Primary effectiveness imputation keeps only patient ID, arm, selected baseline covariates, controlled outcomes, and EQindex summaries.",
+        frame_note = "Primary effectiveness imputation keeps only patient ID, arm, core baseline covariates, controlled outcomes, and EQindex summaries.",
         include_patterns = c("^controlled_[0-9]+$", "^EQindex_[0-9]+$"),
         include_roles = c("id_design", "baseline_covariate", "effectiveness_outcome", "utility_index"),
         exclude_roles = c("cost", "resource_use", "utility_item", "adherence"),
         allow_cost_predictors = FALSE,
         allow_qol_item_predictors = FALSE,
-        rationale = "The primary effectiveness model only needs controlled outcomes plus age, sex, and baseline control. EQindex summaries are retained as parsimonious auxiliary health-status measures; sparse resource use, cost summaries, raw EQ-5D items, and adherence variables are excluded to avoid auxiliary-variable sprawl and post-randomisation mediator noise."
+        rationale = "The primary effectiveness model only needs controlled outcomes plus categorical age, sex, and baseline control. Condition, categorical age, BMI, smoking, IHD, and EQindex summaries are retained as parsimonious clinically relevant auxiliary measures; vague, weak, redundant, or non-informative baseline auxiliaries such as selection, num_meds, and constant diabetes are excluded to avoid auxiliary-variable sprawl and unnecessary conditioning."
       ),
       cea = list(
-        frame_note = "CEA imputation keeps patient ID, arm, selected baseline covariates, controlled outcomes, raw EQ-5D item columns, and canonical half-year cost summaries.",
+        frame_note = "CEA imputation keeps patient ID, arm, core baseline covariates, controlled outcomes, raw EQ-5D item columns, and canonical half-year cost summaries.",
         include_patterns = c("^controlled_[0-9]+$", "^EQ5D5L\\.[1-5]_[0-9]+$", "^cost_[CMFHO](6|12)$"),
         include_roles = c("id_design", "baseline_covariate", "effectiveness_outcome", "utility_item", "cost"),
         exclude_roles = c("resource_use", "utility_index", "adherence"),
         allow_cost_predictors = TRUE,
         allow_qol_item_predictors = TRUE,
-        rationale = "The CEA imputation jointly imputes costs and EQ-5D item responses so QALYs can be recomputed under configured tariffs and cost-effect correlation is preserved. Sparse questionnaire resource-use auxiliaries are excluded because raw cost files are the canonical cost source."
+        rationale = "The CEA imputation jointly imputes costs and EQ-5D item responses so QALYs can be recomputed under configured tariffs and cost-effect correlation is preserved. Sparse questionnaire resource-use auxiliaries and weak extra baseline auxiliaries are excluded because raw cost files, longitudinal EQ-5D, and core clinical/demographic predictors, including categorical age, BMI, smoking, and IHD, are the explainable primary imputation source."
       )
     ),
     cost_predictor_policy = "Cost summaries are imputed only in the CEA branch; they are excluded from primary effectiveness imputation and may predict cost/QALY targets only inside the CEA-specific imputation matrix.",
-    basic_predictors = c("gender", "age", "controlled_0", "EQindex_0"),
-    basic_lagged_pairs = list(
-      c("controlled_3", "controlled_0"),
-      c("controlled_6", "controlled_3"),
-      c("controlled_9", "controlled_6"),
-      c("controlled_12", "controlled_9")
-    ),
     full_seed = 123L,
-    basic_seed = 456L,
-    sensitivity_variants = c("full", "basic", "simple", "complete_cases"),
+    sensitivity_variants = c("full", "simple", "complete_cases"),
     rationale = "The main MICE stage preserves ITT through two explicit analysis-specific branches: a parsimonious effectiveness imputation and a CEA imputation for costs plus EQ-5D items. Sensitivity variants isolate simpler imputation assumptions."
   ),
   effectiveness = list(

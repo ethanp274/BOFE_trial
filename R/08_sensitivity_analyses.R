@@ -2,7 +2,7 @@
 # Purpose: Run all secondary analyses outside the main manuscript pipeline.
 #
 # Sensitivity families:
-#   - complete-case, naive, basic MICE, and full MICE effectiveness variants
+#   - complete-case, simple/naive, and main MICE effectiveness variants
 #   - GLM 12-month outcome comparison
 #   - GLMM over all timepoints
 #   - CEA intervention-cost sweep
@@ -28,16 +28,15 @@ main_imputation_artifact <- read_canonical_artifact("imputation")
 trial_df <- cleaning_artifact$all_cases
 df_impute <- build_imputation_wide_frame(trial_df)
 
-basic_source_cols <- if (all(c("effectiveness_df_impute", "cea_df_impute") %in% names(main_imputation_artifact))) {
+simple_source_cols <- if (all(c("effectiveness_df_impute", "cea_df_impute") %in% names(main_imputation_artifact))) {
   unique(c(names(main_imputation_artifact$effectiveness_df_impute), names(main_imputation_artifact$cea_df_impute)))
 } else {
   names(df_impute)
 }
-df_impute_basic <- df_impute[, intersect(basic_source_cols, names(df_impute)), drop = FALSE]
-basic_mids <- run_basic_mice_imputation(df_impute_basic)
-simple_branch <- run_simple_within_arm_imputation(df_impute_basic)
+df_impute_simple <- df_impute[, intersect(simple_source_cols, names(df_impute)), drop = FALSE]
+simple_branch <- run_simple_within_arm_imputation(df_impute_simple)
 simple_imputed <- simple_branch$data
-imputation_variant_summary <- write_imputation_variant_summary(df_impute_basic, simple_imputed)
+imputation_variant_summary <- write_imputation_variant_summary(df_impute_simple, simple_imputed)
 
 # Keep the main effectiveness artefacts for the full variant, and compute the
 # alternative variants directly in-process so the runner stays filesystem-light.
@@ -54,7 +53,6 @@ cea_full_mids <- if ("cea_mids" %in% names(main_imputation_artifact)) {
 
 variant_imputations <- list(
   full = effectiveness_full_mids,
-  basic = basic_mids$mids,
   simple = simple_imputed,
   complete_cases = cleaning_artifact$complete_cases
 )
@@ -126,19 +124,10 @@ expected_cost_model <- cost_model_spec(cea_cost_family)$model
 if (!any(cea_full$cea_model_comparison$model == expected_cost_model, na.rm = TRUE)) {
   stop("Current main CEA artifact is not using the configured cost model (", expected_cost_model, "). Re-run R/05_cost_effectiveness.R first.")
 }
-cea_basic <- run_nested_mi_cea_branch(
-  mids_obj = basic_mids$mids,
-  branch_label = "basic_mice",
-  economic_data = economic_data,
-  bootstrap_iterations = as.integer(cea_bootstrap_iterations),
-  cost_family = cea_cost_family
-)
-
 cea_sensitivity_summary <- bind_rows(
   cea_complete_case$summary %>% mutate(scenario = "complete_case"),
   cea_simple$summary %>% mutate(scenario = "simple_within_arm"),
-  cea_full$summary %>% mutate(scenario = "full_mice"),
-  cea_basic$summary %>% mutate(scenario = "basic_mice")
+  cea_full$summary %>% mutate(scenario = "full_mice")
 ) %>%
   select(
     scenario,
@@ -213,11 +202,6 @@ uk_tariff_summary <- tryCatch({
 sensitivity_artifact <- list(
   stage = "08_sensitivity_analyses",
   imputations = list(
-    basic_mids = basic_mids$mids,
-    basic_predictor_matrix = basic_mids$predictor_matrix,
-    basic_methods = basic_mids$methods,
-    basic_predictor_audit = basic_mids$predictor_audit,
-    basic_diagnostics = basic_mids$diagnostics,
     simple_wide = simple_imputed,
     variant_summary = imputation_variant_summary
   ),

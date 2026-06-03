@@ -30,7 +30,7 @@ build_imputation_wide_frame <- function(trial_df) {
 
   factor_cols <- c(
     "group", "patient", "condition", "gender", "ethnicity", "education",
-    "selection", "live_alone", "BMI_range", "smoking", "diabetes",
+    "selection", "live_alone", "age", "BMI_range", "smoking", "diabetes",
     "ihd", "employed", "controlled_0", "controlled_3", "controlled_6",
     "controlled_9", "controlled_12"
   )
@@ -219,22 +219,6 @@ run_full_mice_imputation <- function(df_impute, out_dir = "data_processed") {
   run_effectiveness_mice_imputation(df_impute, out_dir = out_dir)
 }
 
-run_basic_mice_imputation <- function(df_impute, out_dir = "data_processed") {
-  pipeline_phase_info("02_imputation", "running the configured basic MICE sensitivity")
-  pred_matrix_basic <- build_basic_mice_predictors(df_impute)
-  methods_basic <- build_mice_methods(df_impute)
-
-  run_arm_split_mice(
-    df_impute = df_impute,
-    predictor_matrix = pred_matrix_basic,
-    methods = methods_basic,
-    seed = method_config("imputation", "basic_seed"),
-    output_prefix = "mids_imputation_basic",
-    out_dir = out_dir,
-    write_first_completion = FALSE
-  )
-}
-
 run_simple_within_arm_imputation <- function(df_impute, out_dir = "data_processed") {
   pipeline_phase_info("02_imputation", "running the simple within-arm mean/mode sensitivity")
   simple_imputed <- groupwise_simple_imputation(df_impute)
@@ -251,15 +235,13 @@ write_imputation_variant_summary <- function(
   cleaning_artifact <- read_canonical_artifact("cleaning")
   complete_cases_n <- nrow(cleaning_artifact$complete_cases)
   variant_summary <- data.frame(
-    variant = c("full_mice", "basic_mice", "simple_within_arm", "complete_cases"),
+    variant = c("full_mice", "simple_within_arm", "complete_cases"),
     canonical_artifact = c(
       canonical_artifact_path("imputation"),
-      canonical_artifact_path("sensitivity"),
       canonical_artifact_path("sensitivity"),
       canonical_artifact_path("cleaning")
     ),
     n_rows = c(
-      nrow(df_impute),
       nrow(df_impute),
       nrow(simple_imputed),
       complete_cases_n

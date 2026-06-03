@@ -345,52 +345,6 @@ build_time_aware_mice_predictors <- function(df, id_col = "patient", group_col =
   pred
 }
 
-build_basic_mice_predictors <- function(df, id_col = "patient", group_col = "group") {
-  pred <- matrix(0, nrow = ncol(df), ncol = ncol(df), dimnames = list(names(df), names(df)))
-
-  baseline_predictors <- intersect(method_config("imputation", "basic_predictors"), names(df))
-  if (length(baseline_predictors) > 0) {
-    pred[, baseline_predictors] <- 1
-  }
-
-  lagged_control_pairs <- method_config("imputation", "basic_lagged_pairs")
-  for (pair in lagged_control_pairs) {
-    target <- pair[[1]]
-    source <- pair[[2]]
-    if (all(c(target, source) %in% names(df))) {
-      pred[target, source] <- 1
-    }
-  }
-
-  # Allow the observed 6-month costs to inform the 12-month cost cells.
-  lagged_cost_pairs <- list(
-    c("cost_C12", "cost_C6"),
-    c("cost_M12", "cost_M6"),
-    c("cost_F12", "cost_F6"),
-    c("cost_H12", "cost_H6"),
-    c("cost_O12", "cost_O6")
-  )
-  for (pair in lagged_cost_pairs) {
-    target <- pair[[1]]
-    source <- pair[[2]]
-    if (all(c(target, source) %in% names(df))) {
-      pred[target, source] <- 1
-    }
-  }
-
-  if (id_col %in% colnames(pred)) {
-    pred[, id_col] <- 0
-    pred[id_col, ] <- 0
-  }
-  if (group_col %in% colnames(pred)) {
-    pred[, group_col] <- 0
-    pred[group_col, ] <- 0
-  }
-
-  diag(pred) <- 0
-  pred
-}
-
 summarise_mice_predictors <- function(df, predictor_matrix, methods = NULL, id_col = "patient", group_col = "group") {
   if (is.null(predictor_matrix)) {
     stop("summarise_mice_predictors: predictor_matrix is required.")

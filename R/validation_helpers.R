@@ -132,6 +132,32 @@ validate_no_future_predictors <- function(predictor_audit) {
   invisible(TRUE)
 }
 
+validate_eq5d_item_levels <- function(df) {
+  eq_cols <- grep("^EQ5D5L\\.[1-5]_[0-9]+$", names(df), value = TRUE)
+  if (length(eq_cols) == 0) {
+    return(invisible(TRUE))
+  }
+
+  bad <- do.call(rbind, lapply(eq_cols, function(col) {
+    values <- suppressWarnings(as.numeric(as.character(df[[col]])))
+    bad_values <- sort(unique(values[!is.na(values) & !values %in% 1:5]))
+    if (length(bad_values) == 0) return(NULL)
+    data.frame(
+      column = col,
+      invalid_values = paste(bad_values, collapse = ", "),
+      stringsAsFactors = FALSE
+    )
+  }))
+
+  if (!is.null(bad) && nrow(bad) > 0) {
+    stop(
+      "EQ-5D item columns contain values outside 1-5: ",
+      paste(paste0(bad$column, "=", bad$invalid_values), collapse = "; ")
+    )
+  }
+  invisible(TRUE)
+}
+
 validate_cleaning_artifact <- function(artifact = read_canonical_artifact("cleaning")) {
   combine_validation_reports(
     run_validation_check("cleaning: required bundle fields", {
@@ -155,6 +181,10 @@ validate_cleaning_artifact <- function(artifact = read_canonical_artifact("clean
     }),
     run_validation_check("cleaning: cost completeness policy", {
       validate_cost_completeness_policy(artifact$all_cases)
+    }),
+    run_validation_check("cleaning: EQ-5D item levels", {
+      validate_eq5d_item_levels(artifact$all_cases)
+      "all raw EQ-5D item values are 1-5 or missing"
     })
   )
 }
@@ -169,6 +199,10 @@ validate_imputation_frame <- function(df_impute) {
       missing_groups <- setdiff(GROUP_LEVELS, unique(as.character(df_impute$group)))
       if (length(missing_groups) > 0) stop("missing groups: ", paste(missing_groups, collapse = ", "))
       "both trial arms present"
+    }),
+    run_validation_check("imputation frame: EQ-5D item levels", {
+      validate_eq5d_item_levels(df_impute)
+      "all raw EQ-5D item values are 1-5 or missing"
     })
   )
 }

@@ -11,7 +11,7 @@ library(geepack)
 
 load_effectiveness_imputation <- function(imputation_variant) {
   imputation_variant <- tolower(imputation_variant)
-  if (!imputation_variant %in% c("full", "basic", "simple", "complete_cases")) {
+  if (!imputation_variant %in% c("full", "simple", "complete_cases")) {
     stop("Unsupported imputation variant '", imputation_variant, "'.")
   }
 
@@ -28,9 +28,6 @@ load_effectiveness_imputation <- function(imputation_variant) {
   }
 
   sensitivity_artifact <- read_canonical_artifact("sensitivity")
-  if (imputation_variant == "basic") {
-    return(sensitivity_artifact$imputations$basic_mids)
-  }
   if (imputation_variant == "simple") {
     return(sensitivity_artifact$imputations$simple_wide)
   }
@@ -181,10 +178,10 @@ fit_mixed_effects_models <- function(long_sets, model_formula, adjustment_label,
 }
 
 run_mixed_effectiveness_analysis <- function(
-    imputation_variant = c("full", "basic", "simple", "complete_cases"),
+    imputation_variant = c("full", "simple", "complete_cases"),
     write_outputs = TRUE,
     imputation_override = NULL) {
-  imputation_variant <- match.arg(tolower(imputation_variant), c("full", "basic", "simple", "complete_cases"))
+  imputation_variant <- match.arg(tolower(imputation_variant), c("full", "simple", "complete_cases"))
   imputation <- if (is.null(imputation_override)) {
     load_effectiveness_imputation(imputation_variant)
   } else {
@@ -408,10 +405,10 @@ fit_and_pool_gee_models <- function(long_sets, model_formula, adjustment_label, 
 }
 
 run_gee_effectiveness_analysis <- function(
-    imputation_variant = c("full", "basic", "simple", "complete_cases"),
+    imputation_variant = c("full", "simple", "complete_cases"),
     write_outputs = TRUE,
     imputation_override = NULL) {
-  imputation_variant <- match.arg(tolower(imputation_variant), c("full", "basic", "simple", "complete_cases"))
+  imputation_variant <- match.arg(tolower(imputation_variant), c("full", "simple", "complete_cases"))
   imputation <- if (is.null(imputation_override)) {
     load_effectiveness_imputation(imputation_variant)
   } else {
