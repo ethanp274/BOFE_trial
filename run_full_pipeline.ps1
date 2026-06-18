@@ -5,6 +5,11 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $repoRoot
 
+$logDir = Join-Path $repoRoot "logs"
+$progressLog = Join-Path $logDir "pipeline_progress.log"
+New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+Set-Content -Path $progressLog -Value ("[{0}] [START] BOFE full pipeline log initialized" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"))
+
 if (-not (Get-Command Rscript -ErrorAction SilentlyContinue)) {
   throw "Rscript was not found on PATH."
 }

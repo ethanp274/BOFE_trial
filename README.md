@@ -18,6 +18,7 @@ Current state:
 - The master full-pipeline launcher is PowerShell (`run_full_pipeline.ps1`).
 - `bootstrap_bofe_vm.ps1` installs R, Rtools, and the CRAN packages needed to run the pipeline on a fresh Windows VM.
 - Each stage reports progress in the console and writes the same markers to `logs/pipeline_progress.log`.
+- `run_full_pipeline.ps1` clears `logs/pipeline_progress.log` at the start of each full run, then stage scripts append within that run; manual single-stage runs append to the existing log.
 - Trained model objects are written to `models/`; manuscript-facing tables and summaries are written to `results/`; runtime logs are written to `logs/`.
 - `R/00_methods_config.R` is the central source of truth for methodological choices, including outcome thresholds, imputation rules, model families, cost model, EQ-5D tariffs, intervention cost, WTP threshold, bootstrap counts, and sensitivity settings.
 - The main CEA branch uses the CEA-specific MICE object with a nested bootstrap that resamples the same patients across all imputations before pooling within each draw; the exact cost model and acceptability threshold are configured in `R/00_methods_config.R`.
@@ -67,6 +68,10 @@ Current refactor entry points:
 - `R/04_models.R`: fits the mixed-effects sensitivity model and writes `models/effectiveness_mixed_artifact.rds`.
 - `R/05_cost_effectiveness.R`: fits the main wide-imputed CEA branch using the CEA-specific MICE object and writes `models/cea_artifact.rds`.
 - `R/08_sensitivity_analyses.R`: runs the secondary effectiveness and CEA sensitivity analyses, including simple/naive imputation and complete-case comparisons, intervention-cost sweeps, and the UK EQ-5D tariff sensitivity branch, then writes `results/sensitivity_analyses_artifact.rds`.
+- `R/09_imputation_predictor_matrix_audit.R`: audits the primary-effectiveness MICE predictor matrix without changing the main analysis, producing pair-level evidence, candidate add/remove flags, and pre-specified matrix variants for sensitivity testing.
+- `R/10_imputation_matrix_sensitivity.R`: reruns primary-effectiveness MICE/GEE under pre-specified predictor-matrix variants and writes the adjusted 12-month GEE comparison to `audit/imputation_matrix_sensitivity_gee_12mo.csv`.
+- `audit/imputation_matrix_sensitivity_manuscript_note.md`: records the predictor-matrix sensitivity rationale, tested variants, adjusted 12-month GEE results, and draft wording for later manuscript use.
+- `audit/master_robustness_and_sensitivity_note.md`: consolidates all main, optional, diagnostic, and deprecated robustness checks into one reviewer-facing methods note.
 - `R/06_outputs.R`: assembles manuscript-facing summary data from canonical stage artifacts and writes `results/manuscript_outputs_artifact.rds`.
 - `R/07_manuscript_report.R`: compiles a readable manuscript brief from canonical GEE and CEA artifacts and writes `results/manuscript_report_artifact.rds`.
 - `R/utils.R`: compatibility loader for focused helper modules; active code should edit the specific helper file rather than rebuilding a monolithic utility script.
@@ -250,6 +255,7 @@ Manuscript-aligned refactor:
 - `R/01_cleaning.R` reads only raw questionnaire and cost files, then derives a single wide analysis dataset for downstream stages
 - `R/02_imputation.R` builds one canonical wide imputation source, derives branch-specific primary-effectiveness and CEA imputation frames, and stores predictor-selection, analytic predictor-matrix, and `mice::quickpred()` comparison audits inside the canonical imputation artifact and `audit/`
 - Key imputation audit exports are `audit/imputation_variable_selection.csv`, `audit/imputation_predictor_audit_effectiveness.csv`, `audit/imputation_predictor_audit_cea.csv`, `audit/imputation_quickpred_comparison_summary.csv`, and `audit/imputation_quickpred_pair_comparison.csv`.
+- The predictor-matrix audit exports are `audit/imputation_baseline_predictor_presence_effectiveness.csv`, `audit/imputation_predictor_pair_scores_effectiveness.csv`, `audit/imputation_predictor_matrix_decisions_effectiveness.csv`, `audit/imputation_predictor_matrix_variant_summary.csv`, and `audit/imputation_predictor_matrix_audit_protocol.md`.
 - `R/04b_gee.R` reconstructs the follow-up repeated-measures analysis set, keeps patient clusters contiguous, and pools the configured primary GEE analyses fit to the selected imputation variant through a shared helper
 - `R/04_models.R` keeps the mixed-effects logistic regression as a sensitivity analysis only and also delegates to the shared effectiveness helper
 - Both `R/04_models.R` and `R/04b_gee.R` use the configured imputation variant default and environment override declared in `R/00_methods_config.R`
