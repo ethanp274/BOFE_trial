@@ -62,7 +62,7 @@ Relevant files:
 
 ### 2. GEE vs Mixed-Effects Longitudinal Effectiveness Models
 
-Status: implemented/runnable; current mixed-effectiveness artifact is not present in `models/`.
+Status: current mixed-effectiveness sensitivity artifact available from 2026-06-18.
 
 Purpose:
 
@@ -79,8 +79,15 @@ Current pipeline position:
 Recommended reporting:
 
 - Present GEE as primary because it is protocol-style and population-average.
-- Use mixed-effects results as supportive sensitivity once rerun.
+- Use mixed-effects results as supportive sensitivity.
 - Do not mix marginal and subject-specific ORs as if they estimate the same estimand; compare direction, magnitude, and inference qualitatively.
+
+Current adjusted 12-month results:
+
+| Variant | Model family | OR | 95% CI | p-value |
+| --- | --- | ---: | --- | ---: |
+| Full MICE | GEE | 1.414 | 1.010 to 1.979 | 0.044 |
+| Full MICE | Mixed-effects | 1.734 | 1.021 to 2.945 | 0.042 |
 
 Relevant files:
 
@@ -129,7 +136,7 @@ Relevant files:
 
 ### 4. Full MICE vs Simple Imputation vs Complete-Case Effectiveness Analysis
 
-Status: implemented/runnable in `R/08_sensitivity_analyses.R`; current sensitivity artifact is missing and should be regenerated before quoting numeric results.
+Status: current results available from `R/08_sensitivity_analyses.R`, refreshed 2026-06-18.
 
 Purpose:
 
@@ -151,6 +158,17 @@ Recommended reporting:
 - Report whether simple and complete-case results are directionally consistent.
 - Avoid presenting simple imputation as a valid equal alternative; it is a robustness stress test.
 
+Current adjusted 12-month results:
+
+| Variant | Model family | OR | 95% CI | p-value |
+| --- | --- | ---: | --- | ---: |
+| Full MICE | GEE | 1.414 | 1.010 to 1.979 | 0.044 |
+| Full MICE | Mixed-effects | 1.734 | 1.021 to 2.945 | 0.042 |
+| Simple within-arm | GEE | 1.564 | 1.128 to 2.168 | 0.007 |
+| Simple within-arm | Mixed-effects | 2.027 | 1.219 to 3.372 | 0.006 |
+| Complete cases | GEE | 1.462 | 1.039 to 2.058 | 0.029 |
+| Complete cases | Mixed-effects | 1.840 | 1.068 to 3.169 | 0.028 |
+
 Relevant files:
 
 - `R/02_imputation.R`
@@ -160,7 +178,7 @@ Relevant files:
 
 ### 5. CEA Full MICE vs Simple Imputation vs Complete-Case Analysis
 
-Status: implemented/runnable in `R/08_sensitivity_analyses.R`; current sensitivity artifact is missing and should be regenerated before quoting numeric results.
+Status: current results available from `R/08_sensitivity_analyses.R`, refreshed 2026-06-18.
 
 Purpose:
 
@@ -180,6 +198,14 @@ Recommended reporting:
 
 - Use full CEA-specific MICE as primary.
 - Summarize whether incremental cost, incremental QALY, and probability cost-effective have the same direction under simple and complete-case assumptions.
+
+Current results:
+
+| Scenario | Incremental cost | Incremental QALY | Probability cost-effective at 29000 EUR/QALY |
+| --- | ---: | ---: | ---: |
+| Full MICE | -116.75 | 0.0224 | 0.861 |
+| Simple within-arm | -132.40 | 0.0276 | 0.910 |
+| Complete case | -492.89 | 0.0320 | 0.971 |
 
 Relevant files:
 
@@ -241,7 +267,7 @@ Relevant context:
 
 ### 8. EQ-5D Tariff Sensitivity
 
-Status: implemented/runnable in `R/08_sensitivity_analyses.R`; current sensitivity artifact is missing and should be regenerated before quoting numeric results.
+Status: current results available from `R/08_sensitivity_analyses.R`, refreshed 2026-06-18.
 
 Purpose:
 
@@ -259,6 +285,15 @@ Recommended reporting:
 - Report tariff sensitivity only as sensitivity, not as competing primary valuation.
 - Focus on whether incremental QALY and probability cost-effective remain directionally similar.
 
+Current UK tariff sensitivity:
+
+| Metric | Estimate |
+| --- | ---: |
+| Incremental cost | -116.75 |
+| Incremental QALY | 0.0190 |
+| ICER | -6143.76 |
+| Probability cost-effective at 29000 EUR/QALY | 0.839 |
+
 Relevant files:
 
 - `R/00_methods_config.R`
@@ -268,7 +303,7 @@ Relevant files:
 
 ### 9. Intervention-Cost Sweep
 
-Status: implemented/runnable in `R/08_sensitivity_analyses.R`; current sensitivity artifact is missing and should be regenerated before quoting numeric results.
+Status: current results available from `R/08_sensitivity_analyses.R`, refreshed 2026-06-18.
 
 Purpose:
 
@@ -285,6 +320,20 @@ Recommended reporting:
 
 - Report whether probability cost-effective remains acceptable across plausible intervention-cost assumptions.
 - If there is a threshold at which conclusions change, report it clearly.
+
+Current intervention-cost sweep:
+
+| Cost per consultation | Incremental cost | Probability cost-effective at 29000 EUR/QALY |
+| ---: | ---: | ---: |
+| 40 | -116.75 | 0.861 |
+| 60 | -76.75 | 0.847 |
+| 80 | -36.75 | 0.836 |
+| 100 | 3.25 | 0.822 |
+| 120 | 43.25 | 0.807 |
+| 140 | 83.25 | 0.791 |
+| 160 | 123.25 | 0.774 |
+| 180 | 163.25 | 0.756 |
+| 200 | 203.25 | 0.736 |
 
 Relevant files:
 
@@ -361,14 +410,14 @@ For a paper response or methods appendix, the most defensible structure is:
 
 We conducted a series of sensitivity and robustness checks to examine whether the trial conclusions depended on modelling, imputation, or economic assumptions. For effectiveness, we compared adjusted and unadjusted GEE models, retained mixed-effects logistic regression as a subject-specific sensitivity model, and evaluated alternative MICE predictor matrices designed to test the influence of utility auxiliaries, same-visit predictors, prior-outcome-only history, and time-sanitized empirical predictor selection. Future-timepoint predictors were prohibited in all primary-effectiveness imputation specifications. The adjusted 12-month intervention effect remained directionally consistent across these matrix variants, with odds ratios ranging from 1.40 to 1.44, although some specifications were close to the conventional 0.05 threshold.
 
-For the economic analysis, the primary CEA used a CEA-specific MICE branch, patient-level Gaussian-identity GLMs for total cost and QALYs, and a nested MI bootstrap with 5000 draws. Additional implemented sensitivity checks examine complete-case and simple-imputation CEA, alternative intervention-cost assumptions, and alternate EQ-5D tariff valuation. These checks are intended to assess robustness of the direction and economic interpretation rather than to select a preferred model post hoc.
+For the economic analysis, the primary CEA used a CEA-specific MICE branch, patient-level Gaussian-identity GLMs for total cost and QALYs, and a nested MI bootstrap with 5000 draws. Sensitivity checks examined complete-case and simple-imputation CEA, alternative intervention-cost assumptions, and alternate EQ-5D tariff valuation. These checks were intended to assess robustness of the direction and economic interpretation rather than to select a preferred model post hoc.
 
 ## Refresh Checklist Before Manuscript Submission
 
 - Run `Rscript R/run_smoke_tests.R`.
 - Regenerate the full main pipeline with `./run_full_pipeline.ps1`.
-- Run `Rscript R/04_models.R` if mixed-effects sensitivity is to be reported numerically.
-- Run `Rscript R/08_sensitivity_analyses.R` before quoting complete-case/simple/tariff/cost-sweep values.
+- Run `Rscript R/04_models.R` if mixed-effects sensitivity must be refreshed after upstream changes.
+- Run `Rscript R/08_sensitivity_analyses.R` if complete-case/simple/tariff/cost-sweep values must be refreshed after upstream changes.
 - Run `Rscript R/09_imputation_predictor_matrix_audit.R` and `Rscript R/10_imputation_matrix_sensitivity.R` if the imputation artifacts change.
 - Regenerate `results/cea_bootstrap_results.csv` from `models/cea_artifact.rds` before using it; the current CSV is stale.
 

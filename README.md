@@ -14,7 +14,7 @@ Core outputs include:
 - Figures and diagnostics
 
 Current state:
-- The active main pipeline runs `R/01_cleaning.R`, `R/02_imputation.R`, `R/03_descriptives.R`, `R/04b_gee.R`, `R/05_cost_effectiveness.R`, `R/06_outputs.R`, and `R/07_manuscript_report.R`; `R/04_models.R` is reserved for sensitivity analysis.
+- The active main pipeline runs `R/01_cleaning.R`, `R/02_imputation.R`, `R/03_descriptives.R`, `R/04b_gee.R`, `R/05_cost_effectiveness.R`, `R/06_outputs.R`, and `R/07_manuscript_report.R`; `R/01b_publication_long_dataset.R` is an optional post-cleaning anonymized publication export, and `R/04_models.R` is reserved for sensitivity analysis.
 - The master full-pipeline launcher is PowerShell (`run_full_pipeline.ps1`).
 - `bootstrap_bofe_vm.ps1` installs R, Rtools, and the CRAN packages needed to run the pipeline on a fresh Windows VM.
 - Each stage reports progress in the console and writes the same markers to `logs/pipeline_progress.log`.
@@ -62,6 +62,7 @@ Disease control at 12 months:
 
 Current refactor entry points:
 - `R/01_cleaning.R`: reads raw questionnaire/cost files, applies manual corrections, derives `controlled_*`, `EQindex_*`, cost summaries, and completeness flags, then writes `data_processed/cleaning_artifact.rds`.
+- `R/01b_publication_long_dataset.R`: optional post-cleaning/pre-imputation export that writes `data_processed/bofe_publication_anonymized_long.csv` plus a codebook for manuscript data sharing. It replaces source IDs with random short IDs, suppresses pharmacy/source patient IDs, converts residence to anonymized letter categories, keeps age/gender/BMI/smoking as interpretable categorical labels suitable for reproduced regressions, and writes missing values as literal `NA`.
 - `R/02_imputation.R`: creates one canonical wide imputation source, derives separate primary-effectiveness and CEA MICE frames from it, runs 20 arm-split imputations per branch, and writes `data_processed/imputation_artifact.rds`. A secondary-effectiveness adherence branch exists behind a disabled config flag but is not part of the clean main pipeline.
 - `R/03_descriptives.R`: builds the analyzed-population Table 1, disease-aware missingness summary, cost summary, and resource-use summary, then writes `results/descriptives_artifact.rds`.
 - `R/04b_gee.R`: fits the protocol-style GEE effectiveness model and writes `models/effectiveness_gee_artifact.rds`. This is the default effectiveness analysis.
@@ -70,6 +71,7 @@ Current refactor entry points:
 - `R/08_sensitivity_analyses.R`: runs the secondary effectiveness and CEA sensitivity analyses, including simple/naive imputation and complete-case comparisons, intervention-cost sweeps, and the UK EQ-5D tariff sensitivity branch, then writes `results/sensitivity_analyses_artifact.rds`.
 - `R/09_imputation_predictor_matrix_audit.R`: audits the primary-effectiveness MICE predictor matrix without changing the main analysis, producing pair-level evidence, candidate add/remove flags, and pre-specified matrix variants for sensitivity testing.
 - `R/10_imputation_matrix_sensitivity.R`: reruns primary-effectiveness MICE/GEE under pre-specified predictor-matrix variants and writes the adjusted 12-month GEE comparison to `audit/imputation_matrix_sensitivity_gee_12mo.csv`.
+- `R/11_control_transition_sankey.R`: optional figure script that reads the anonymized publication CSV and writes intervention/control Sankey-style PNGs plus aggregate and patient-level transition CSVs for observed baseline-to-12-month disease-control status.
 - `audit/imputation_matrix_sensitivity_manuscript_note.md`: records the predictor-matrix sensitivity rationale, tested variants, adjusted 12-month GEE results, and draft wording for later manuscript use.
 - `audit/master_robustness_and_sensitivity_note.md`: consolidates all main, optional, diagnostic, and deprecated robustness checks into one reviewer-facing methods note.
 - `R/06_outputs.R`: assembles manuscript-facing summary data from canonical stage artifacts and writes `results/manuscript_outputs_artifact.rds`.
@@ -86,13 +88,15 @@ Current refactor entry points:
 
 Recommended run order from the project root:
 1. `source("R/01_cleaning.R")`
-2. `source("R/02_imputation.R")`
-3. `source("R/03_descriptives.R")`
-4. `source("R/04b_gee.R")`
-5. `source("R/05_cost_effectiveness.R")`
-6. `source("R/06_outputs.R")`
-7. `source("R/07_manuscript_report.R")`
-8. Optional sensitivity pass: `source("R/08_sensitivity_analyses.R")`
+2. Optional publication data export: `source("R/01b_publication_long_dataset.R")`
+3. `source("R/02_imputation.R")`
+4. `source("R/03_descriptives.R")`
+5. `source("R/04b_gee.R")`
+6. `source("R/05_cost_effectiveness.R")`
+7. `source("R/06_outputs.R")`
+8. `source("R/07_manuscript_report.R")`
+9. Optional sensitivity pass: `source("R/08_sensitivity_analyses.R")`
+10. Optional control-transition figures: `source("R/11_control_transition_sankey.R")`
 
 For PowerShell on Windows, use `.\run_full_pipeline.ps1`.
 For a fresh VM bootstrap, use `.\bootstrap_bofe_vm.ps1` (add `-SkipRtools` only if you already have a suitable toolchain).
@@ -105,6 +109,7 @@ Progress tracking:
 - `R/04_models.R` is reserved for sensitivity runs and uses the same shared long-panel reconstruction helper as the GEE script.
 - The main CEA branch now runs directly from `R/05_cost_effectiveness.R`; the optional sensitivity runner handles heavier alternate scenarios separately.
 - The sensitivity runner emits its own progress checkpoints for alternate CEA and effectiveness scenarios.
+- The optional Sankey figure script writes `results/sankey_control_transition_control.png`, `results/sankey_control_transition_intervention.png`, `results/sankey_control_transition_counts.csv`, and `results/sankey_control_transition_patient_traces.csv`.
 - The manuscript-ready summary CSV preserves the pooled CEA uncertainty summary in `results/manuscript_results_summary.csv`.
 - The latest rerun after fixing the legacy long-data helper shows nonzero bootstrap variation in incremental cost again.
 - `run_full_pipeline.ps1` stops on the first failed phase and reports the failed step.
@@ -253,6 +258,7 @@ Main effectiveness analysis in `R/04b_gee.R`:
 
 Manuscript-aligned refactor:
 - `R/01_cleaning.R` reads only raw questionnaire and cost files, then derives a single wide analysis dataset for downstream stages
+- `R/01b_publication_long_dataset.R` reads only `data_processed/cleaning_artifact.rds` and creates the anonymized long-form publication CSV/codebook before imputation, without changing any canonical analysis artifact
 - `R/02_imputation.R` builds one canonical wide imputation source, derives branch-specific primary-effectiveness and CEA imputation frames, and stores predictor-selection, analytic predictor-matrix, and `mice::quickpred()` comparison audits inside the canonical imputation artifact and `audit/`
 - Key imputation audit exports are `audit/imputation_variable_selection.csv`, `audit/imputation_predictor_audit_effectiveness.csv`, `audit/imputation_predictor_audit_cea.csv`, `audit/imputation_quickpred_comparison_summary.csv`, and `audit/imputation_quickpred_pair_comparison.csv`.
 - The predictor-matrix audit exports are `audit/imputation_baseline_predictor_presence_effectiveness.csv`, `audit/imputation_predictor_pair_scores_effectiveness.csv`, `audit/imputation_predictor_matrix_decisions_effectiveness.csv`, `audit/imputation_predictor_matrix_variant_summary.csv`, and `audit/imputation_predictor_matrix_audit_protocol.md`.
@@ -377,6 +383,86 @@ These documents explain:
 - methodological decisions
 - reviewer concerns
 - interpretation choices
+
+---
+
+# Manuscript Text-Editing Handoff
+
+Use this section when another agent is taking over manuscript wording, reviewer responses, or methods/results text.
+
+## Current Analysis State
+
+The manuscript-facing main pipeline is:
+
+1. `R/01_cleaning.R`
+2. Optional: `R/01b_publication_long_dataset.R`
+3. `R/02_imputation.R`
+4. `R/03_descriptives.R`
+5. `R/04b_gee.R`
+6. `R/05_cost_effectiveness.R`
+7. `R/06_outputs.R`
+8. `R/07_manuscript_report.R`
+
+Primary effectiveness analysis:
+- Marginal logistic GEE on follow-up disease-control outcomes after multiple imputation.
+- Adjusted model: `controlled_t ~ controlled_0 + age + gender + group * time`.
+- Main adjusted 12-month OR: 1.414, 95% CI 1.010 to 1.979, p = 0.044.
+- Unadjusted 12-month OR: 1.229, 95% CI 0.913 to 1.654, p = 0.173.
+
+Main CEA:
+- CEA-specific MICE branch.
+- Patient-level Gaussian-identity GLM for total cost.
+- Gaussian-identity GLM for QALYs.
+- Nested MI bootstrap with 5000 draws.
+- Incremental cost: -116.75 EUR, pooled CI -1366.77 to 1133.27.
+- Incremental QALY: 0.0224, pooled CI -0.0204 to 0.0652.
+- Probability cost-effective at 29000 EUR/QALY: 0.861.
+
+Important caution:
+- `results/secondary_effectiveness_summary.csv` and related secondary adherence outputs are stale/deprecated. Current config sets `effectiveness.secondary_outcomes.enabled = FALSE`.
+- `results/cea_bootstrap_results.csv` is stale/small; use `models/cea_artifact.rds` or regenerate exports before quoting bootstrap-row data.
+- `results/sensitivity_analyses_artifact.rds` was refreshed on 2026-06-18, along with `effectiveness_sensitivity_summary.csv`, `cea_sensitivity_summary.csv`, `cea_cost_sensitivity_summary.csv`, and `cea_tariff_sensitivity_summary.csv`.
+
+## Sensitivity and Robustness Description
+
+The single best source for the full robustness narrative is:
+
+- `audit/master_robustness_and_sensitivity_note.md`
+
+Compressed manuscript-ready description:
+
+The primary analysis was supported by a broad set of robustness checks addressing modelling, imputation, and economic assumptions. For effectiveness, the pipeline compares adjusted and unadjusted GEE models, retains mixed-effects logistic regression as a subject-specific sensitivity model, and includes implemented comparisons across full MICE, simple within-arm imputation, and complete-case analysis. The primary adjusted GEE result was stronger and more precise than the unadjusted result, but both were directionally consistent.
+
+The refreshed effectiveness sensitivity results were directionally consistent at 12 months. Adjusted full-MICE estimates were OR 1.414 for GEE and OR 1.734 for mixed-effects; simple-imputation estimates were OR 1.564 for GEE and OR 2.027 for mixed-effects; complete-case estimates were OR 1.462 for GEE and OR 1.840 for mixed-effects. These are sensitivity results and should not replace the primary GEE estimate.
+
+Because the primary result depends on multiply imputed disease-control outcomes, we also audited the MICE predictor matrix. The current primary-effectiveness matrix is arm-split, branch-specific, and time-aware; future-timepoint predictors are structurally prohibited. A diagnostic audit confirmed zero future-time links in the current analytic matrix. We then reran the primary GEE after alternative MICE predictor matrices: removing EQ-5D utility-index auxiliaries, removing same-visit auxiliary predictors, using a history-only disease-control matrix, and using a time-sanitized empirical `quickpred` matrix. The adjusted 12-month ORs ranged from 1.396 to 1.443. All variants favoured the intervention, although two were just above the conventional p = 0.05 threshold. This should be described as directionally robust but statistically borderline under some imputation specifications.
+
+For the economic analysis, the primary CEA uses a CEA-specific MICE branch and nested MI bootstrap. Implemented sensitivity checks include complete-case and simple-imputation CEA, an intervention-cost sweep from 40 to 200 EUR per consultation, and EQ-5D tariff sensitivity using the configured UK tariff. The helper layer also supports Gaussian-identity and Gamma-log cost-model specifications, though Gaussian-identity is the current primary model because it directly estimates mean cost differences for the economic evaluation. Older interval-level CEA GEE explorations are historical/refactor context only and are not part of the current clean main CEA.
+
+The refreshed CEA sensitivity outputs remained directionally favourable. Complete-case CEA estimated incremental cost -492.89 EUR, incremental QALY 0.0320, and probability cost-effective 0.971 at 29000 EUR/QALY. Simple-imputation CEA estimated incremental cost -132.40 EUR, incremental QALY 0.0276, and probability cost-effective 0.910. The UK tariff sensitivity estimated incremental QALY 0.0190 and probability cost-effective 0.839. In the intervention-cost sweep, probability cost-effective declined from 0.861 at 40 EUR per consultation to 0.736 at 200 EUR per consultation.
+
+Suggested wording style:
+- Emphasize that the intervention effect is stable in direction across robustness checks.
+- Be explicit that the primary result is close to the null boundary.
+- For CEA, emphasize uncertainty and cost-effectiveness probability rather than overinterpreting the ICER.
+- Keep deprecated adherence outcomes out of manuscript-facing claims unless the methods are revised.
+
+## Key Notes for Text Editors
+
+- `audit/master_robustness_and_sensitivity_note.md`: complete robustness dossier and suggested reviewer-response language.
+- `audit/imputation_matrix_sensitivity_manuscript_note.md`: focused note on MICE predictor-matrix sensitivity.
+- `results/manuscript_results_brief.md`: current concise results brief.
+- `results/manuscript_results_summary.csv`: current concise numeric summary.
+- `AGENTS.md`: project history, methodological decisions, and active caveats.
+
+Before final manuscript edits, refresh outputs if upstream data or methods have changed:
+
+1. `Rscript R/run_smoke_tests.R`
+2. `./run_full_pipeline.ps1`
+3. `Rscript R/04_models.R`
+4. `Rscript R/08_sensitivity_analyses.R`
+5. `Rscript R/09_imputation_predictor_matrix_audit.R`
+6. `Rscript R/10_imputation_matrix_sensitivity.R`
 
 ---
 
