@@ -12,6 +12,12 @@ BOFE_METHODS_CONFIG <- list(
     group_levels = c("cg (control group)", "ig (intervention group)"),
     rationale = "BOFE has baseline plus 3-, 6-, 9-, and 12-month follow-up with control as the reference arm."
   ),
+  data_source = list(
+    source = "raw",
+    choices = c("raw", "public"),
+    public_dataset_path = "data_processed/bofe_publication_anonymized_long.csv",
+    rationale = "Set to 'raw' to read original SPSS files from raw_data/ (default for development), or 'public' to use the anonymized publication dataset from data_processed/ for full replicability without access to raw data. Can be overridden by environment variable BOFE_DATA_SOURCE."
+  ),
   cleaning = list(
     structural_zero_rules = list(
       T0 = c("^D2\\.", "^D3\\.10", "^D3\\.11", "^D5\\."),
@@ -180,6 +186,7 @@ BOFE_METHODS_CONFIG <- list(
     rationale = "The main CEA uses the complex-MICE cohort, Gaussian-identity cost GLM on total_cost, Gaussian-identity QALY GLM, and a nested MI bootstrap over shared patient IDs."
   ),
   environment_overrides = list(
+    data_source = "BOFE_DATA_SOURCE",
     imputation_variant = "BOFE_IMPUTATION_VARIANT",
     bootstrap_iterations = "BOFE_BOOTSTRAP_ITERATIONS",
     sensitivity_bootstrap_iterations = "BOFE_SENSITIVITY_BOOTSTRAP_ITERATIONS",

@@ -1,7 +1,12 @@
 # R/01_cleaning.R
 # Consolidated cleaning and ETL for BOFE project.
-# Purpose: read raw SPSS/CSV files, perform canonical cleaning steps, derive
-# analysis variables, attach cost summaries, and produce analysis-ready datasets.
+# Purpose: read raw SPSS questionnaire and cost files, perform canonical cleaning
+# steps, derive analysis variables, attach cost summaries, and produce the
+# analysis-ready wide dataset as data_processed/cleaning_artifact.rds.
+#
+# NOTE: This script handles raw data (SPSS files) only.
+# For reproducibility using the public anonymized dataset, see R/02_imputation.R
+# which supports loading the pre-cleaned public CSV directly.
 
 # Source shared helpers
 source("R/utils.R")
@@ -12,7 +17,7 @@ library(labelled)
 
 pipeline_started <- pipeline_phase_start(
   "01_cleaning",
-  "reading raw questionnaire and cost files"
+  "reading raw SPSS questionnaire and cost files"
 )
 
 raw_dir <- file.path("raw_data")
@@ -89,6 +94,7 @@ all_cases <- add_analysis_derivations(survey_data)
 economic_data <- build_economic_data(raw_dir)
 complete_cases <- attach_cost_summaries(complete_cases, economic_data)
 all_cases <- attach_cost_summaries(all_cases, economic_data)
+
 cost_completeness_summary <- data.frame(
   cohort = c("all_cases", "complete_cases", "economic_data"),
   n_rows = c(nrow(all_cases), nrow(complete_cases), nrow(economic_data)),
@@ -130,13 +136,18 @@ cleaning_artifact <- list(
   complete_cases = complete_cases,
   economic_data = economic_data,
   cost_completeness_summary = cost_completeness_summary,
+  data_source = "raw",
   contracts = c("analysis_wide", "economic_cost_summary")
 )
 write_canonical_artifact("cleaning", cleaning_artifact)
 
 message("01_cleaning: saved canonical cleaning artifact.")
+message(sprintf("01_cleaning: all_cases N=%d, complete_cases N=%d",
+                nrow(all_cases), nrow(complete_cases)))
 pipeline_phase_end(
   "01_cleaning",
   pipeline_started,
   "saved canonical cleaning artifact"
 )
+
+

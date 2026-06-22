@@ -1,7 +1,11 @@
 # R/02_imputation.R
 # Multiple imputation pipeline.
 #
-# Main path:
+# Data source handling:
+#   - If BOFE_DATA_SOURCE="raw" (default): reads canonical cleaning_artifact.rds from raw SPSS processing
+#   - If BOFE_DATA_SOURCE="public": loads pre-cleaned public CSV directly for reproducibility
+#
+# Main workflow:
 #   - builds the wide ITT frame from the cleaned trial data
 #   - derives explicit primary effectiveness and CEA MICE frames from that source
 #   - runs analysis-specific MICE branches
@@ -26,8 +30,43 @@ pipeline_started <- pipeline_phase_start(
 out_dir <- DATA_PROCESSED_DIR
 ensure_artifact_dirs()
 
-cleaning_artifact <- read_canonical_artifact("cleaning")
-trial_df <- cleaning_artifact$all_cases
+# Determine data source and load accordingly
+# If public data is selected, load it directly (avoids re-processing already-clean data)
+# If raw data is selected, read the cleaning artifact produced by R/01_cleaning.R
+active_data_source <- get_active_data_source()
+pipeline_phase_info("02_imputation", sprintf("data source: %s", active_data_source))
+
+if (active_data_source == "public") {
+  pipeline_phase_info("02_imputation", "loading pre-cleaned public anonymized dataset")
+  
+  if (!public_dataset_exists()) {
+    stop("BOFE_DATA_SOURCE='public' requested but public dataset not found at: ",
+         method_config("data_source", "public_dataset_path"), "\n",
+         "Run R/01b_publication_long_dataset.R first, or set BOFE_DATA_SOURCE='raw'.")
+  }
+  
+  # Load and reshape the public CSV to analysis format
+  public_result <- load_public_dataset_wide()
+  trial_df <- public_result$all_cases
+  
+  # Remap factor levels to match internal analysis expectations
+  trial_df$D1.4 <- factor(
+    ifelse(trial_df$D1.4 == "intervention", 
+           "ig (intervention group)", 
+           "cg (control group)"),
+    levels = c("cg (control group)", "ig (intervention group)")
+  )
+  
+  pipeline_phase_info("02_imputation", 
+    sprintf("loaded public data: N=%d patients", nrow(trial_df)))
+  
+} else {
+  # Raw data path: read the cleaning artifact
+  cleaning_artifact <- read_canonical_artifact("cleaning")
+  trial_df <- cleaning_artifact$all_cases
+  pipeline_phase_info("02_imputation", 
+    sprintf("loaded raw-data cleaning artifact: N=%d patients", nrow(trial_df)))
+}
 df_impute <- build_imputation_wide_frame(trial_df)
 selection_profile <- build_imputation_selection_profile(df_impute)
 secondary_effectiveness_enabled <- isTRUE(method_config("effectiveness", "secondary_outcomes", "enabled"))
