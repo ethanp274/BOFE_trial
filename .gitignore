@@ -22,6 +22,10 @@ outputs-vm/
 # Context files and deprecated files
 context_source_files/
 deprecated/
+deprecated/
+logs/
+vm-helper-scripts/
+audit/
 
 # Session Data files
 .RData

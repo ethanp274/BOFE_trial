@@ -1,1 +1,0 @@
-Rscript -e "cat(sort(installed.packages()[, 'Package']), sep = '\n')"
