@@ -46,6 +46,27 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
   } else {
     as_numeric_safe(df[["D2.3_0"]])
   }
+  bmi_vec <- if ("BMI" %in% names(df)) {
+    as.numeric(df[["BMI"]])
+  } else if ("D3.3_0" %in% names(df)) {
+    as.numeric(df[["D3.3_0"]])
+  } else {
+    rep(NA_real_, length(patient_vec))
+  }
+  smoking_vec <- if ("smoking" %in% names(df)) {
+    as_numeric_safe(df[["smoking"]])
+  } else if ("D3.6_0" %in% names(df)) {
+    as_numeric_safe(df[["D3.6_0"]])
+  } else {
+    rep(NA_real_, length(patient_vec))
+  }
+  ihd_vec <- if ("ihd" %in% names(df)) {
+    as_numeric_safe(df[["ihd"]])
+  } else if ("D3.7_2_0" %in% names(df)) {
+    as_numeric_safe(df[["D3.7_2_0"]])
+  } else {
+    rep(NA_real_, length(patient_vec))
+  }
   controlled_0_vec <- if ("controlled_0" %in% names(df)) {
     as_numeric_safe(df[["controlled_0"]])
   } else {
@@ -84,6 +105,9 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
       },
       gender = gender_vec,
       age = age_vec,
+      BMI = bmi_vec,
+      smoking = smoking_vec,
+      ihd = ihd_vec,
       controlled_0 = controlled_0_vec,
       controlled_t = if (controlled_col %in% names(df)) as_numeric_safe(df[[controlled_col]]) else NA_real_,
       EQindex_t = if (eq_col %in% names(df)) as_numeric_safe(df[[eq_col]]) else NA_real_,
@@ -164,8 +188,11 @@ make_longitudinal_analysis_data <- function(df, timepoints = TIMEPOINTS) {
   long_df$group <- factor(long_df$group, levels = GROUP_LEVELS)
   long_df$time <- factor(long_df$time, levels = timepoints)
   long_df$patient <- factor(long_df$patient)
+  long_df$condition <- factor(long_df$condition)
   long_df$gender <- factor(long_df$gender)
   long_df$age <- factor(long_df$age)
+  long_df$smoking <- factor(long_df$smoking)
+  long_df$ihd <- factor(long_df$ihd, levels = c(0, 1))
   long_df$controlled_0 <- factor(long_df$controlled_0, levels = c(0, 1))
   long_df$controlled_t <- as.numeric(long_df$controlled_t)
   long_df$medication_adherence_0 <- factor(long_df$medication_adherence_0, levels = c(0, 1))

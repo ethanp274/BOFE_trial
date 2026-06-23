@@ -414,6 +414,223 @@ run_mi_bootstrap_serial <- function(
   out
 }
 
+bootstrap_mi_qaly_iteration_result <- function(
+  i,
+  cea_sets,
+  base_patient_level,
+  model_family = "mi_qaly_bootstrap"
+) {
+  set.seed(i * 37)
+
+  sampled_ids <- sample_bootstrap_patient_ids(base_patient_level)
+  if (length(sampled_ids) == 0) {
+    return(NULL)
+  }
+
+  boot_patient_levels <- lapply(cea_sets, function(set) {
+    set <- as.data.frame(set)
+    set_ids <- as.character(set$patient)
+    boot_idx <- match(sampled_ids, set_ids)
+    if (anyNA(boot_idx)) {
+      stop("bootstrap_mi_qaly_iteration_result: sampled patient IDs were not found in a CEA patient-level set.")
+    }
+    set[boot_idx, , drop = FALSE]
+  })
+  if (any(vapply(boot_patient_levels, nrow, integer(1)) == 0)) {
+    return(NULL)
+  }
+
+  qaly_fits <- lapply(seq_along(boot_patient_levels), function(idx) {
+    fit_stable_glm(
+      QALY_model ~ group + age + gender,
+      boot_patient_levels[[idx]],
+      gaussian(link = "identity"),
+      maxit = 200
+    )
+  })
+  if (any(vapply(qaly_fits, is.null, logical(1)))) {
+    return(NULL)
+  }
+
+  qaly_group_term <- grep("^group", names(coef(qaly_fits[[1]])), value = TRUE)[1]
+  if (is.na(qaly_group_term) || !nzchar(qaly_group_term)) {
+    return(NULL)
+  }
+
+  qaly_pool <- pool_glm_terms_rubin(qaly_fits, c("(Intercept)", qaly_group_term))
+  if (is.null(qaly_pool)) {
+    return(NULL)
+  }
+
+  qaly_intercept <- unname(qaly_pool$qbar[["(Intercept)"]])
+  qaly_group <- unname(qaly_pool$qbar[[qaly_group_term]])
+  qaly_cov <- qaly_pool$total_cov
+  incremental_qaly_var <- as.numeric(qaly_cov[qaly_group_term, qaly_group_term, drop = TRUE])
+  if (!is.finite(incremental_qaly_var) || incremental_qaly_var < 0) {
+    incremental_qaly_var <- NA_real_
+  }
+
+  data.frame(
+    iteration = i,
+    model_family = model_family,
+    qaly_intercept = qaly_intercept,
+    qaly_group = qaly_group,
+    incremental_qaly = qaly_group,
+    incremental_qaly_var = incremental_qaly_var,
+    incremental_qaly_se = sqrt(pmax(incremental_qaly_var, 0)),
+    n_imputations = length(boot_patient_levels),
+    stringsAsFactors = FALSE
+  )
+}
+
+run_mi_qaly_bootstrap_serial <- function(
+  cea_sets,
+  base_patient_level,
+  num_iter,
+  model_family = "mi_qaly_bootstrap"
+) {
+  out <- data.frame(
+    iteration = integer(0),
+    model_family = character(0),
+    qaly_intercept = numeric(0),
+    qaly_group = numeric(0),
+    incremental_qaly = numeric(0),
+    incremental_qaly_var = numeric(0),
+    incremental_qaly_se = numeric(0),
+    n_imputations = integer(0),
+    stringsAsFactors = FALSE
+  )
+
+  for (i in seq_len(num_iter)) {
+    if (i == 1 || i %% 500 == 0 || i == num_iter) {
+      pipeline_phase_info(
+        "05_cost_effectiveness",
+        sprintf("QALY-only bootstrap iteration %d/%d", i, num_iter)
+      )
+    }
+
+    boot_row <- bootstrap_mi_qaly_iteration_result(
+      i = i,
+      cea_sets = cea_sets,
+      base_patient_level = base_patient_level,
+      model_family = model_family
+    )
+    if (!is.null(boot_row)) {
+      out <- rbind(out, boot_row)
+    }
+  }
+
+  out
+}
+
+reuse_main_cost_bootstrap <- function(reference_cea_results, num_iter, branch_label) {
+  if (is.null(reference_cea_results) || is.null(reference_cea_results$bootstrap_results)) {
+    stop("reuse_main_cost_bootstrap: expected a nested main CEA result with bootstrap_results.")
+  }
+  boot <- reference_cea_results$bootstrap_results
+  if (is.null(boot) || nrow(boot) == 0) {
+    stop("reuse_main_cost_bootstrap: reference CEA bootstrap results are empty.")
+  }
+
+  boot <- boot[order(boot$iteration), , drop = FALSE]
+  boot <- boot[boot$iteration %in% seq_len(num_iter), , drop = FALSE]
+  if (nrow(boot) != num_iter) {
+    stop(
+      "reuse_main_cost_bootstrap: expected at least ", num_iter,
+      " main bootstrap iterations but found ", nrow(boot), "."
+    )
+  }
+
+  main_cost_row <- reference_cea_results$summary %>%
+    filter(metric == "incremental_cost") %>%
+    slice(1)
+  if (nrow(main_cost_row) != 1 || !is.finite(main_cost_row$estimate)) {
+    stop("reuse_main_cost_bootstrap: could not recover the main incremental cost estimate.")
+  }
+
+  shift <- main_cost_row$estimate - mean(boot$incremental_cost, na.rm = TRUE)
+  boot$incremental_cost <- boot$incremental_cost + shift
+  if ("intervention_cost" %in% names(boot)) {
+    boot$intervention_cost <- boot$intervention_cost + shift
+  }
+  if ("cost_group_effect" %in% names(boot)) {
+    boot$cost_group_effect <- boot$cost_group_effect + shift
+  }
+  boot$model_family <- branch_label
+  boot
+}
+
+run_tariff_sensitivity_with_fixed_main_cost <- function(
+  reference_cea_results,
+  mids_obj,
+  branch_label,
+  economic_data = NULL,
+  tariff = method_config("economics", "tariff_sensitivity"),
+  intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
+  bootstrap_iterations = method_config("economics", "sensitivity_bootstrap_iterations")
+) {
+  tariff <- match.arg(tariff, configured_eq5d_tariffs())
+
+  completed_sets <- mice::complete(mids_obj, action = "all", include = FALSE)
+  if (length(completed_sets) == 0) {
+    stop("run_tariff_sensitivity_with_fixed_main_cost: no completed imputations were available.")
+  }
+
+  cea_sets <- lapply(seq_along(completed_sets), function(i) {
+    cea_i <- prepare_cea_patient_level(
+      as.data.frame(completed_sets[[i]]),
+      require_cost_data = FALSE,
+      economic_data = economic_data,
+      intervention_cost_per_consultation = intervention_cost_per_consultation,
+      tariff = tariff
+    )
+    if (nrow(cea_i) == 0) {
+      stop("run_tariff_sensitivity_with_fixed_main_cost: empty CEA cohort in imputation ", i, ".")
+    }
+    cea_i
+  })
+
+  qaly_boot <- run_mi_qaly_bootstrap_serial(
+    cea_sets = cea_sets,
+    base_patient_level = cea_sets[[1]],
+    num_iter = bootstrap_iterations,
+    model_family = branch_label
+  )
+  if (nrow(qaly_boot) == 0) {
+    stop("run_tariff_sensitivity_with_fixed_main_cost: QALY bootstrap produced no usable iterations.")
+  }
+
+  cost_boot <- reuse_main_cost_bootstrap(
+    reference_cea_results = reference_cea_results,
+    num_iter = bootstrap_iterations,
+    branch_label = branch_label
+  )
+
+  qaly_boot <- qaly_boot[order(qaly_boot$iteration), , drop = FALSE]
+  cost_boot <- cost_boot[order(cost_boot$iteration), , drop = FALSE]
+  if (!identical(cost_boot$iteration, qaly_boot$iteration)) {
+    stop("run_tariff_sensitivity_with_fixed_main_cost: cost and QALY bootstrap iterations did not align.")
+  }
+
+  boot <- cost_boot
+  boot$qaly_intercept <- qaly_boot$qaly_intercept
+  boot$qaly_group <- qaly_boot$qaly_group
+  boot$incremental_qaly <- qaly_boot$incremental_qaly
+  boot$incremental_qaly_var <- qaly_boot$incremental_qaly_var
+  boot$incremental_qaly_se <- qaly_boot$incremental_qaly_se
+  boot$n_imputations <- qaly_boot$n_imputations
+  boot$icer <- boot$incremental_cost / boot$incremental_qaly
+
+  pooled <- build_cea_summary_rows(boot, use_rubin = TRUE)
+  list(
+    bootstrap_results = boot,
+    acceptability_curve = pooled$acceptability,
+    summary = pooled$summary,
+    branch = branch_label,
+    note = "Incremental cost bootstrap reused from the synchronized main CEA and recentered to the main pooled cost estimate; only QALYs were re-estimated under the alternate tariff."
+  )
+}
+
 # Resample patients within arm, then refit the CEA models for one bootstrap draw.
 bootstrap_iteration_result <- function(
   i,

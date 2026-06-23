@@ -110,7 +110,7 @@ BOFE_DATA_CONTRACTS <- list(
     row_grain = "One row per patient-time observation.",
     unique_key = NULL,
     required_columns = c(
-      "patient", "group", "time", "age", "gender",
+      "patient", "pharmacy", "group", "time", "condition", "age", "gender", "BMI", "smoking", "ihd",
       "controlled_0", "controlled_t",
       "medication_adherence_0", "medication_adherence_t",
       "non_recent_missed_dose_0", "non_recent_missed_dose_t"

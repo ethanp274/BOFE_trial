@@ -302,6 +302,7 @@ Implemented checks include:
 
 - Adjusted vs unadjusted GEE
 - GEE vs mixed-effects logistic regression
+- 12-month model-specification comparison across GEE, GLM, GLMM, and pharmacy-clustered GLMM
 - Full MICE vs simple imputation vs complete-case analysis
 - Predictor-matrix sensitivity variants
 - Complete-case and simple-imputation CEA
@@ -311,12 +312,14 @@ Implemented checks include:
 
 Predictor-matrix sensitivity testing found adjusted 12-month ORs ranging from 1.396 to 1.443 across tested variants. All variants favoured the intervention, although some were close to the conventional p = 0.05 threshold.
 
-CEA sensitivity outputs remained directionally favourable. Complete-case CEA estimated incremental cost -492.89 EUR, incremental QALY 0.0320, and probability cost-effective 0.971 at 29000 EUR/QALY. Simple-imputation CEA estimated incremental cost -132.40 EUR, incremental QALY 0.0276, and probability cost-effective 0.910. UK tariff sensitivity estimated incremental QALY 0.0190 and probability cost-effective 0.839.
+The dedicated 12-month model-specification comparison also remained directionally favourable throughout. The main adjusted GEE gave OR 1.414, the expanded-covariate GEE gave OR 1.386, the adjusted 12-month-only GLM gave OR 1.392, the patient-random-effect GLMM gave OR 1.734, and the patient-plus-pharmacy GLMM gave OR 1.687.
+
+CEA sensitivity outputs remained directionally favourable. Complete-case CEA estimated incremental cost -469.93 EUR, incremental QALY 0.0322, and probability cost-effective 0.971 at 29000 EUR/QALY. Simple-imputation CEA estimated incremental cost -123.27 EUR, incremental QALY 0.0282, and probability cost-effective 0.903. UK tariff sensitivity now reuses the main-analysis incremental cost and re-estimates only the QALY side under the alternate tariff; it estimated incremental QALY 0.0195 and probability cost-effective 0.835.
 
 ### Caveats for Maintainers
 
 - `results/secondary_effectiveness_summary.csv` and related secondary adherence outputs are stale/deprecated. Current config sets `effectiveness.secondary_outcomes.enabled = FALSE`.
-- After the 2026-06-23 sensitivity run, `models/cea_artifact.rds` and `results/cea_summary.csv` contain a 10-bootstrap main CEA artifact, while `results/manuscript_results_summary.csv` still contains the older 5000-bootstrap manuscript-facing CEA values. Rerun `R/05_cost_effectiveness.R`, then `R/06_outputs.R` and `R/07_manuscript_report.R`, before final economic reporting.
+- The current main CEA artifacts are synchronized at 5000 bootstrap draws, while refreshed CEA sensitivity branches in `R/08_sensitivity_analyses.R` now use 1500 draws by default unless deliberately overridden.
 - The configured bootstrap policy is 5000 draws for the main CEA and 1500 draws for future CEA sensitivity analyses in `R/08_sensitivity_analyses.R`. Override sensitivity draws only deliberately via `BOFE_SENSITIVITY_BOOTSTRAP_ITERATIONS`.
 - If upstream data or methods change, rerun the full pipeline before quoting manuscript-facing results.
 - Generated CSV/Markdown outputs should be regenerated from canonical artifacts rather than manually edited.

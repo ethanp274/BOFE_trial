@@ -498,6 +498,120 @@ pool_gee_timepoints <- function(
     bind_rows()
 }
 
+extract_primary_group_term <- function(term_names) {
+  term_names <- as.character(term_names)
+  matches <- term_names[grep("^group", term_names)]
+  if (length(matches) == 0) {
+    return(NA_character_)
+  }
+  matches[[1]]
+}
+
+pool_single_timepoint_logistic_models <- function(
+    fit_list,
+    adjustment_label,
+    model_family = "glm_12mo",
+    outcome = "disease_control",
+    outcome_label = "Disease control",
+    timepoint = 12) {
+  if (length(fit_list) == 1L) {
+    pooled_summary <- broom::tidy(
+      fit_list[[1]],
+      conf.int = TRUE,
+      conf.level = 0.95
+    ) |>
+      mutate(
+        df = NA_real_,
+        odds_ratio = exp(estimate),
+        ci_low = exp(conf.low),
+        ci_high = exp(conf.high)
+      ) |>
+      select(term, estimate, std.error, statistic, df, p.value, odds_ratio, ci_low, ci_high)
+  } else {
+    pooled_fit <- mice::pool(mice::as.mira(fit_list))
+    pooled_summary <- summary(pooled_fit)
+    crit <- ifelse(is.finite(pooled_summary$df), qt(0.975, pooled_summary$df), 1.96)
+    pooled_summary$odds_ratio <- exp(pooled_summary$estimate)
+    pooled_summary$ci_low <- exp(pooled_summary$estimate - crit * pooled_summary$std.error)
+    pooled_summary$ci_high <- exp(pooled_summary$estimate + crit * pooled_summary$std.error)
+  }
+
+  pooled_summary$model_family <- model_family
+  pooled_summary$adjustment <- adjustment_label
+  pooled_summary$outcome <- outcome
+  pooled_summary$outcome_label <- outcome_label
+  pooled_summary$model <- paste0(model_family, "_", adjustment_label)
+
+  group_term <- extract_primary_group_term(pooled_summary$term)
+  if (is.na(group_term) || !nzchar(group_term)) {
+    stop("Could not identify the treatment-group coefficient in pooled ", model_family, " output.")
+  }
+
+  comparison_row <- pooled_summary |>
+    filter(term == group_term) |>
+    transmute(
+      model_family = model_family,
+      outcome = outcome,
+      outcome_label = outcome_label,
+      adjustment = adjustment_label,
+      model = paste0(model_family, "_", adjustment_label),
+      time = timepoint,
+      log_or = estimate,
+      odds_ratio = odds_ratio,
+      ci_low = ci_low,
+      ci_high = ci_high,
+      p_value = p.value,
+      n_imputations = length(fit_list),
+      term = term
+    )
+
+  list(
+    pooled_summary = pooled_summary,
+    timepoint_effects = comparison_row
+  )
+}
+
+fit_single_timepoint_logistic_models <- function(
+    long_sets,
+    model_formula,
+    adjustment_label,
+    n_imputations,
+    model_family = "glm_12mo",
+    time_label = "12mo",
+    outcome = "disease_control",
+    outcome_label = "Disease control") {
+  fit_list <- vector("list", n_imputations)
+  for (i in seq_len(n_imputations)) {
+    fit_started <- proc.time()[["elapsed"]]
+    pipeline_phase_info(
+      "08_sensitivity_analyses",
+      sprintf("fitting %s (%s) on imputation %d/%d", model_family, adjustment_label, i, n_imputations)
+    )
+    df_i <- long_sets[[i]]
+    df_i <- df_i[df_i$time == time_label, , drop = FALSE]
+    df_i$time <- droplevels(factor(df_i$time))
+    fit_list[[i]] <- glm(
+      formula = model_formula,
+      family = binomial(link = "logit"),
+      data = df_i
+    )
+    fit_elapsed <- proc.time()[["elapsed"]] - fit_started
+    pipeline_phase_info(
+      "08_sensitivity_analyses",
+      sprintf("finished %s (%s) imputation %d/%d in %.1fs", model_family, adjustment_label, i, n_imputations, fit_elapsed)
+    )
+  }
+
+  pool_single_timepoint_logistic_models(
+    fit_list = fit_list,
+    adjustment_label = adjustment_label,
+    model_family = model_family,
+    outcome = outcome,
+    outcome_label = outcome_label,
+    timepoint = 12
+  )
+}
+
 fit_and_pool_gee_models <- function(
   long_sets,
   model_formula,

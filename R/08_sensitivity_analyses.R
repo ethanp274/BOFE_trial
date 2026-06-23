@@ -2,8 +2,8 @@
 # Purpose: Run all secondary analyses outside the main manuscript pipeline.
 #
 # Sensitivity families:
-#   - complete-case, simple/naive, and main MICE effectiveness variants
-#   - GLM 12-month outcome comparison
+#   - missing-data handling checks for adjusted 12-month GEE
+#   - 12-month model-specification comparison under the main MICE branch
 #   - GLMM over all timepoints
 #   - CEA intervention-cost sweep
 #   - CEA EQ-5D tariff sensitivity configured in R/00_methods_config.R
@@ -84,12 +84,82 @@ effectiveness_variants <- method_config("imputation", "sensitivity_variants")
 pipeline_phase_info("08_sensitivity_analyses", "running effectiveness sensitivity variants")
 effectiveness_sensitivity <- bind_rows(lapply(effectiveness_variants, read_variant_effectiveness))
 
+matrix_sensitivity_path <- file.path("audit", "imputation_matrix_sensitivity_gee_12mo.csv")
+matrix_sensitivity_gee <- if (file.exists(matrix_sensitivity_path)) {
+  read.csv(matrix_sensitivity_path, stringsAsFactors = FALSE)
+} else {
+  data.frame()
+}
+
+missing_data_gee_12mo <- bind_rows(
+  effectiveness_sensitivity %>%
+    filter(model_family == "gee", adjustment == "adjusted", variant %in% c("full", "simple", "complete_cases")) %>%
+    transmute(
+      source = "imputation_variant",
+      variant = dplyr::recode(
+        variant,
+        full = "current_analytic",
+        simple = "simple_within_arm",
+        complete_cases = "complete_case"
+      ),
+      model_family,
+      adjustment,
+      time,
+      odds_ratio,
+      ci_low,
+      ci_high,
+      p_value
+    ),
+  if (nrow(matrix_sensitivity_gee) > 0) {
+    matrix_sensitivity_gee %>%
+      transmute(
+        source = "predictor_matrix",
+        variant,
+        model_family,
+        adjustment,
+        time,
+        odds_ratio,
+        ci_low,
+        ci_high,
+        p_value = NA_real_
+      )
+  } else {
+    data.frame()
+  }
+)
+
+effectiveness_sets_full <- prepare_effectiveness_long_sets(effectiveness_full_mids)
+long_sets_full <- followup_effectiveness_sets(effectiveness_sets_full$long_sets)
+n_imp_full <- effectiveness_sets_full$n_imputations
+
+pipeline_phase_info("08_sensitivity_analyses", "running 12-month model-specification comparison under the main MICE branch")
+expanded_gee_formula <- controlled_t ~ controlled_0 + age + gender + condition + BMI + smoking + ihd + group * time
+expanded_gee_result <- fit_and_pool_gee_models(
+  long_sets = long_sets_full,
+  model_formula = expanded_gee_formula,
+  adjustment_label = "adjusted_expanded",
+  n_imputations = n_imp_full
+)
+
+glm_unadjusted_result <- fit_single_timepoint_logistic_models(
+  long_sets = long_sets_full,
+  model_formula = controlled_t ~ group,
+  adjustment_label = "unadjusted",
+  n_imputations = n_imp_full,
+  model_family = "glm_12mo"
+)
+
+glm_adjusted_result <- fit_single_timepoint_logistic_models(
+  long_sets = long_sets_full,
+  model_formula = controlled_t ~ controlled_0 + age + gender + group,
+  adjustment_label = "adjusted",
+  n_imputations = n_imp_full,
+  model_family = "glm_12mo"
+)
+
 # Pharmacy-clustering sensitivity: mixed-effects model adding a pharmacy-level random intercept
 pipeline_phase_info("08_sensitivity_analyses", "running pharmacy-clustering mixed-effects sensitivity (patient + pharmacy random intercepts)")
 pharmacy_cluster_result <- tryCatch({
-  effectiveness_sets_full <- prepare_effectiveness_long_sets(effectiveness_full_mids)
-  long_sets_full <- followup_effectiveness_sets(effectiveness_sets_full$long_sets)
-  n_imp_full <- effectiveness_sets_full$n_imputations
   pharmacy_model_formula <- as.formula(paste(
     method_config("effectiveness", "adjusted_formula"),
     method_config("effectiveness", "mixed_effects_formula_suffix"),
@@ -111,6 +181,35 @@ pharmacy_cluster_result <- tryCatch({
   pipeline_phase_info("08_sensitivity_analyses", paste0("pharmacy clustering sensitivity failed: ", conditionMessage(e)))
   list(success = FALSE, error = conditionMessage(e))
 })
+
+model_specification_12mo <- bind_rows(
+  effectiveness_sensitivity %>%
+    filter(variant == "full", time == 12, model_family == "gee", adjustment %in% c("unadjusted", "adjusted")) %>%
+    mutate(specification = ifelse(adjustment == "unadjusted", "Unadjusted GEE", "Adjusted GEE (main covariates)")) %>%
+    select(specification, model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, p_value, n_imputations),
+  glm_unadjusted_result$timepoint_effects %>%
+    mutate(specification = "Unadjusted GLM (12-month only)") %>%
+    select(specification, model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, p_value, n_imputations),
+  expanded_gee_result$gee_timepoint_effects %>%
+    filter(time == 12) %>%
+    mutate(specification = "Adjusted GEE (expanded baseline covariates)") %>%
+    select(specification, model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, p_value, n_imputations),
+  glm_adjusted_result$timepoint_effects %>%
+    mutate(specification = "Adjusted GLM (12-month only)") %>%
+    select(specification, model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, p_value, n_imputations),
+  effectiveness_sensitivity %>%
+    filter(variant == "full", time == 12, model_family == "mixed_effects", adjustment == "adjusted") %>%
+    mutate(specification = "Adjusted GLMM (patient random effect)") %>%
+    select(specification, model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, p_value, n_imputations),
+  if (is.list(pharmacy_cluster_result) && isTRUE(pharmacy_cluster_result$success)) {
+    pharmacy_cluster_result$result$timepoint_effects %>%
+      filter(time == 12, adjustment == "adjusted_pharmacy_re") %>%
+      mutate(specification = "Adjusted GLMM (patient + pharmacy random effects)") %>%
+      select(specification, model_family, adjustment, model, time, odds_ratio, ci_low, ci_high, p_value, n_imputations)
+  } else {
+    data.frame()
+  }
+)
 
 
 # Pharmacy-clustered GEE is deliberately not part of the clean sensitivity bundle.
@@ -212,18 +311,19 @@ cea_cost_sensitivity <- bind_rows(lapply(cost_values, function(cost_per_consulta
 tariff_sensitivity <- method_config("economics", "tariff_sensitivity")
 tariff_sensitivity_label <- paste0(tariff_sensitivity, "_eq5d_tariff")
 uk_tariff_summary <- tryCatch({
-  uk_cea <- run_nested_mi_cea_branch(
+  uk_cea <- run_tariff_sensitivity_with_fixed_main_cost(
+    reference_cea_results = cea_full,
     mids_obj = cea_full_mids,
     branch_label = tariff_sensitivity_label,
-    tariff = tariff_sensitivity,
     economic_data = economic_data,
-    bootstrap_iterations = as.integer(cea_bootstrap_iterations),
-    cost_family = cea_cost_family
+    tariff = tariff_sensitivity,
+    intervention_cost_per_consultation = INTERVENTION_COST_PER_CONSULTATION,
+    bootstrap_iterations = as.integer(cea_bootstrap_iterations)
   )
   uk_cea$summary %>%
     mutate(
       scenario = tariff_sensitivity_label,
-      note = paste0(tariff_sensitivity, " tariff coefficients applied successfully.")
+      note = uk_cea$note
     )
 }, error = function(e) {
   data.frame(
@@ -253,6 +353,16 @@ sensitivity_artifact <- list(
     variant_summary = imputation_variant_summary
   ),
   effectiveness_sensitivity = effectiveness_sensitivity,
+  missing_data_gee_12mo = missing_data_gee_12mo,
+  model_specification_12mo = model_specification_12mo,
+  expanded_gee = list(
+    pooled_summary = expanded_gee_result$gee_pooled_summary,
+    timepoint_effects = expanded_gee_result$gee_timepoint_effects
+  ),
+  glm_12mo = list(
+    unadjusted = glm_unadjusted_result,
+    adjusted = glm_adjusted_result
+  ),
   cea_sensitivity_summary = cea_sensitivity_summary,
   cea_cost_sensitivity = cea_cost_sensitivity,
   uk_tariff_summary = uk_tariff_summary
@@ -277,6 +387,8 @@ if (is.list(gee_pharmacy_result) && isTRUE(gee_pharmacy_result$success)) {
 }
 write_canonical_artifact("sensitivity", sensitivity_artifact)
 write_result_csv(effectiveness_sensitivity, "effectiveness_sensitivity_summary.csv")
+write_result_csv(missing_data_gee_12mo, "missing_data_handling_gee_12mo.csv")
+write_result_csv(model_specification_12mo, "model_specification_12mo_comparison.csv")
 write_result_csv(cea_sensitivity_summary, "cea_sensitivity_summary.csv")
 write_result_csv(cea_cost_sensitivity, "cea_cost_sensitivity_summary.csv")
 write_result_csv(uk_tariff_summary, "cea_tariff_sensitivity_summary.csv")
