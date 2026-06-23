@@ -50,7 +50,7 @@ BOFE_DATA_CONTRACTS <- list(
     row_grain = "One row per ITT patient.",
     unique_key = "patient",
     required_columns = c(
-      "patient", "condition", "group", "gender", "age",
+      "patient", "pharmacy", "condition", "group", "gender", "age",
       contract_controlled_columns,
       contract_eqindex_columns,
       contract_eq5d_item_columns,
@@ -65,7 +65,7 @@ BOFE_DATA_CONTRACTS <- list(
     row_grain = "One row per ITT patient.",
     unique_key = "patient",
     required_columns = c(
-      "patient", "condition", "group", "gender", "age",
+      "patient", "pharmacy", "condition", "group", "gender", "age",
       contract_controlled_columns,
       contract_eqindex_columns
     ),
@@ -80,7 +80,7 @@ BOFE_DATA_CONTRACTS <- list(
     row_grain = "One row per ITT patient.",
     unique_key = "patient",
     required_columns = c(
-      "patient", "condition", "group", "gender", "age",
+      "patient", "pharmacy", "condition", "group", "gender", "age",
       contract_controlled_columns,
       contract_eqindex_columns,
       contract_adherence_columns
@@ -96,7 +96,7 @@ BOFE_DATA_CONTRACTS <- list(
     row_grain = "One row per ITT patient.",
     unique_key = "patient",
     required_columns = c(
-      "patient", "condition", "group", "gender", "age", "controlled_0",
+      "patient", "pharmacy", "condition", "group", "gender", "age", "controlled_0",
       contract_eq5d_item_columns,
       COST_SUMMARY_COLUMNS
     ),

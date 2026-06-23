@@ -199,7 +199,8 @@ Models:
 - Gaussian-identity GLM for QALYs
 
 Sensitivity:
-- 5000 bootstrap simulations
+- Main CEA uses 5000 bootstrap simulations
+- Future CEA sensitivity analyses default to 1500 bootstrap simulations
 - Main CEA summaries come from the complex-MICE branch; alternate CEA scenarios are reported separately in `R/08_sensitivity_analyses.R`
 
 ---
@@ -566,9 +567,12 @@ Use this space to create a running list of brief summaries of each action taken 
 - 2026-06-22: Added and ran `R/01b_publication_long_dataset.R`, a post-cleaning/pre-imputation anonymized long-form export for manuscript data sharing. It writes `data_processed/bofe_publication_anonymized_long.csv` and a companion codebook, replacing source IDs with random short IDs, suppressing pharmacy/raw residence identifiers, retaining interpretable categorical age/gender/BMI/smoking covariates, including cleaned disease-control, EQ-5D, and half-year cost variables, and writing missing values as literal `NA`. Regenerated the export so age/gender/BMI/smoking use readable regression-safe labels rather than opaque category numbers.
 - 2026-06-22: Added and ran `R/11_control_transition_sankey.R` to draw observed baseline-to-12-month disease-control transition diagrams from the anonymized publication CSV. It writes separate control/intervention PNGs, an aggregate transition-count CSV, and an anonymized patient-level transition trace CSV; 12-month missing disease-control status is shown explicitly rather than dropped.
 - 2026-06-22: Reworked `README.md` for a public-facing reviewer audience. The clean-dataset DOI placeholder now appears near the top, reviewer-facing reproduction instructions come before internal details, and the current-state/results/robustness/change-tracking material has been moved to a maintainer section at the end.
+- 2026-06-23: Traced the pharmacy-clustered GEE sensitivity path. `pharmacy` survives the imputation-to-long reconstruction, and `geeglm` can run with `cluster_var = "pharmacy"` when called directly, but this replaces the patient repeated-measures cluster rather than adding a pharmacy level because `geeglm` supports one clustering id. `R/08_sensitivity_analyses.R` now records pharmacy-id GEE as skipped by design and relies on the pharmacy random-intercept GLMM sensitivity for nested patient/pharmacy clustering. `R/04_effectiveness_helpers.R` now validates `cluster_var`, sorts rows by the requested cluster before fitting, and gives a clear missing-column error instead of a misleading `cluster_id` lookup failure.
+- 2026-06-23: Reviewed the completed `R/08_sensitivity_analyses.R` run and rewrote `audit/master_robustness_and_sensitivity_note.md` with refreshed effectiveness, pharmacy-clustering, CEA imputation, intervention-cost, and UK EQ-5D tariff sensitivity results. The pharmacy random-intercept GLMM remains supportive at 12 months (OR 1.687, 95% CI 1.016 to 2.802, p = 0.043). Noted a CEA synchronization issue: `models/cea_artifact.rds` and `results/cea_summary.csv` currently contain a 10-bootstrap main CEA artifact, while `results/manuscript_results_summary.csv` still contains the older 5000-bootstrap manuscript-facing CEA values; rerun `R/05_cost_effectiveness.R`, `R/06_outputs.R`, and `R/07_manuscript_report.R` before final economic reporting.
+- 2026-06-23: Kept the main CEA bootstrap setting at 5000 draws and configured future CEA sensitivity branches to use 1500 draws by default through `economics$sensitivity_bootstrap_iterations`. `R/08_sensitivity_analyses.R` now passes this value to complete-case, simple-imputation, and UK tariff CEA sensitivity branches, with `BOFE_SENSITIVITY_BOOTSTRAP_ITERATIONS` retained as the deliberate override.
 
 Next steps:
-1. Run `R/08_sensitivity_analyses.R` when ready to refresh the optional sensitivity artifact under the new imputation-source design; it is intentionally skipped by the latest smoke pass because it is expensive.
+1. Resynchronize the main CEA artifacts before final economic reporting: rerun `R/05_cost_effectiveness.R`, then `R/06_outputs.R` and `R/07_manuscript_report.R`, and confirm `models/cea_artifact.rds`, `results/cea_summary.csv`, and `results/manuscript_results_summary.csv` agree on the bootstrap count and estimates.
 2. Compare `results/model_gee_timepoint_effects.csv`, `results/cea_summary.csv`, `results/manuscript_results_summary.csv`, and `results/manuscript_results_brief.md` against the manuscript draft before changing reported text.
 3. Use `Rscript R/run_smoke_tests.R` before and after expensive stages to catch shape or artifact regressions quickly.
 4. If a full end-to-end rerun is needed, run `.\run_full_pipeline.ps1` from the project root.

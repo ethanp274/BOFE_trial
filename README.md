@@ -266,6 +266,8 @@ This section is primarily for project maintainers and future analysis agents. It
 - `R/08_sensitivity_analyses.R` handles optional effectiveness and economic sensitivity scenarios.
 - `R/09_imputation_predictor_matrix_audit.R` and `R/10_imputation_matrix_sensitivity.R` document and test MICE predictor-matrix robustness.
 - `R/11_control_transition_sankey.R` writes aggregate transition figures and patient-level trace CSVs from the anonymized publication dataset.
+- Pharmacy-level clustering is handled in the sensitivity bundle through a mixed-effects model with patient and pharmacy random intercepts. Pharmacy-id GEE is skipped by design because `geeglm` supports only one clustering id; using `id = pharmacy` would replace the patient repeated-measures cluster rather than add a second clustering level.
+- The refreshed pharmacy-clustering GLMM sensitivity remains supportive at 12 months: OR 1.687, 95% CI 1.016 to 2.802, p = 0.043.
 - `run_full_pipeline.ps1` is the master PowerShell launcher.
 - `logs/pipeline_progress.log` records stage progress.
 - `models/` stores fitted model artifacts; `results/` stores manuscript-facing summaries and figures; `audit/` stores methodological diagnostics.
@@ -285,6 +287,7 @@ Main CEA:
 - Patient-level Gaussian-identity GLM for total cost.
 - Gaussian-identity GLM for QALYs.
 - Nested MI bootstrap with 5000 draws.
+- CEA sensitivity branches default to 1500 bootstrap draws for future reruns.
 - Incremental cost: -116.75 EUR, pooled CI -1366.77 to 1133.27.
 - Incremental QALY: 0.0224, pooled CI -0.0204 to 0.0652.
 - Probability cost-effective at 29000 EUR/QALY: 0.861.
@@ -313,6 +316,8 @@ CEA sensitivity outputs remained directionally favourable. Complete-case CEA est
 ### Caveats for Maintainers
 
 - `results/secondary_effectiveness_summary.csv` and related secondary adherence outputs are stale/deprecated. Current config sets `effectiveness.secondary_outcomes.enabled = FALSE`.
+- After the 2026-06-23 sensitivity run, `models/cea_artifact.rds` and `results/cea_summary.csv` contain a 10-bootstrap main CEA artifact, while `results/manuscript_results_summary.csv` still contains the older 5000-bootstrap manuscript-facing CEA values. Rerun `R/05_cost_effectiveness.R`, then `R/06_outputs.R` and `R/07_manuscript_report.R`, before final economic reporting.
+- The configured bootstrap policy is 5000 draws for the main CEA and 1500 draws for future CEA sensitivity analyses in `R/08_sensitivity_analyses.R`. Override sensitivity draws only deliberately via `BOFE_SENSITIVITY_BOOTSTRAP_ITERATIONS`.
 - If upstream data or methods change, rerun the full pipeline before quoting manuscript-facing results.
 - Generated CSV/Markdown outputs should be regenerated from canonical artifacts rather than manually edited.
 - Method choices should be changed first in `R/00_methods_config.R`, then reflected in code if needed.

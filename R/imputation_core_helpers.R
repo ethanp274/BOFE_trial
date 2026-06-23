@@ -6,7 +6,7 @@ imputation_resource_pattern <- function() {
 }
 
 classify_imputation_variable <- function(name) {
-  if (name %in% c("patient", "group")) {
+  if (name %in% c("patient", "group", "pharmacy")) {
     return("id_design")
   }
   if (name %in% COST_SUMMARY_COLUMNS) {
@@ -94,7 +94,7 @@ branch_requested_imputation_variables <- function(df, branch = c("effectiveness"
   baseline_predictors <- cfg$global$baseline_predictors
   include_patterns <- cfg$branch$include_patterns
 
-  requested <- c("patient", "group", baseline_predictors)
+  requested <- c("patient", "group", "pharmacy", baseline_predictors)
   for (pattern in include_patterns) {
     requested <- c(requested, grep(pattern, names(df), value = TRUE))
   }
@@ -251,6 +251,10 @@ build_analytic_mice_predictors <- function(df, branch = c("effectiveness", "seco
     pred[, group_col] <- 0
     pred[group_col, ] <- 0
   }
+  if ("pharmacy" %in% colnames(pred)) {
+    pred[, "pharmacy"] <- 0
+    pred["pharmacy", ] <- 0
+  }
 
   diag(pred) <- 0
   pred
@@ -263,7 +267,7 @@ build_quickpred_matrix <- function(df, id_col = "patient", group_col = "group") 
       df,
       mincor = cfg$quickpred_min_correlation,
       minpuc = cfg$quickpred_min_usable_cases,
-      exclude = intersect(c(id_col, group_col), names(df))
+      exclude = intersect(c(id_col, group_col, "pharmacy"), names(df))
     ),
     error = function(e) {
       attr(e, "quickpred_failed") <- TRUE
@@ -284,6 +288,10 @@ build_quickpred_matrix <- function(df, id_col = "patient", group_col = "group") 
   if (group_col %in% colnames(quick)) {
     quick[, group_col] <- 0
     quick[group_col, ] <- 0
+  }
+  if ("pharmacy" %in% colnames(quick)) {
+    quick[, "pharmacy"] <- 0
+    quick["pharmacy", ] <- 0
   }
   diag(quick) <- 0
   quick

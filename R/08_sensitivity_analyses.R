@@ -84,6 +84,51 @@ effectiveness_variants <- method_config("imputation", "sensitivity_variants")
 pipeline_phase_info("08_sensitivity_analyses", "running effectiveness sensitivity variants")
 effectiveness_sensitivity <- bind_rows(lapply(effectiveness_variants, read_variant_effectiveness))
 
+# Pharmacy-clustering sensitivity: mixed-effects model adding a pharmacy-level random intercept
+pipeline_phase_info("08_sensitivity_analyses", "running pharmacy-clustering mixed-effects sensitivity (patient + pharmacy random intercepts)")
+pharmacy_cluster_result <- tryCatch({
+  effectiveness_sets_full <- prepare_effectiveness_long_sets(effectiveness_full_mids)
+  long_sets_full <- followup_effectiveness_sets(effectiveness_sets_full$long_sets)
+  n_imp_full <- effectiveness_sets_full$n_imputations
+  pharmacy_model_formula <- as.formula(paste(
+    method_config("effectiveness", "adjusted_formula"),
+    method_config("effectiveness", "mixed_effects_formula_suffix"),
+    "+ (1 | pharmacy)"
+  ))
+
+  pharmacy_fit <- fit_mixed_effects_models(
+    long_sets = long_sets_full,
+    model_formula = pharmacy_model_formula,
+    adjustment_label = "adjusted_pharmacy_re",
+    n_imputations = n_imp_full
+  )
+
+  pharmacy_tp <- pharmacy_fit$timepoint_effects
+  write_result_csv(pharmacy_tp %>% filter(time == 12), "effectiveness_pharmacy_cluster_12mo.csv")
+
+  list(success = TRUE, result = pharmacy_fit)
+}, error = function(e) {
+  pipeline_phase_info("08_sensitivity_analyses", paste0("pharmacy clustering sensitivity failed: ", conditionMessage(e)))
+  list(success = FALSE, error = conditionMessage(e))
+})
+
+
+# Pharmacy-clustered GEE is deliberately not part of the clean sensitivity bundle.
+# `geepack::geeglm()` supports one clustering id. Setting id = pharmacy would
+# replace, rather than add to, the patient-level repeated-measures clustering.
+# The nested patient/pharmacy sensitivity is therefore handled by the GLMM above.
+gee_pharmacy_result <- list(
+  success = FALSE,
+  skipped = TRUE,
+  reason = paste(
+    "Skipped by design: geeglm supports one clustering id, so id = pharmacy",
+    "would replace the patient repeated-measures cluster rather than add a",
+    "pharmacy-level cluster. Use the pharmacy random-intercept GLMM sensitivity",
+    "for nested patient/pharmacy clustering."
+  )
+)
+
+
 economic_data <- cleaning_artifact$economic_data
 complete_cases <- cleaning_artifact$complete_cases
 cea_cost_family <- method_config("economics", "main_cost_family")
@@ -93,11 +138,11 @@ if (is.null(cea_bootstrap_iterations)) {
   cea_bootstrap_iterations <- if (nzchar(env_cea_bootstrap_iterations)) {
     suppressWarnings(as.integer(env_cea_bootstrap_iterations))
   } else {
-    BOOTSTRAP_ITERATIONS
+    method_config("economics", "sensitivity_bootstrap_iterations")
   }
 }
 if (!is.finite(cea_bootstrap_iterations) || cea_bootstrap_iterations < 1L) {
-  cea_bootstrap_iterations <- BOOTSTRAP_ITERATIONS
+  cea_bootstrap_iterations <- method_config("economics", "sensitivity_bootstrap_iterations")
 }
 
 # Reuse the same helper logic for each CEA sensitivity branch.
@@ -108,7 +153,8 @@ cea_complete_case <- run_wide_cea_branch(
   branch_label = "complete_case",
   model_family = "complete_case",
   economic_data = economic_data,
-  cost_family = cea_cost_family
+  cost_family = cea_cost_family,
+  num_iter = as.integer(cea_bootstrap_iterations)
 )
 
 cea_simple <- run_wide_cea_branch(
@@ -116,7 +162,8 @@ cea_simple <- run_wide_cea_branch(
   branch_label = "simple_within_arm",
   model_family = "simple_within_arm",
   economic_data = economic_data,
-  cost_family = cea_cost_family
+  cost_family = cea_cost_family,
+  num_iter = as.integer(cea_bootstrap_iterations)
 )
 
 cea_full <- read_canonical_artifact("cea")
@@ -210,6 +257,24 @@ sensitivity_artifact <- list(
   cea_cost_sensitivity = cea_cost_sensitivity,
   uk_tariff_summary = uk_tariff_summary
 )
+if (is.list(pharmacy_cluster_result) && isTRUE(pharmacy_cluster_result$success)) {
+  sensitivity_artifact$pharmacy_clustering <- list(
+    timepoint_effects = pharmacy_cluster_result$result$timepoint_effects,
+    pooled_summary = pharmacy_cluster_result$result$pooled_summary,
+    manuscript_style_12mo = subset(pharmacy_cluster_result$result$timepoint_effects, time == 12 & adjustment == "adjusted_pharmacy_re")
+  )
+} else {
+  sensitivity_artifact$pharmacy_clustering <- list(error = pharmacy_cluster_result)
+}
+if (is.list(gee_pharmacy_result) && isTRUE(gee_pharmacy_result$success)) {
+  sensitivity_artifact$gee_pharmacy_clustering <- list(
+    timepoint_effects = gee_pharmacy_result$result$gee_timepoint_effects,
+    pooled_summary = gee_pharmacy_result$result$gee_pooled_summary,
+    manuscript_style_12mo = subset(gee_pharmacy_result$result$gee_timepoint_effects, time == 12 & adjustment == "adjusted")
+  )
+} else {
+  sensitivity_artifact$gee_pharmacy_clustering <- gee_pharmacy_result
+}
 write_canonical_artifact("sensitivity", sensitivity_artifact)
 write_result_csv(effectiveness_sensitivity, "effectiveness_sensitivity_summary.csv")
 write_result_csv(cea_sensitivity_summary, "cea_sensitivity_summary.csv")

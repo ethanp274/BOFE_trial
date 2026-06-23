@@ -49,7 +49,7 @@ BOFE_METHODS_CONFIG <- list(
     main_variant = "analytic",
     main_effectiveness_variant = "effectiveness_analytic",
     main_cea_variant = "cea_analytic",
-    replicates = 20L,
+    replicates = 2L,
     split_by_arm = TRUE,
     numeric_method = "pmm",
     binary_factor_method = "logreg",
@@ -163,6 +163,7 @@ BOFE_METHODS_CONFIG <- list(
     tariff_sensitivity = "uk",
     qaly_method = "Trapezoidal area under the EQ-5D utility curve across 0, 3, 6, 9, and 12 months.",
     bootstrap_iterations = 5000L,
+    sensitivity_bootstrap_iterations = 1500L,
     nested_mi_bootstrap = TRUE,
     intervention_cost_sweep = seq(40, 200, by = 20),
     eq5d_tariff_lookup = list(

@@ -4,6 +4,7 @@
 build_wide_analysis_alias_map <- function() {
   c(
     patient = "D1.2",
+    pharmacy = "D1.1",
     condition = "D1.3_0",
     group = "D1.4_0",
     location = "D2.1_0",

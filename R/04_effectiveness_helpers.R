@@ -499,13 +499,14 @@ pool_gee_timepoints <- function(
 }
 
 fit_and_pool_gee_models <- function(
-    long_sets,
-    model_formula,
-    adjustment_label,
-    n_imputations,
-    timepoints = FOLLOWUP_TIMEPOINTS,
-    outcome = "disease_control",
-    outcome_label = "Disease control") {
+  long_sets,
+  model_formula,
+  adjustment_label,
+  n_imputations,
+  timepoints = FOLLOWUP_TIMEPOINTS,
+  outcome = "disease_control",
+  outcome_label = "Disease control",
+  cluster_var = "patient") {
   fit_gee_list <- vector("list", n_imputations)
   for (i in seq_len(n_imputations)) {
     fit_started <- proc.time()[["elapsed"]]
@@ -514,19 +515,37 @@ fit_and_pool_gee_models <- function(
       sprintf("fitting geeglm (%s, %s) on imputation %d/%d", outcome, adjustment_label, i, n_imputations)
     )
 
-    fit_gee_list[[i]] <- tryCatch(
+    fit_gee_list[[i]] <- tryCatch({
+      df_i <- long_sets[[i]]
+      if (!cluster_var %in% names(df_i)) {
+        stop(
+          "cluster_var '", cluster_var, "' was not found in the reconstructed long data. ",
+          "Available columns: ", paste(names(df_i), collapse = ", ")
+        )
+      }
+      df_i$cluster_id <- df_i[[cluster_var]]
+      if (all(is.na(df_i$cluster_id))) {
+        stop("cluster_var '", cluster_var, "' is present but entirely missing.")
+      }
+      time_order <- if ("time" %in% names(df_i)) {
+        factor(as.character(df_i$time), levels = paste0(FOLLOWUP_TIMEPOINTS, "mo"))
+      } else {
+        seq_len(nrow(df_i))
+      }
+      patient_order <- if ("patient" %in% names(df_i)) as.character(df_i$patient) else seq_len(nrow(df_i))
+      df_i <- df_i[order(as.character(df_i$cluster_id), time_order, patient_order), , drop = FALSE]
+      cluster_id <- df_i[["cluster_id"]]
       geeglm(
         formula = model_formula,
         family = binomial(link = "logit"),
-        id = patient,
-        data = long_sets[[i]],
+        id = cluster_id,
+        data = df_i,
         corstr = "exchangeable",
         std.err = "san.se"
-      ),
-      error = function(e) {
-        stop("GEE model failed for imputation ", i, ": ", conditionMessage(e), call. = FALSE)
-      }
-    )
+      )
+    }, error = function(e) {
+      stop("GEE model failed for imputation ", i, ": ", conditionMessage(e), call. = FALSE)
+    })
 
     fit_elapsed <- proc.time()[["elapsed"]] - fit_started
     fit_messages <- fit_gee_list[[i]]$geese$conv
@@ -576,7 +595,7 @@ fit_and_pool_gee_models <- function(
   )
 }
 
-fit_secondary_gee_outcomes <- function(long_sets, n_imputations, timepoints = FOLLOWUP_TIMEPOINTS) {
+fit_secondary_gee_outcomes <- function(long_sets, n_imputations, timepoints = FOLLOWUP_TIMEPOINTS, cluster_var = "patient") {
   specs <- secondary_effectiveness_outcome_specs("gee")
   if (length(specs) == 0) {
     return(list(results = list(), pooled_summary = data.frame(), timepoint_effects = data.frame()))
@@ -600,7 +619,8 @@ fit_secondary_gee_outcomes <- function(long_sets, n_imputations, timepoints = FO
         n_imputations,
         timepoints = timepoints,
         outcome = outcome,
-        outcome_label = spec$label
+        outcome_label = spec$label,
+        cluster_var = cluster_var
       )
     })
     names(outcome_results) <- c("unadjusted", "adjusted")
@@ -615,9 +635,10 @@ fit_secondary_gee_outcomes <- function(long_sets, n_imputations, timepoints = FO
 }
 
 run_gee_effectiveness_analysis <- function(
-    imputation_variant = c("full", "simple", "complete_cases"),
-    write_outputs = TRUE,
-    imputation_override = NULL) {
+  imputation_variant = c("full", "simple", "complete_cases"),
+  write_outputs = TRUE,
+  imputation_override = NULL,
+  cluster_var = "patient") {
   imputation_variant <- match.arg(tolower(imputation_variant), c("full", "simple", "complete_cases"))
   imputation <- if (is.null(imputation_override)) {
     load_effectiveness_imputation(imputation_variant)
@@ -657,13 +678,13 @@ run_gee_effectiveness_analysis <- function(
   )
 
   gee_results <- lapply(names(gee_model_specs), function(adj) {
-    fit_and_pool_gee_models(long_sets, gee_model_specs[[adj]], adj, n_imputations)
+    fit_and_pool_gee_models(long_sets, gee_model_specs[[adj]], adj, n_imputations, cluster_var = cluster_var)
   })
   names(gee_results) <- names(gee_model_specs)
 
   gee_pooled_summary <- bind_rows(lapply(gee_results, `[[`, "gee_pooled_summary"))
   gee_contrast_table <- bind_rows(lapply(gee_results, `[[`, "gee_timepoint_effects"))
-  secondary_results <- fit_secondary_gee_outcomes(secondary_long_sets, secondary_n_imputations)
+  secondary_results <- fit_secondary_gee_outcomes(secondary_long_sets, secondary_n_imputations, cluster_var = cluster_var)
 
   result <- list(
     imputation = imputation,
