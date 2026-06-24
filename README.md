@@ -127,7 +127,7 @@ Rscript R/run_smoke_tests.R
 - `R/01_cleaning.R`: reads raw questionnaire and cost files, applies cleaning rules, derives disease-control outcomes and EQ-5D utilities, attaches cost summaries, and writes `data_processed/cleaning_artifact.rds`.
 - `R/01b_publication_long_dataset.R`: creates the anonymized long-form publication dataset and codebook from the cleaning artifact.
 - `R/02_imputation.R`: builds branch-specific MICE datasets for primary effectiveness and cost-effectiveness, then writes `data_processed/imputation_artifact.rds`.
-- `R/03_descriptives.R`: creates baseline and missingness summaries.
+- `R/03_descriptives.R`: creates baseline and missingness summaries, including a full pre-imputation baseline characteristic comparison table with standardized differences plus multi-level categorical breakdown rows with explicit `Missing` categories.
 - `R/04b_gee.R`: fits the primary marginal GEE effectiveness model.
 - `R/04_models.R`: fits mixed-effects sensitivity models.
 - `R/05_cost_effectiveness.R`: fits the primary cost-effectiveness analysis using the CEA-specific MICE branch.
